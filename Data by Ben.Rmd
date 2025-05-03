@@ -1,0 +1,31 @@
+---
+title: "Data by Ben"
+author: "Benjamin Nicklas"
+date: "2025-05-03"
+output: html_document
+---
+
+```{r}
+file.exists("C:/Users/ben_n/Documents/Uni/4. Semester/Bioinfo/Daten.xlsx") 
+
+file.exists("C:/Users/ben_n/Documents/Uni/4. Semester/Bioinfo/Daten.csv")
+```
+```{r}
+MS_Table <- read.table("C:/Users/ben_n/Documents/Uni/4. Semester/Bioinfo/Daten.csv", header=TRUE, row.names=1, sep = ";")
+```
+
+```{r}
+head(rownames(MS_Table),12)
+
+head(colnames(MS_Table),12)
+```
+
+```{r}
+View(MS_Table)
+```
+
+
+
+
+
+
