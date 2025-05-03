@@ -26,6 +26,14 @@ View(MS_Table)
 
 
 
+```{r}
+MS_Table1 <- read.table("C:/Users/ben_n/Documents/GitHub/2025-topic-03-group-01/Daten.csv", header=TRUE, row.names=1, sep = ";")
+```
 
+```{r}
+head(rownames(MS_Table1),12)
+
+head(colnames(MS_Table1),12)
+```
 
 
