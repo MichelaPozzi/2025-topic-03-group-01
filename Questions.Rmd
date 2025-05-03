@@ -8,3 +8,4 @@ Questions:
 
 1. Vortrag auf Englisch oder Deutsch?
 2. Freischalten von Projekt im gegebenen Reposetory zur Organisation in der Gruppe
+3. Wie Daten reinladen, wenn jeder selbst einen Pfad anlegt, kann man nicht in einem Dokument arbeiten?!
