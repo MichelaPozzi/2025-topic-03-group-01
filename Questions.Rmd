@@ -1,0 +1,10 @@
+---
+title: "Questions"
+author: "Benjamin Nicklas"
+date: "2025-05-03"
+output: html_document
+---
+Questions:
+
+1. Vortrag auf Englisch oder Deutsch?
+2. Freischalten von Projekt im gegebenen Reposetory zur Organisation in der Gruppe
