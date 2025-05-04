@@ -27,7 +27,7 @@ View(NS_Table)
 
 ```{r}
 read.csv("Daten/Daten.csv")
-Tab 1 <- read.csv("Daten/Daten.csv")
+Tab1 <- read.csv("Daten/Daten.csv")
 ```
 
 
