@@ -10,8 +10,7 @@ Test
 
 
 ```{r}
-setwd("~/GitHub/2025-topic-03-group-01/Daten")
-read.csv("Daten.csv")
+read.csv("Daten/Daten.csv")
 
-Tab1 <- read.csv("Daten.csv")
+Tab1 <- read.csv("Daten/Daten.csv")
 ```
