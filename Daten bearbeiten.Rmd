@@ -7,9 +7,8 @@ output: html_document
 
 
 ```{r}
-read.csv("Daten.csv")
-
-Tab1 <- read.csv("Daten.csv")
+read.csv("Daten/Daten.csv")
+Tab1 <- read.csv("Daten/Daten.csv")
 ```
 
 
