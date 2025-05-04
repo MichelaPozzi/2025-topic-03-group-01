@@ -23,16 +23,8 @@ head(colnames(NS_Table),12)
 
 ```{r}
 read.csv("Daten/Daten.csv")
-<<<<<<< HEAD
-<<<<<<< HEAD
-Tab1 <- read.csv("Daten/Daten.csv")
-=======
-dat <- read.csv("Daten/Daten.csv", header=TRUE, row.names=1, sep = ";")
->>>>>>> dfa212802fb192ba8381ba73580c6f23cd082dcd
-=======
 NS_Table <- read.csv("Daten/Daten.csv", header=TRUE, row.names=1, sep = ";")
 View(NS_Table)
->>>>>>> db985f3a3a63585cdf5202d7283a6e25a3c164e9
 ```
 
 
