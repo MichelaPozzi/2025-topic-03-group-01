@@ -1,0 +1,56 @@
+---
+title: "Data set backup"
+author: "Julia Annika Ferdin"
+date: "2025-05-04"
+output: html_document
+---
+
+```{r}
+#Checks, if dataset is stored on local directory
+file.exists("C:/Users/julia/Documents/2025-topic-03-group-01/Daten/Daten.csv")
+```
+```{r}
+#Reads table, by indicating path to directory where the dataset is stored, and stores it to variable NS_Table (NS for Non-synchronizied)
+NS_Table <- read.table("Daten/Daten.csv", header=TRUE, row.names=1, sep = ";")
+```
+
+```{r}
+#Row names are protein names
+head(rownames(NS_Table),12)
+
+#Columns indicate the respective fractions from 1 to 25, and their replicated
+head(colnames(NS_Table),12)
+```
+
+```{r}
+read.csv("Daten/Daten.csv")
+NS_Table <- read.csv("Daten/Daten.csv", header=TRUE, row.names=1, sep = ";")
+View(NS_Table)
+```
+
+
+```{r}
+#General first overview of data
+
+# Dimension
+dim(NS_Table)
+# Number of columns
+ncol(NS_Table)
+# Number of rows
+nrow(NS_Table)
+
+colnames(NS_Table)
+rownames(NS_Table)
+head(NS_Table)
+summary(NS_Table)
+```
+
+```{r}
+#Check for missing values
+anyNA(NS_Table)
+```
+
+```{r}
+#Visualizing data
+boxplot(NS_Table$AHNK_HUMAN, xlab ="X", horizontal = TRUE)
+```
