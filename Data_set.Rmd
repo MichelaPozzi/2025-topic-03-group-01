@@ -27,7 +27,11 @@ View(NS_Table)
 
 ```{r}
 read.csv("Daten/Daten.csv")
+<<<<<<< HEAD
 Tab1 <- read.csv("Daten/Daten.csv")
+=======
+dat <- read.csv("Daten/Daten.csv", header=TRUE, row.names=1, sep = ";")
+>>>>>>> dfa212802fb192ba8381ba73580c6f23cd082dcd
 ```
 
 
