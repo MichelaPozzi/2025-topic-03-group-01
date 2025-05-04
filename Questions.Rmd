@@ -9,3 +9,4 @@ Questions:
 1. Vortrag auf Englisch oder Deutsch?
 2. Freischalten von Projekt im gegebenen Reposetory zur Organisation in der Gruppe
 3. Wie Daten reinladen, wenn jeder selbst einen Pfad anlegt, kann man nicht in einem Dokument arbeiten?!
+4. Wie genau funktioniert der Rückschluss auf die genauen Proteine, die bei der Massenspektrometrie zunächst mit Trypsin verdaut wurden, es müssten doch Peptidfragmente entstehen, die nicht mehr akkurat zugeordnet werden können?
