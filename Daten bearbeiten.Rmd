@@ -1,0 +1,15 @@
+---
+title: "Daten bearbeiten"
+author: "Benjamin Nicklas"
+date: "2025-05-04"
+output: html_document
+---
+
+
+```{r}
+read.csv("Daten.csv")
+
+Tab1 <- read.csv("Daten.csv")
+```
+
+
