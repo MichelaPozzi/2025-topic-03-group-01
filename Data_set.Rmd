@@ -22,6 +22,7 @@ head(colnames(NS_Table),12)
 ```
 
 ```{r}
+#Give teammates ability to view data set
 read.csv("Daten/Daten.csv")
 NS_Table <- read.csv("Daten/Daten.csv", header=TRUE, row.names=1, sep = ";")
 View(NS_Table)
@@ -50,6 +51,7 @@ anyNA(NS_Table)
 ```
 
 ```{r}
-#Visualizing data
-boxplot(NS_Table$AHNK_HUMAN, xlab ="X", horizontal = TRUE)
+#Visualizing data, NOT RIGHT, FIX
+NS_Table$Fraction1_Ctrl_Rep1 <- as.numeric(gsub("\\.","", NS_Table$Fraction10_Ctrl_Rep1)) #Ersetzt Punkte, Code auch nicht vollständig verstanden
+hist(NS_Table$Fraction1_Ctrl_Rep1, xlab ="Werte?")
 ```
