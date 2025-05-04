@@ -22,12 +22,9 @@ head(colnames(NS_Table),12)
 ```
 
 ```{r}
-View(NS_Table)
-```
-
-```{r}
 read.csv("Daten/Daten.csv")
-dat <- read.csv("Daten/Daten.csv", header=TRUE, row.names=1, sep = ";")
+NS_Table <- read.csv("Daten/Daten.csv", header=TRUE, row.names=1, sep = ";")
+View(NS_Table)
 ```
 
 
