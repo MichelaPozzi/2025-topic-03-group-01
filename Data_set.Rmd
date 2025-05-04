@@ -49,6 +49,6 @@ anyNA(NS_Table)
 
 ```{r}
 #Visualizing data
-hist(NS_Table$Fraction1_Ctrl_Rep1)
+hist(NS_Table$AHNK_HUMAN)
 plot(d, xlab ="X", main ="Y")
 ```
