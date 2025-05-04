@@ -25,6 +25,11 @@ head(colnames(NS_Table),12)
 View(NS_Table)
 ```
 
+```{r}
+read.csv("Daten/Daten.csv")
+Tab 1 <- read.csv("Daten/Daten.csv")
+```
+
 
 ```{r}
 #General first overview of data
