@@ -6,10 +6,15 @@ output: html_document
 ---
 Questions:
 
-1. Vortrag auf Englisch oder Deutsch?
+1. Vortrag auf Englisch oder Deutsch? beides möglich
 
 2. Freischalten von Projekt im gegebenen Reposetory zur Organisation in der Gruppe
 
 3. Wie genau funktioniert der Rückschluss auf die genauen Proteine, die bei der Massenspektrometrie zunächst mit Trypsin verdaut wurden, es müssten doch Peptidfragmente entstehen, die nicht mehr akkurat zugeordnet werden können?
 
 4. Hab versucht eine Spalte als histogram zu plotten, Fehlermeldung, behaupted x hist(x,etc.) ist nicht numerisch. Warum, wie ändern?
+--> Wird in Reposetory hoch geladen
+
+5. Powerpoint für Ende?
+
+6. In welchen Programm muss das Plakat gemacht werden?
