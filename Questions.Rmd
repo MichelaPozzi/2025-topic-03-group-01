@@ -23,3 +23,5 @@ Idee: table.frxn1.CTRL <- as.numeric(table.frxn1.CTRL)
 Fehler: 'list' Objekt kann nicht in Typ 'double' umgewandelt werden
 Heißt: Ich habe aktuell eine Liste, die Elemente darin werden anscheinend aber nicht als numerisch erkannt, evtl. als character? Oder werden die Elemente gar nicht betrachtet, man sieht nur list ungleich numerisch?
 ->Wie lösen?
+
+7. Die Datenverteilung, die wir machen sollen, soll aussehen, wie im Readme von Maïwen Caudron-Herger mit dem grünen und roten Graphen? Und dadrauf sollen dann det t-test bzw die Correlation test angewendet werden oder? Also das ist alles Teil der Data exploration
