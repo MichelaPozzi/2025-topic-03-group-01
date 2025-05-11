@@ -25,3 +25,5 @@ Heißt: Ich habe aktuell eine Liste, die Elemente darin werden anscheinend aber 
 ->Wie lösen?
 
 7. Die Datenverteilung, die wir machen sollen, soll aussehen, wie im Readme von Maïwen Caudron-Herger mit dem grünen und roten Graphen? Und dadrauf sollen dann det t-test bzw die Correlation test angewendet werden oder? Also das ist alles Teil der Data exploration
+
+8. Precipitation Proteine mit Shift, sind die RNA-dependent?
