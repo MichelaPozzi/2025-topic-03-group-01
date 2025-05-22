@@ -11,7 +11,7 @@ Mass spectrometry analysis of non-synchronized HeLa cells
 Script is divided into different parts:
 1 - Read dataset, normalization between replicated, sliding window?, normalization to sum = 100
 2 - Find local maxima greater than 2 as fit parameters
-3 - Gaussian fit on each curve (per protein, three control and three rnase replicates)
+3 - Gaussian fit on each curve (per protein, three control and three Rnase replicates)
 4 - Quality control of fit an if possible adjustment
 5 - Asses p-values and FDR-adjusted p-values for each maximum
 6 - Evaluate shifts by using selection criteria
