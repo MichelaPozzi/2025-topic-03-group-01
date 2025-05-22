@@ -249,15 +249,8 @@ avg.table.frxn24.RNASE <- sapply(table.frxn24.RNASE, function(x) mean(x))
 avg.table.frxn25.RNASE <- sapply(table.frxn25.RNASE, function(x) mean(x))
 ```
 
-++++++++++++++++++
-FEHLER nach Z.235: Warnung: Argument ist weder numerisch noch boolesch: gebe NA
-Idee: table.frxn1.CTRL <- as.numeric(table.frxn1.CTRL)
-Fehler: 'list' Objekt kann nicht in Typ 'double' umgewandelt werden
-->Wie lösen?
-++++++++++++++++++
-
 ```{r}
-# Determine normalization factor for each condition, as the mean of the 2 most similar replicates
+# Determine normalization factor for each condition (i.e. sample), as the mean of the 2 most similar replicates.
 # Create a function norm_fact for this step:
 norm_fact <- function(x) {
 				if( (abs(x[1]-x[2])<abs(x[1]-x[3])) && (abs(x[1]-x[2])<abs(x[2]-x[3])) ) 
@@ -267,7 +260,9 @@ norm_fact <- function(x) {
 ```
 
 ```{r}
-# Determine the normalization factor for the CTRL fractions and for the RNASE fractions
+# Determine the normalization factor for very replicate for the CTRL fractions and for the RNASE fractions
+# Normalization factors are calculated by dividing the mean of the two most similar replicates by the average protein value across all proteins for each of the three replicates. 
+# -> Reduces the influence of outlier replicates and ensures more robust normalization
 norm_mean_frxn1_CTRL <-  norm_fact(avg.table.frxn1.CTRL)/avg.table.frxn1.CTRL
 norm_mean_frxn2_CTRL <-  norm_fact(avg.table.frxn2.CTRL)/avg.table.frxn2.CTRL
 norm_mean_frxn3_CTRL <-  norm_fact(avg.table.frxn3.CTRL)/avg.table.frxn3.CTRL
@@ -321,6 +316,7 @@ norm_mean_frxn24_RNASE <-  norm_fact(avg.table.frxn24.RNASE)/avg.table.frxn24.RN
 norm_mean_frxn25_RNASE <-  norm_fact(avg.table.frxn25.RNASE)/avg.table.frxn25.RNASE
 
 ```
+
 ```{r}
 # Compute vectors containing the normalization factors for the respective treatment and replicates and fractions 1 to 25
 norm.ctrl1 <- c(norm_mean_frxn1_CTRL[1],norm_mean_frxn2_CTRL[1],norm_mean_frxn3_CTRL[1],norm_mean_frxn4_CTRL[1],norm_mean_frxn5_CTRL[1],norm_mean_frxn6_CTRL[1],norm_mean_frxn7_CTRL[1],norm_mean_frxn8_CTRL[1],norm_mean_frxn9_CTRL[1],norm_mean_frxn10_CTRL[1],norm_mean_frxn11_CTRL[1],norm_mean_frxn12_CTRL[1],norm_mean_frxn13_CTRL[1],norm_mean_frxn14_CTRL[1],norm_mean_frxn15_CTRL[1],norm_mean_frxn16_CTRL[1],norm_mean_frxn17_CTRL[1],norm_mean_frxn18_CTRL[1],norm_mean_frxn19_CTRL[1],norm_mean_frxn20_CTRL[1],norm_mean_frxn21_CTRL[1],norm_mean_frxn22_CTRL[1],norm_mean_frxn23_CTRL[1],norm_mean_frxn24_CTRL[1],norm_mean_frxn25_CTRL[1])
