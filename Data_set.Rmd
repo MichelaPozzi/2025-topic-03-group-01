@@ -89,11 +89,17 @@ row_names
 ```{r}
 # Make dataframe with the information (treatment, condition, fraction) for each column - here 150 columns
 data <- data.frame(row.names = colnames(NS_Table), treatment = treatment, condition = condition, fraction = fraction)
+
+#Check for missing values, there are none 
+anyNA(NS_Table)
 ```
 
 
 **************************************************************************************************************
 Normalization step between the replicates in each fraction and for each treatment using the mean value method
+
+
+
 
 ```{r}
 # Define subtables for each fraction (with three CTRL and three RNASE replicates)
@@ -235,7 +241,6 @@ avg.table.frxn22.RNASE <- sapply(table.frxn22.RNASE, function(x) mean(x))
 avg.table.frxn23.RNASE <- sapply(table.frxn23.RNASE, function(x) mean(x))
 avg.table.frxn24.RNASE <- sapply(table.frxn24.RNASE, function(x) mean(x))
 avg.table.frxn25.RNASE <- sapply(table.frxn25.RNASE, function(x) mean(x))
-
 ```
 
 ++++++++++++++++++
