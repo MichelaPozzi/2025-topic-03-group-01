@@ -24,7 +24,7 @@ Graphics 2 - All curves for one protein of interest- function curves_all
 1 - Read dataset, normalization between replicated, sliding window?, normalization to sum = 100
 **************************************************************************************************************
 
-
+Do we need this chunk?
 ```{r}
 #Checks, if dataset is stored on local directory
 file.exists("C:/Users/julia/Documents/2025-topic-03-group-01/Daten/Daten.csv")
@@ -43,6 +43,7 @@ head(rownames(NS_Table),12)
 head(colnames(NS_Table),12)
 ```
 
+Why do we need this chunk? 
 ```{r,results='hide'}
 #Give teammates ability to view data set
 read.csv("Daten/Daten.csv")
