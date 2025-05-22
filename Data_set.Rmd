@@ -134,12 +134,11 @@ table.frxn25 <- NS_Table[,data$fraction =="fraction25"]
 
 ```{r}
 # Re-define the information for the fraction subtables (dataframe named "data3") and create one table per treatment and per fraction. Here there are 50 subtables in total
+# A new table is defined for each fraction, containing 3 replicates of either CTRL or RNASE.
 
-# Definiere eine neue Tabelle mit 3 Replikaten (entweder CTRL oder RNASE) pro Fraktion.
-
-# data3 ist eine Hilfstabelle um leichter für die table.frxn_.CTROL oder .RNASE Tabellen die richtigen Spalten (aus den Fraktionstabellen table.frxn_) auswählen zu können
-
+# CODE: data3 serves as an auxiliary table used to more easily select the correct columns of CTRL or RNASE replicates for the new tables.
 data3 <- data.frame(row.names=colnames(table.frxn1), treatment = rep(c("CTRL", "RNASE"),3), condition = c("ctrl1","rnase1","ctrl2","rnase2","ctrl3","rnase3"))
+
 table.frxn1.CTRL <- table.frxn1[,data3$treatment == "CTRL"] 
 table.frxn1.RNASE <- table.frxn1[,data3$treatment == "RNASE"]
 table.frxn2.CTRL <- table.frxn2[,data3$treatment == "CTRL"] 
@@ -196,8 +195,7 @@ table.frxn25.RNASE <- table.frxn25[,data3$treatment == "RNASE"]
 
 ```{r}
 # Determine average values for each treatment, each fraction and each replicate. Here, the values for the three replicates are stored in the same table
-# Berechnet den Mittelwert jeder Spalte in table.frxn_.CTRL 
-# berechnet also den durchschnittlichen Proteinwert über alle Proteine hinweg für jede der 3 Kontrollreplikate
+# Each vector contains the average protein value across all proteins for each of its 3 replicates.
 avg.table.frxn1.CTRL <- sapply(table.frxn1.CTRL, function(x) mean(x))
 avg.table.frxn2.CTRL <- sapply(table.frxn2.CTRL, function(x) mean(x))
 avg.table.frxn3.CTRL <- sapply(table.frxn3.CTRL, function(x) mean(x))
