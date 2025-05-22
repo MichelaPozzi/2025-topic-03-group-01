@@ -32,7 +32,7 @@ file.exists("C:/Users/julia/Documents/2025-topic-03-group-01/Daten/Daten.csv")
 
 ```{r}
 #Reads table, by indicating path to directory where the dataset is stored, and stores it to variable NS_Table (NS for Non-synchronizied)
-NS_Table <- read.table("Daten/Daten.csv", header=TRUE, row.names=1, sep = ";")
+NS_Table <- read.table("Daten/Daten_Kommata_behoben.csv", header=TRUE, row.names=1, sep = ";")
 ```
 
 ```{r}
