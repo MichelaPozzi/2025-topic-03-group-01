@@ -243,12 +243,6 @@ avg.table.frxn24.RNASE <- sapply(table.frxn24.RNASE, function(x) mean(x))
 avg.table.frxn25.RNASE <- sapply(table.frxn25.RNASE, function(x) mean(x))
 ```
 
-++++++++++++++++++
-FEHLER nach Z.235: Warnung: Argument ist weder numerisch noch boolesch: gebe NA
-Idee: table.frxn1.CTRL <- as.numeric(table.frxn1.CTRL)
-Fehler: 'list' Objekt kann nicht in Typ 'double' umgewandelt werden
-->Wie lösen?
-++++++++++++++++++
 
 ```{r}
 # Determine normalization factor for each condition, as the mean of the 2 most similar replicates
@@ -314,41 +308,47 @@ norm_mean_frxn23_RNASE <-  norm_fact(avg.table.frxn23.RNASE)/avg.table.frxn23.RN
 norm_mean_frxn24_RNASE <-  norm_fact(avg.table.frxn24.RNASE)/avg.table.frxn24.RNASE
 norm_mean_frxn25_RNASE <-  norm_fact(avg.table.frxn25.RNASE)/avg.table.frxn25.RNASE
 
+
 ```
+
+
 ```{r}
 # Compute vectors containing the normalization factors for the respective treatment and replicates and fractions 1 to 25
+# Koorekturfaktor für die overall Proteinmenge?!
 norm.ctrl1 <- c(norm_mean_frxn1_CTRL[1],norm_mean_frxn2_CTRL[1],norm_mean_frxn3_CTRL[1],norm_mean_frxn4_CTRL[1],norm_mean_frxn5_CTRL[1],norm_mean_frxn6_CTRL[1],norm_mean_frxn7_CTRL[1],norm_mean_frxn8_CTRL[1],norm_mean_frxn9_CTRL[1],norm_mean_frxn10_CTRL[1],norm_mean_frxn11_CTRL[1],norm_mean_frxn12_CTRL[1],norm_mean_frxn13_CTRL[1],norm_mean_frxn14_CTRL[1],norm_mean_frxn15_CTRL[1],norm_mean_frxn16_CTRL[1],norm_mean_frxn17_CTRL[1],norm_mean_frxn18_CTRL[1],norm_mean_frxn19_CTRL[1],norm_mean_frxn20_CTRL[1],norm_mean_frxn21_CTRL[1],norm_mean_frxn22_CTRL[1],norm_mean_frxn23_CTRL[1],norm_mean_frxn24_CTRL[1],norm_mean_frxn25_CTRL[1])
+
 norm.ctrl2 <- c(norm_mean_frxn1_CTRL[2],norm_mean_frxn2_CTRL[2],norm_mean_frxn3_CTRL[2],norm_mean_frxn4_CTRL[2],norm_mean_frxn5_CTRL[2],norm_mean_frxn6_CTRL[2],norm_mean_frxn7_CTRL[2],norm_mean_frxn8_CTRL[2],norm_mean_frxn9_CTRL[2],norm_mean_frxn10_CTRL[2],norm_mean_frxn11_CTRL[2],norm_mean_frxn12_CTRL[2],norm_mean_frxn13_CTRL[2],norm_mean_frxn14_CTRL[2],norm_mean_frxn15_CTRL[2],norm_mean_frxn16_CTRL[2],norm_mean_frxn17_CTRL[2],norm_mean_frxn18_CTRL[2],norm_mean_frxn19_CTRL[2],norm_mean_frxn20_CTRL[2],norm_mean_frxn21_CTRL[2],norm_mean_frxn22_CTRL[2],norm_mean_frxn23_CTRL[2],norm_mean_frxn24_CTRL[2],norm_mean_frxn25_CTRL[2])
+
 norm.ctrl3 <- c(norm_mean_frxn1_CTRL[3],norm_mean_frxn2_CTRL[3],norm_mean_frxn3_CTRL[3],norm_mean_frxn4_CTRL[3],norm_mean_frxn5_CTRL[3],norm_mean_frxn6_CTRL[3],norm_mean_frxn7_CTRL[3],norm_mean_frxn8_CTRL[3],norm_mean_frxn9_CTRL[3],norm_mean_frxn10_CTRL[3],norm_mean_frxn11_CTRL[3],norm_mean_frxn12_CTRL[3],norm_mean_frxn13_CTRL[3],norm_mean_frxn14_CTRL[3],norm_mean_frxn15_CTRL[3],norm_mean_frxn16_CTRL[3],norm_mean_frxn17_CTRL[3],norm_mean_frxn18_CTRL[3],norm_mean_frxn19_CTRL[3],norm_mean_frxn20_CTRL[3],norm_mean_frxn21_CTRL[3],norm_mean_frxn22_CTRL[3],norm_mean_frxn23_CTRL[3],norm_mean_frxn24_CTRL[3],norm_mean_frxn25_CTRL[3])
 
 norm.rnase1 <- c(norm_mean_frxn1_RNASE[1],norm_mean_frxn2_RNASE[1],norm_mean_frxn3_RNASE[1],norm_mean_frxn4_RNASE[1],norm_mean_frxn5_RNASE[1],norm_mean_frxn6_RNASE[1],norm_mean_frxn7_RNASE[1],norm_mean_frxn8_RNASE[1],norm_mean_frxn9_RNASE[1],norm_mean_frxn10_RNASE[1],norm_mean_frxn11_RNASE[1],norm_mean_frxn12_RNASE[1],norm_mean_frxn13_RNASE[1],norm_mean_frxn14_RNASE[1],norm_mean_frxn15_RNASE[1],norm_mean_frxn16_RNASE[1],norm_mean_frxn17_RNASE[1],norm_mean_frxn18_RNASE[1],norm_mean_frxn19_RNASE[1],norm_mean_frxn20_RNASE[1],norm_mean_frxn21_RNASE[1],norm_mean_frxn22_RNASE[1],norm_mean_frxn23_RNASE[1],norm_mean_frxn24_RNASE[1],norm_mean_frxn25_RNASE[1])
+
 norm.rnase2 <- c(norm_mean_frxn1_RNASE[2],norm_mean_frxn2_RNASE[2],norm_mean_frxn3_RNASE[2],norm_mean_frxn4_RNASE[2],norm_mean_frxn5_RNASE[2],norm_mean_frxn6_RNASE[2],norm_mean_frxn7_RNASE[2],norm_mean_frxn8_RNASE[2],norm_mean_frxn9_RNASE[2],norm_mean_frxn10_RNASE[2],norm_mean_frxn11_RNASE[2],norm_mean_frxn12_RNASE[2],norm_mean_frxn13_RNASE[2],norm_mean_frxn14_RNASE[2],norm_mean_frxn15_RNASE[2],norm_mean_frxn16_RNASE[2],norm_mean_frxn17_RNASE[2],norm_mean_frxn18_RNASE[2],norm_mean_frxn19_RNASE[2],norm_mean_frxn20_RNASE[2],norm_mean_frxn21_RNASE[2],norm_mean_frxn22_RNASE[2],norm_mean_frxn23_RNASE[2],norm_mean_frxn24_RNASE[2],norm_mean_frxn25_RNASE[2])
+
 norm.rnase3 <- c(norm_mean_frxn1_RNASE[3],norm_mean_frxn2_RNASE[3],norm_mean_frxn3_RNASE[3],norm_mean_frxn4_RNASE[3],norm_mean_frxn5_RNASE[3],norm_mean_frxn6_RNASE[3],norm_mean_frxn7_RNASE[3],norm_mean_frxn8_RNASE[3],norm_mean_frxn9_RNASE[3],norm_mean_frxn10_RNASE[3],norm_mean_frxn11_RNASE[3],norm_mean_frxn12_RNASE[3],norm_mean_frxn13_RNASE[3],norm_mean_frxn14_RNASE[3],norm_mean_frxn15_RNASE[3],norm_mean_frxn16_RNASE[3],norm_mean_frxn17_RNASE[3],norm_mean_frxn18_RNASE[3],norm_mean_frxn19_RNASE[3],norm_mean_frxn20_RNASE[3],norm_mean_frxn21_RNASE[3],norm_mean_frxn22_RNASE[3],norm_mean_frxn23_RNASE[3],norm_mean_frxn24_RNASE[3],norm_mean_frxn25_RNASE[3])
 
 ```
 
 ```{r}
 # Define subtables for each treatment and each replicate 
-data.ctrl1 <- data$condition =="ctrl1"
-data.ctrl2 <- data$condition =="ctrl2"
-data.ctrl3 <- data$condition =="ctrl3"
-data.rnase1 <- data$condition =="rnase1"
-data.rnase2 <- data$condition =="rnase2"
-data.rnase3 <- data$condition =="rnase3"
-
+data.ctrl1 <- data$condition =="Ctrl_Rep1"
+data.ctrl2 <- data$condition =="Ctrl_Rep2"
+data.ctrl3 <- data$condition =="Ctrl_Rep3"
+data.rnase1 <- data$condition =="RNase_Rep1"
+data.rnase2 <- data$condition =="RNase_Rep2"
+data.rnase3 <- data$condition =="RNase_Rep3"
 ```
 
 **************************************************************************************************************
 ```{r}
 # Normalization step, fraction-wise
-table.ctrl1 <- data.frame(mapply('*', table[,data.ctrl1], norm.ctrl1, SIMPLIFY=FALSE))
-table.ctrl2 <- data.frame(mapply('*', table[,data.ctrl2], norm.ctrl2, SIMPLIFY=FALSE))
-table.ctrl3 <- data.frame(mapply('*', table[,data.ctrl3], norm.ctrl3, SIMPLIFY=FALSE))
+table.ctrl1 <- data.frame(mapply('*', NS_Table[,data.ctrl1], norm.ctrl1, SIMPLIFY=FALSE))
+table.ctrl2 <- data.frame(mapply('*', NS_Table[,data.ctrl2], norm.ctrl2, SIMPLIFY=FALSE))
+table.ctrl3 <- data.frame(mapply('*', NS_Table[,data.ctrl3], norm.ctrl3, SIMPLIFY=FALSE))
 
-table.rnase1 <- data.frame(mapply('*', table[,data.rnase1], norm.rnase1, SIMPLIFY=FALSE))
-table.rnase2 <- data.frame(mapply('*', table[,data.rnase2], norm.rnase2, SIMPLIFY=FALSE))
-table.rnase3 <- data.frame(mapply('*', table[,data.rnase3], norm.rnase3, SIMPLIFY=FALSE))
-
+table.rnase1 <- data.frame(mapply('*', NS_Table[,data.rnase1], norm.rnase1, SIMPLIFY=FALSE))
+table.rnase2 <- data.frame(mapply('*', NS_Table[,data.rnase2], norm.rnase2, SIMPLIFY=FALSE))
+table.rnase3 <- data.frame(mapply('*', NS_Table[,data.rnase3], norm.rnase3, SIMPLIFY=FALSE))
 ```
 
 ```{r}
