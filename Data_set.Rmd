@@ -67,7 +67,7 @@ treatment
 
 ```{r}
 # Use factors to define the condition in the samples. Here we have all six replicates for 1 fraction after each other and then the next fractions.
-condition <- factor(rep(c("Fraction1_Ctrl_Rep1","Fraction1_RNase_Rep1","Fraction1_Ctrl_Rep2","Fraction1_RNase_Rep2","Fraction1_Ctrl_Rep3","Fraction1_RNase_Rep3"),25))
+condition <- factor(rep(c("Ctrl_Rep1","RNase_Rep1","Ctrl_Rep2","RNase_Rep2","Ctrl_Rep3","RNase_Rep3"),25))
 condition
 ```
 
@@ -88,7 +88,7 @@ row_names
 
 ```{r}
 # Make dataframe with the information (treatment, condition, fraction) for each column - here 150 columns
-data <- data.frame(row.names = colnames(table), treatment = treatment, condition = condition, fraction = fraction)
+data <- data.frame(row.names = colnames(NS_Table), treatment = treatment, condition = condition, fraction = fraction)
 ```
 
 
