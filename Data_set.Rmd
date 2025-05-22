@@ -25,10 +25,13 @@ Graphics 2 - All curves for one protein of interest- function curves_all
 **************************************************************************************************************
 
 
+Wird das überhaupt noch gebraucht, ich denke eigentlich kann das weg. 
 ```{r}
 #Checks, if dataset is stored on local directory
 file.exists("C:/Users/julia/Documents/2025-topic-03-group-01/Daten/Daten.csv")
 ```
+
+
 
 ```{r}
 #Reads table, by indicating path to directory where the dataset is stored, and stores it to variable NS_Table (NS for Non-synchronizied)
@@ -45,8 +48,8 @@ head(colnames(NS_Table),12)
 
 ```{r,results='hide'}
 #Give teammates ability to view data set
-read.csv("Daten/Daten.csv")
-NS_Table <- read.csv("Daten/Daten.csv", header=TRUE, row.names=1, sep = ";")
+#read.csv("Daten/Daten.csv")
+#NS_Table <- read.csv("Daten/Daten.csv", header=TRUE, row.names=1, sep = ";")
 View(NS_Table)
 ```
 
