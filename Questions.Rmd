@@ -6,24 +6,6 @@ output: html_document
 ---
 Questions:
 
-1. Vortrag auf Englisch oder Deutsch? beides möglich
-
-2. Wie genau funktioniert der Rückschluss auf die genauen Proteine, die bei der Massenspektrometrie zunächst mit Trypsin verdaut wurden, es müssten doch Peptidfragmente entstehen, die nicht mehr akkurat zugeordnet werden können?
-
-3. Powerpoint für Ende?
-
-4. In welchen Programm muss das Plakat gemacht werden?
----
-5. 
-Wenn man eine Variable bearbeitet, werden ja alle gleichnamigen Variablen im Dokument markiert. Gibt es eine Möglichkeit, wie man diese auf einmal bearbeiten kann? Wenn ich beispielsweise eine Funktion habe, die ich 30 mal anwende, aber wo sich immer ein paramater ändert, man also quasi fast identische Codezeilen hat. Wenn ich jetzt meinen Tabellennamen ändern würde, der ja in jeder Zeile ist, kann man das auf einmal machen, oder muss man den per Hand jedes mal ändern?
-
-6. 
-FEHLER nach Z. 235: Warnung: Argument ist weder numerisch noch boolesch: gebe NA
-Idee: table.frxn1.CTRL <- as.numeric(table.frxn1.CTRL)
-Fehler: 'list' Objekt kann nicht in Typ 'double' umgewandelt werden
-Heißt: Ich habe aktuell eine Liste, die Elemente darin werden anscheinend aber nicht als numerisch erkannt, evtl. als character? Oder werden die Elemente gar nicht betrachtet, man sieht nur list ungleich numerisch?
-->Wie lösen?
-
 7. Die Datenverteilung, die wir machen sollen, soll aussehen, wie im Readme von Maïwen Caudron-Herger mit dem grünen und roten Graphen? Und dadrauf sollen dann det t-test bzw die Correlation test angewendet werden oder? Also das ist alles Teil der Data exploration
 
 8. Precipitation Proteine mit Shift, sind die RNA-dependent?
