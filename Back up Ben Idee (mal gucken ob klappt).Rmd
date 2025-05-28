@@ -86,15 +86,72 @@ norm_fact <- function(x) {
 												  {mean(c(x[1],x[3]))} else {mean(c(x[2],x[3]))} 
 }
 
+print(norm_fact(avg.tables.CTRL[["fraction1"]]))
 
-print(norm_fact(avg.table.frxn25.RNASE))
 ```
 
 
+```{r}
+norm_mean_frxn_CTRL <- lapply(avg.tables.CTRL, function(vec) {
+  norm_factor <- norm_fact(vec)
+  norm_factor / vec 
+})
+
+norm_mean_frxn_RNASE <- lapply(avg.tables.RNASE, function(vec) {
+  norm_factor <- norm_fact(vec)
+  norm_factor / vec 
+})
+
+print(norm_mean_frxn_CTRL[[1]])
+```
+```{r}
+# Normierungsvektoren für CTRL, Replikat 1–3
+norm.ctrl1 <- sapply(norm_mean_frxn_CTRL, function(x) x[1])
+norm.ctrl2 <- sapply(norm_mean_frxn_CTRL, function(x) x[2])
+norm.ctrl3 <- sapply(norm_mean_frxn_CTRL, function(x) x[3])
+
+# Und genauso für RNASE
+norm.rnase1 <- sapply(norm_mean_frxn_RNASE, function(x) x[1])
+norm.rnase2 <- sapply(norm_mean_frxn_RNASE, function(x) x[2])
+norm.rnase3 <- sapply(norm_mean_frxn_RNASE, function(x) x[3])
+```
 
 
+```{r}
+data.ctrl1 <- colmns_sorted$levels_fraction =="Ctrl_Rep1"
+data.ctrl2 <- colmns_sorted$levels_fraction =="Ctrl_Rep2"
+data.ctrl3 <- colmns_sorted$levels_fraction =="Ctrl_Rep3"
+data.rnase1 <- colmns_sorted$levels_fraction =="RNase_Rep1"
+data.rnase2 <- colmns_sorted$levels_fraction =="RNase_Rep2"
+data.rnase3 <- colmns_sorted$levels_fraction =="RNase_Rep3"
+
+```
 
 
+```{r}
+# Hilfsfunktion: multipliziert Spalten von NS_Table mit den jeweiligen Normfaktoren
+normalize_group <- function(mask, norm_vec) {
+  selected <- NS_Table[, mask]                  # Spalten für die jeweilige Gruppe
+  as.data.frame(mapply(`*`, selected, norm_vec, SIMPLIFY = FALSE))  # Elementweise Multiplikation
+}
+
+# Anwendung auf alle Gruppen
+table.ctrl1  <- normalize_group(data.ctrl1,  norm.ctrl1)
+table.ctrl2  <- normalize_group(data.ctrl2,  norm.ctrl2)
+table.ctrl3  <- normalize_group(data.ctrl3,  norm.ctrl3)
+table.rnase1 <- normalize_group(data.rnase1, norm.rnase1)
+table.rnase2 <- normalize_group(data.rnase2, norm.rnase2)
+table.rnase3 <- normalize_group(data.rnase3, norm.rnase3)
+```
+
+```{r}
+rownames(table.ctrl1) <- row_names
+rownames(table.ctrl2) <- row_names
+rownames(table.ctrl3) <- row_names
+rownames(table.rnase1) <- row_names
+rownames(table.rnase2) <- row_names
+rownames(table.rnase3) <- row_names
+```
 
 
 
