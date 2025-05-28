@@ -24,19 +24,15 @@ Graphics 2 - All curves for one protein of interest- function curves_all
 1 - Read dataset, normalization between replicated, sliding window?, normalization to sum = 100
 **************************************************************************************************************
 
-Do we need this chunk?
-Wird das überhaupt noch gebraucht, ich denke eigentlich kann das weg.
 ```{r}
-#Checks, if dataset is stored on local directory
-file.exists("C:/Users/julia/Documents/2025-topic-03-group-01/Daten/Daten.csv")
-```
+#Reads table, by indicating path to directory where the dataset is stored, and stores it to variable NS_Table (NS for Non-synchronizied HeLa-cells)
 
-```{r}
-#Reads table, by indicating path to directory where the dataset is stored, and stores it to variable NS_Table (NS for Non-synchronizied)
 NS_Table <- read.table("Daten/Daten_Kommata_behoben.csv", header=TRUE, row.names=1, sep = ";")
 ```
 
 ```{r}
+#The first 12 titles of the table (NS_Table) rows/colums are read out
+
 #Row names are protein names
 head(rownames(NS_Table),12)
 
@@ -45,41 +41,52 @@ head(colnames(NS_Table),12)
 ```
 
 **************************************************************************************************************
-Define the information found in table
+Rearrange and reorder the columns to their fraction and treatment to simplify the following work steps. 
 
-Creating 3 vectors that describe the characteristics of the columns (i.e., samples) in the dataset:
-treatment → indicates whether the sample in the column is a control (CTRL) or rnase (RNASE) replicate
-condition → labels the column with the replicate number (1–3) for either CTRL or RNASE
-fraction → indicates which fraction the sample belongs to
+Creating 3 vectors that describe the characteristics of the columns (i.e., samples) in the data set:
+levels_CR → indicates whether the sample was treated with RNASE or as a CTRL
+levels_fraction → labels the column with the replicate number (1–3) for either CTRL or RNASE
+fraction_names → creates the variables fraction1 to fraction25 to assign the replicates to each fraction
 
 ```{r}
-# Use factors to define the treatment in the samples as control (CTRL) or rnase (RNASE) - there are as many treatments as columns in the table. Here, we have 150 treatments
-#factor() encodes a vector as a factor. Can be used to order different levels, here we have the two levels CTRL and RNASE
-#rep() replicates the values in x
-treatment <- factor(rep(c("CTRL", "RNASE"),75))
+#A vector consists of 2 variables (CTRL, RNASE) --> c("CTRL", "RNASE")
+#The factor() function encodes a vector as a factor. The 2 variables CTRL and RNASE are ordered into 2 different levels (characters)
+#rep(vector,75) repeats the factor() function 75 times, because we have 150 columns (75 times CTRL and RNASE)
+#The factor is defined as the variable 'treatment'
+
+levels_CR <- factor(rep(c("CTRL", "RNASE"),75))
 ```
 
 ```{r}
-# Use factors to define the condition in the samples. Here we have all six replicates for 1 fraction after each other and then the next fractions.
-condition <- factor(rep(c("Ctrl_Rep1","RNase_Rep1","Ctrl_Rep2","RNase_Rep2","Ctrl_Rep3","RNase_Rep3"),25))
+#Every sample of every fraction gets its own level to disconnect them from each other -> 6 levels per fraction because we have 3 CTRLs and 3 RNASEs per fraction
+
+levels_fraction <- factor(rep(c("Ctrl_Rep1","RNase_Rep1","Ctrl_Rep2","RNase_Rep2","Ctrl_Rep3","RNase_Rep3"),25))
+View(levels_fraction)
 ```
 
 ```{r}
-# Use factors to define the fractions from fraction1 to fraction25 through the 150 columns. Here, we have first all six fraction1, then all six fraction2 etc ... until all six fraction25
-fraction <- as.vector(matrix(rep(paste("fraction",1:25,sep=""),6), nrow = 6, ncol=25, byrow = TRUE))
+# Creation of a matrix with 6 rows and 25 columns. The matrix is filled by row from fraction1 to fraction25 so every column has one single fraction.
+# sep="" compares the word fraction with the numbers 1 to 25 without a blank space.
+# as.vector changes the created matrix into a vector with 150 elements sorted from 6 times fraction1 to 6 times fraction25
+
+fraction_names <- as.vector(matrix(rep(paste("fraction",1:25,sep=""),6), nrow = 6, ncol=25, byrow = TRUE))
+View(matrix(rep(paste("fraction",1:25,sep=""),6), nrow = 6, ncol=25, byrow = TRUE))
+View(fraction)
 ```
 
 ```{r}
-# Store the number of rows in a variable
+# The number of rows are stored in a variable
 n_row <- nrow(NS_Table)
 
-# Store the row names (here the name sof the proteins) in a variable
+# The row names (protein names) are stored in a variable
 row_names <- rownames(NS_Table)
 ```
 
 ```{r}
-# Make dataframe with the information (treatment, condition, fraction) for each column - here 150 columns
-data <- data.frame(row.names = colnames(NS_Table), treatment = treatment, condition = condition, fraction = fraction)
+# Creation of a data frame with levels_CR, levels_fraction and fraction_names. This assigns every replicate of the factions (levels_fraction) to their fraction (fraction_names) and their kind of treatment, CRTL or RNASE (levels_CR).
+
+data <- data.frame(row.names = colnames(NS_Table), levels_CR = levels_CR, levels_fraction = levels_fraction, fraction_names = fraction_names)
+View(data)
 
 #Check for missing values, there are none 
 anyNA(NS_Table)
