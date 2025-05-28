@@ -1,0 +1,32 @@
+---
+title: "Back up"
+author: "Benjamin Nicklas"
+date: "2025-05-28"
+output: html_document
+---
+
+```{r}
+#Reads table, by indicating path to directory where the dataset is stored, and stores it to variable NS_Table (NS for Non-synchronizied HeLa-cells)
+
+NS_Table <- read.table("Daten/Daten_Kommata_behoben.csv", header=TRUE, row.names=1, sep = ";")
+```
+
+
+
+```{r}
+
+fraction.tables <- lapply(paste("fraction", 1:25, sep = ""), function(fx) {NS_Table[, data$fraction == fx]})
+
+names(fraction.tables) <- paste("fraction", 1:25, sep = "")
+
+fraction.tables[[1]]
+```
+
+```{r}
+fraction.tables <- lapply(fraction.tables, function(subtable) {
+  subtable[rowSums(subtable != 0) > 0, ]})
+
+fraction.tables[[1]]
+```
+
+

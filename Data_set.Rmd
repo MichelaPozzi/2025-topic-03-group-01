@@ -85,7 +85,7 @@ row_names <- rownames(NS_Table)
 ```{r}
 # Creation of a data frame with levels_CR, levels_fraction and fraction_names. This assigns every replicate of the factions (levels_fraction) to their fraction (fraction_names) and their kind of treatment, CRTL or RNASE (levels_CR).
 
-data <- data.frame(row.names = colnames(NS_Table), levels_CR = levels_CR, levels_fraction = levels_fraction, fraction_names = fraction_names)
+colmns_sorted <- data.frame(row.names = colnames(NS_Table), levels_CR = levels_CR, levels_fraction = levels_fraction, fraction_names = fraction_names)
 View(data)
 
 #Check for missing values, there are none 
@@ -128,6 +128,16 @@ table.frxn24 <- NS_Table[,data$fraction =="fraction24"]
 table.frxn25 <- NS_Table[,data$fraction =="fraction25"]
 
 ```
+
+```{r}
+
+fraction.tables <- lapply(paste("fraction", 1:25, sep = ""), function(fx) {NS_Table[, data$fraction == fx]})
+
+names(fraction.tables) <- paste("fraction", 1:25, sep = "")
+
+fraction.tables[[1]]
+```
+
 
 ```{r}
 # Re-define the information for the fraction subtables (dataframe named "data3") and create one table per treatment and per fraction. Here there are 50 subtables in total
