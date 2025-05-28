@@ -11,22 +11,110 @@ output: html_document
 NS_Table <- read.table("Daten/Daten_Kommata_behoben.csv", header=TRUE, row.names=1, sep = ";")
 ```
 
+```{r}
+levels_CR <- factor(rep(c("CTRL", "RNASE"),75))
+```
+
+```{r}
+levels_fraction <- factor(rep(c("Ctrl_Rep1","RNase_Rep1","Ctrl_Rep2","RNase_Rep2","Ctrl_Rep3","RNase_Rep3"),25))
+```
+
+```{r}
+fraction_names <- as.vector(matrix(rep(paste("fraction",1:25,sep=""),6), nrow = 6, ncol=25, byrow = TRUE))
+```
+
+```{r}
+# The number of rows are stored in a variable
+n_row <- nrow(NS_Table)
+
+# The row names (protein names) are stored in a variable
+row_names <- rownames(NS_Table)
+```
+
+```{r}
+colmns_sorted <- data.frame(row.names = colnames(NS_Table), levels_CR = levels_CR, levels_fraction = levels_fraction, fraction_names = fraction_names)
+View(colmns_sorted)
+```
 
 
 ```{r}
 
-fraction.tables <- lapply(paste("fraction", 1:25, sep = ""), function(fx) {NS_Table[, data$fraction == fx]})
+fraction.tables <- lapply(paste("fraction", 1:25, sep = ""), function(fx) {NS_Table[, colmns_sorted$fraction == fx]})
 
 names(fraction.tables) <- paste("fraction", 1:25, sep = "")
 
-fraction.tables[[1]]
+selected_proteins <- names(fraction.tables)
+```
+
+
+```{r}
+# Liste mit nur CTRL-Spalten für jede Fraktion
+fraction.tables.CTRL <- lapply(selected_proteins, function(fx) {
+  cols <- rownames(subset(colmns_sorted, fraction_names == fx & levels_CR == "CTRL")) 
+  NS_Table[, cols, drop = FALSE]
+  })
+
+# Liste mit nur RNASE-Spalten für jede Fraktion
+fraction.tables.RNASE <- lapply(selected_proteins, function(fx) {
+  cols <- rownames(subset(colmns_sorted, fraction_names == fx & levels_CR == "RNASE"))
+  NS_Table[, cols, drop = FALSE]})
+
+names(fraction.tables.CTRL) <- selected_proteins
+names(fraction.tables.RNASE) <- selected_proteins
+
+View(fraction.tables.CTRL[["fraction3"]])
 ```
 
 ```{r}
-fraction.tables <- lapply(fraction.tables, function(subtable) {
-  subtable[rowSums(subtable != 0) > 0, ]})
+avg.tables.CTRL <- lapply(fraction.tables.CTRL, function(df) {
+  sapply(df, mean)
+})
 
-fraction.tables[[1]]
+avg.tables.RNASE <- lapply(fraction.tables.RNASE, function(df) {
+  sapply(df, mean)
+})
+
+avg.tables.CTRL[["fraction1"]]
+avg.tables.RNASE[["fraction1"]]
 ```
 
+
+```{r}
+norm_fact <- function(x) {
+				if( (abs(x[1]-x[2])<abs(x[1]-x[3])) && (abs(x[1]-x[2])<abs(x[2]-x[3])) ) 
+					{mean(c(x[1],x[2]))} else if( (abs(x[1]-x[3])<abs(x[1]-x[2])) && (abs(x[1]-x[3])<abs(x[2]-x[3])) )
+												  {mean(c(x[1],x[3]))} else {mean(c(x[2],x[3]))} 
+}
+
+
+print(norm_fact(avg.table.frxn25.RNASE))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+#Nicht wirklich teil des Codes nur falls ich das nochmal brauche
+fraction.tables0 <- lapply(fraction.tables, function(subtable) {subtable[rowSums(subtable != 0) > 0, ]})
+
+selected_proteins <- names(fraction.tables0)
+
+View(fraction.tables0[[1]])
+View(fraction.tables[[1]])
+
+names(fraction.tables) <- paste("fraction", 1:25, sep = "")
+
+selected_proteins <- names(fraction.tables)
+```
 
