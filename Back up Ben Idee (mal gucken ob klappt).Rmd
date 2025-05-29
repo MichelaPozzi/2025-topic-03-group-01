@@ -33,7 +33,6 @@ row_names <- rownames(NS_Table)
 
 ```{r}
 colmns_sorted <- data.frame(row.names = colnames(NS_Table), levels_CR = levels_CR, levels_fraction = levels_fraction, fraction_names = fraction_names)
-View(colmns_sorted)
 ```
 
 
@@ -61,8 +60,6 @@ fraction.tables.RNASE <- lapply(selected_proteins, function(fx) {
 
 names(fraction.tables.CTRL) <- selected_proteins
 names(fraction.tables.RNASE) <- selected_proteins
-
-View(fraction.tables.CTRL[["fraction3"]])
 ```
 
 ```{r}
@@ -153,9 +150,115 @@ rownames(table.rnase2) <- row_names
 rownames(table.rnase3) <- row_names
 ```
 
+```{r}
+smooth_table <- function(tbl) {
+  data.frame(tbl[1], (tbl[1:23] + tbl[2:24] + tbl[3:25]) / 3, tbl[25])
+}
+
+table.ctrl1.SW <- smooth_table(table.ctrl1)
+table.ctrl2.SW <- smooth_table(table.ctrl2)
+table.ctrl3.SW <- smooth_table(table.ctrl3)
+table.rnase1.SW <- smooth_table(table.rnase1)
+table.rnase2.SW <- smooth_table(table.rnase2)
+table.rnase3.SW <- smooth_table(table.rnase3)
+```
+
+```{r}
+# Get the proper rownames for the tables
+colnames(table.ctrl1.SW) <- colnames(table.ctrl1)
+colnames(table.ctrl2.SW) <- colnames(table.ctrl2)
+colnames(table.ctrl3.SW) <- colnames(table.ctrl3)
+colnames(table.rnase1.SW) <- colnames(table.rnase1)
+colnames(table.rnase2.SW) <- colnames(table.rnase2)
+colnames(table.rnase3.SW) <- colnames(table.rnase3)
+```
+
+```{r}
+# Funktion zur Zeilennormalisierung (auf 100 %)
+normalize_table <- function(tbl) {
+  tbl * 100 / rowSums(tbl)
+}
 
 
+tables.ctrl <- list(
+  ctrl1 = table.ctrl1.SW,
+  ctrl2 = table.ctrl2.SW,
+  ctrl3 = table.ctrl3.SW)
 
+tables.rnase <- list(
+  rnase1 = table.rnase1.SW,
+  rnase2 = table.rnase2.SW,
+  rnase3 = table.rnase3.SW)
+
+norm_tables.ctrl <- lapply(tables.ctrl, normalize_table)
+norm_tables.rnase <- lapply(tables.rnase, normalize_table)
+
+norm_tables.rnase$rnase1
+```
+```{r}
+# Funktion zum Ersetzen von NA und NaN durch 0
+clean_table <- function(tbl) {
+  tbl <- rapply(tbl, function(x) ifelse(is.na(x), 0, x), how = "replace")
+  tbl <- rapply(tbl, function(x) ifelse(is.nan(x), 0, x), how = "replace")
+  return(tbl)
+}
+
+# Liste der Tabellen
+tables.norm.ctrl <- list(
+  ctrl1 = table.ctrl1.SW.norm,
+  ctrl2 = table.ctrl2.SW.norm,
+  ctrl3 = table.ctrl3.SW.norm)
+
+tables.norm.rnase <- list(
+  rnase1 = table.rnase1.SW.norm,
+  rnase2 = table.rnase2.SW.norm,
+  rnase3 = table.rnase3.SW.norm)
+
+# Bereinigen
+tables.norm.ctrl <- lapply(tables.norm.ctrl, clean_table)
+tables.norm.rnase <- lapply(tables.norm.rnase, clean_table)
+
+View(tables.norm.ctrl$ctrl1)
+
+```
+
+```{r}
+# Average value for normalization of CTRL and RNASE samples to 100
+my.list.ctrl.norm <- list(table.ctrl1.SW, table.ctrl2.SW, table.ctrl3.SW)
+my.list.rnase.norm <- list(table.rnase1.SW, table.rnase2.SW, table.rnase3.SW)
+
+ctrl_norm_mean <- Reduce("+", my.list.ctrl.norm)/length(my.list.ctrl.norm)
+rnase_norm_mean <- Reduce("+", my.list.rnase.norm)/length(my.list.rnase.norm)
+
+```
+
+```{r}
+# Change names of the columns: from "fraction1" to "fraction25"
+col_fractions <- paste("fraction",1:25,sep="")
+colnames(ctrl_norm_mean) <- col_fractions
+colnames(rnase_norm_mean) <- col_fractions
+```
+
+```{r}
+# Normalization to 100 for each protein (= the sum of the amount of protein from fraction1 to fraction25 is 100)
+ctrl_norm_mean <- ctrl_norm_mean*100/rowSums(ctrl_norm_mean)
+rnase_norm_mean <- rnase_norm_mean*100/rowSums(rnase_norm_mean)
+
+```
+
+```{r}
+replace_na_nan <- function(x) rapply(x, function(y) ifelse(is.na(y) | is.nan(y), 0, y), how = "replace")
+
+ctrl_norm_mean <- replace_na_nan(ctrl_norm_mean)
+rnase_norm_mean <- replace_na_nan(rnase_norm_mean)
+```
+
+```{r}
+ctrl_norm_mean[rowSums(rnase_norm_mean[1:25])==0,] <- 0
+rnase_norm_mean[rowSums(ctrl_norm_mean[1:25])==0,] <- 0
+
+View(ctrl_norm_mean)
+```
 
 
 

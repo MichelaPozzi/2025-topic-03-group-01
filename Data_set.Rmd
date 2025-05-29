@@ -207,6 +207,7 @@ data.rnase3 <- colmns_sorted$levels_fraction =="RNase_Rep3"
 
 **************************************************************************************************************
 ```{r}
+#Muss noch ne neue Erklärung hin, Code ist von mir (Ben) bzw ChatGPT
 # Normalization step, fraction-wise
 # Hilfsfunktion: multipliziert Spalten von NS_Table mit den jeweiligen Normfaktoren
 normalize_group <- function(mask, norm_vec) {
@@ -237,19 +238,19 @@ rownames(table.rnase3) <- row_names
 View(table.ctrl1)
 ```
 
-Weiter hab ich noch nicht den Code bearbeitet 
-LG Ben
-
 **************************************************************************************************************
 ```{r}
 #### Apply a sliding window/moving average of 3 points to the data ####
-table.ctrl1.SW <- data.frame(table.ctrl1[1],(table.ctrl1[1:23]+table.ctrl1[2:24]+table.ctrl1[3:25])/3,table.ctrl1[25])
-table.ctrl2.SW <- data.frame(table.ctrl2[1],(table.ctrl2[1:23]+table.ctrl2[2:24]+table.ctrl2[3:25])/3,table.ctrl2[25])
-table.ctrl3.SW <- data.frame(table.ctrl3[1],(table.ctrl3[1:23]+table.ctrl3[2:24]+table.ctrl3[3:25])/3,table.ctrl3[25])
-table.rnase1.SW <- data.frame(table.rnase1[1],(table.rnase1[1:23]+table.rnase1[2:24]+table.rnase1[3:25])/3,table.rnase1[25])
-table.rnase2.SW <- data.frame(table.rnase2[1],(table.rnase2[1:23]+table.rnase2[2:24]+table.rnase2[3:25])/3,table.rnase2[25])
-table.rnase3.SW <- data.frame(table.rnase3[1],(table.rnase3[1:23]+table.rnase3[2:24]+table.rnase3[3:25])/3,table.rnase3[25])
+smooth_table <- function(tbl) {
+  data.frame(tbl[1], (tbl[1:23] + tbl[2:24] + tbl[3:25]) / 3, tbl[25])
+}
 
+table.ctrl1.SW <- smooth_table(table.ctrl1)
+table.ctrl2.SW <- smooth_table(table.ctrl2)
+table.ctrl3.SW <- smooth_table(table.ctrl3)
+table.rnase1.SW <- smooth_table(table.rnase1)
+table.rnase2.SW <- smooth_table(table.rnase2)
+table.rnase3.SW <- smooth_table(table.rnase3)
 ```
 
 ```{r}
@@ -260,37 +261,61 @@ colnames(table.ctrl3.SW) <- colnames(table.ctrl3)
 colnames(table.rnase1.SW) <- colnames(table.rnase1)
 colnames(table.rnase2.SW) <- colnames(table.rnase2)
 colnames(table.rnase3.SW) <- colnames(table.rnase3)
+
+View(table.ctrl1.SW)
 ```
 
 **************************************************************************************************************
 ```{r}
 #### Normaliztion over the amount to sum = 100 (%) ####
+# Funktion zur Zeilennormalisierung (auf 100 %)
+normalize_table <- function(tbl) {
+  tbl * 100 / rowSums(tbl)
+}
 
-table.ctrl1.SW.norm <- table.ctrl1.SW * 100 / rowSums(table.ctrl1.SW)
-table.ctrl2.SW.norm <- table.ctrl2.SW * 100 / rowSums(table.ctrl2.SW)
-table.ctrl3.SW.norm <- table.ctrl3.SW * 100 / rowSums(table.ctrl3.SW)
 
-table.rnase1.SW.norm <- table.rnase1.SW * 100 / rowSums(table.rnase1.SW)
-table.rnase2.SW.norm <- table.rnase2.SW * 100 / rowSums(table.rnase2.SW)
-table.rnase3.SW.norm <- table.rnase3.SW * 100 / rowSums(table.rnase3.SW)
+tables.ctrl <- list(
+  ctrl1 = table.ctrl1.SW,
+  ctrl2 = table.ctrl2.SW,
+  ctrl3 = table.ctrl3.SW)
+
+tables.rnase <- list(
+  rnase1 = table.rnase1.SW,
+  rnase2 = table.rnase2.SW,
+  rnase3 = table.rnase3.SW)
+
+norm_tables.ctrl <- lapply(tables.ctrl, normalize_table)
+norm_tables.rnase <- lapply(tables.rnase, normalize_table)
+
+norm_tables.rnase$rnase1
 ```
 
 **************************************************************************************************************
 ```{r}
 # Replace NA, NaN with 0 if any
-table.ctrl1.SW.norm <- rapply(table.ctrl1.SW.norm, f=function(x) ifelse(is.na(x),0,x), how="replace") 
-table.ctrl2.SW.norm <- rapply(table.ctrl2.SW.norm, f=function(x) ifelse(is.na(x),0,x), how="replace" )
-table.ctrl3.SW.norm <- rapply(table.ctrl3.SW.norm, f=function(x) ifelse(is.na(x),0,x), how="replace" )
-table.rnase1.SW.norm <- rapply(table.rnase1.SW.norm, f=function(x) ifelse(is.na(x),0,x), how="replace" )
-table.rnase2.SW.norm <- rapply(table.rnase2.SW.norm, f=function(x) ifelse(is.na(x),0,x), how="replace" )
-table.rnase3.SW.norm <- rapply(table.rnase3.SW.norm, f=function(x) ifelse(is.na(x),0,x), how="replace" )
+# Funktion zum Ersetzen von NA und NaN durch 0
+clean_table <- function(tbl) {
+  tbl <- rapply(tbl, function(x) ifelse(is.na(x), 0, x), how = "replace")
+  tbl <- rapply(tbl, function(x) ifelse(is.nan(x), 0, x), how = "replace")
+  return(tbl)
+}
 
-table.ctrl1.SW.norm <- rapply(table.ctrl1.SW.norm, f=function(x) ifelse(is.nan(x),0,x), how="replace") 
-table.ctrl2.SW.norm <- rapply(table.ctrl2.SW.norm, f=function(x) ifelse(is.nan(x),0,x), how="replace" )
-table.ctrl3.SW.norm <- rapply(table.ctrl3.SW.norm, f=function(x) ifelse(is.nan(x),0,x), how="replace" )
-table.rnase1.SW.norm <- rapply(table.rnase1.SW.norm, f=function(x) ifelse(is.nan(x),0,x), how="replace" )
-table.rnase2.SW.norm <- rapply(table.rnase2.SW.norm, f=function(x) ifelse(is.nan(x),0,x), how="replace" )
-table.rnase3.SW.norm <- rapply(table.rnase3.SW.norm, f=function(x) ifelse(is.nan(x),0,x), how="replace" )
+# Liste der Tabellen
+tables.norm.ctrl <- list(
+  ctrl1 = table.ctrl1.SW.norm,
+  ctrl2 = table.ctrl2.SW.norm,
+  ctrl3 = table.ctrl3.SW.norm)
+
+tables.norm.rnase <- list(
+  rnase1 = table.rnase1.SW.norm,
+  rnase2 = table.rnase2.SW.norm,
+  rnase3 = table.rnase3.SW.norm)
+
+# Bereinigen
+tables.norm.ctrl <- lapply(tables.norm.ctrl, clean_table)
+tables.norm.rnase <- lapply(tables.norm.rnase, clean_table)
+
+View(tables.norm.ctrl$ctrl1)
 
 ```
 
@@ -320,11 +345,10 @@ rnase_norm_mean <- rnase_norm_mean*100/rowSums(rnase_norm_mean)
 
 ```{r}
 # Replace the NaN and NA values by 0 if any
-ctrl_norm_mean <- rapply(ctrl_norm_mean, f=function(x) ifelse(is.nan(x),0,x), how="replace")
-rnase_norm_mean <- rapply(rnase_norm_mean, f=function(x) ifelse(is.nan(x),0,x), how="replace")
-ctrl_norm_mean <- rapply(ctrl_norm_mean, f=function(x) ifelse(is.na(x),0,x), how="replace")
-rnase_norm_mean <- rapply(rnase_norm_mean, f=function(x) ifelse(is.na(x),0,x), how="replace")
+replace_na_nan <- function(x) rapply(x, function(y) ifelse(is.na(y) | is.nan(y), 0, y), how = "replace")
 
+ctrl_norm_mean <- replace_na_nan(ctrl_norm_mean)
+rnase_norm_mean <- replace_na_nan(rnase_norm_mean)
 ```
 
 ```{r}
@@ -332,7 +356,11 @@ rnase_norm_mean <- rapply(rnase_norm_mean, f=function(x) ifelse(is.na(x),0,x), h
 ctrl_norm_mean[rowSums(rnase_norm_mean[1:25])==0,] <- 0
 rnase_norm_mean[rowSums(ctrl_norm_mean[1:25])==0,] <- 0
 
+View(ctrl_norm_mean)
 ```
+
+Weiter hab ich noch nicht den Code bearbeitet 
+LG Ben
 
 **************************************************************************************************************
 2 - Find local maxima greater than 2 as fit parameters
