@@ -136,7 +136,8 @@ View(fraction.tables.CTRL[["fraction3"]])
 ```
 
 ```{r}
-#Muss noch ne neue Erklärung hin, Code ist von mir (Ben) bzw ChatGPT
+# sapply(df, mean) calculates the mean of every column of the dataframe fraction.tables.CTRL
+
 avg.tables.CTRL <- lapply(fraction.tables.CTRL, function(df) {
   sapply(df, mean)
 })
@@ -164,7 +165,9 @@ print(norm_fact(avg.tables.CTRL[["fraction1"]]))
 ```
 
 ```{r}
-#Muss noch ne neue Erklärung hin, Code ist von mir (Ben) bzw ChatGPT
+# normalization of the mean value vectors - inversely proportional to the size of the values
+# norm_factor / vec: gives a new vector indicating how strong each element is relative to the norm factor (mean)
+
 norm_mean_frxn_CTRL <- lapply(avg.tables.CTRL, function(vec) {
   norm_factor <- norm_fact(vec)
   norm_factor / vec 
@@ -180,23 +183,24 @@ print(norm_mean_frxn_CTRL[[1]])
 
 
 ```{r}
-#Muss noch ne neue Erklärung hin, Code ist von mir (Ben) bzw ChatGPT
-# Compute vectors containing the normalization factors for the respective treatment and replicates and fractions 1 to 25
-# Korrekturfaktor für die overall Proteinmenge?!
-# Normierungsvektoren für CTRL, Replikat 1–3
+# Correction factor for the overall protein quantity
+# Normalization vectors for replicates 1-3
+# function(x) x[1]: extracts the first element of each vector in the list
+# norm.ctrl1 is a numeric vector consisting of the 1st element of each normalized CTRL vector
+
 norm.ctrl1 <- sapply(norm_mean_frxn_CTRL, function(x) x[1])
 norm.ctrl2 <- sapply(norm_mean_frxn_CTRL, function(x) x[2])
 norm.ctrl3 <- sapply(norm_mean_frxn_CTRL, function(x) x[3])
 
-# Und genauso für RNASE
 norm.rnase1 <- sapply(norm_mean_frxn_RNASE, function(x) x[1])
 norm.rnase2 <- sapply(norm_mean_frxn_RNASE, function(x) x[2])
 norm.rnase3 <- sapply(norm_mean_frxn_RNASE, function(x) x[3])
 ```
 
 ```{r}
-#ChatgPT bekommt das nicht küzer geschrieben, deshalb würde ichs behalten
-# Define subtables for each treatment and each replicate 
+# Defines logical vectors (TRUE, FALSE), which are later used to create subtables - separately for treatment (Ctrl vs. RNase) and replica (Rep1, Rep2, Rep3)
+# colmns_sorted$levels_fraction =="Ctrl_Rep1": checks at which position exactly in the columns_sorted Ctrl_Rep1 can be found (marks it with TRUE)
+
 data.ctrl1 <- colmns_sorted$levels_fraction =="Ctrl_Rep1"
 data.ctrl2 <- colmns_sorted$levels_fraction =="Ctrl_Rep2"
 data.ctrl3 <- colmns_sorted$levels_fraction =="Ctrl_Rep3"
@@ -207,15 +211,20 @@ data.rnase3 <- colmns_sorted$levels_fraction =="RNase_Rep3"
 
 **************************************************************************************************************
 ```{r}
-#Muss noch ne neue Erklärung hin, Code ist von mir (Ben) bzw ChatGPT
 # Normalization step, fraction-wise
-# Hilfsfunktion: multipliziert Spalten von NS_Table mit den jeweiligen Normfaktoren
+# takes specific columns from the protein intensity table and scales each row according to a normalization factor to compensate for measurement differences between replicates
+# mask: A logical vector (TRUE/FALSE) that specifies which columns of NS_Table are selected
+# selected <- NS_Table[, mask]: from NS_Table only the columns marked with TRUE in mask are selected
+# (`*`, selected, norm_vec, SIMPLIFY = FALSE): Multiplication of colums of selected and the vector norm_vec saved as a list
+
 normalize_group <- function(mask, norm_vec) {
-  selected <- NS_Table[, mask]                  # Spalten für die jeweilige Gruppe
-  as.data.frame(mapply(`*`, selected, norm_vec, SIMPLIFY = FALSE))  # Elementweise Multiplikation
+  selected <- NS_Table[, mask]                  
+  as.data.frame(mapply(`*`, selected, norm_vec, SIMPLIFY = FALSE))
 }
 
-# Anwendung auf alle Gruppen
+# logical vectors (data.ctrl1) and vectors with normalization-factors (norm.ctrl1) form groups
+# normalize_group(): multiplication of the vectors with their normalization-factor
+
 table.ctrl1  <- normalize_group(data.ctrl1,  norm.ctrl1)
 table.ctrl2  <- normalize_group(data.ctrl2,  norm.ctrl2)
 table.ctrl3  <- normalize_group(data.ctrl3,  norm.ctrl3)
@@ -226,8 +235,8 @@ table.rnase3 <- normalize_group(data.rnase3, norm.rnase3)
 ```
 
 ```{r}
-#ChatgPT bekommt das nicht küzer geschrieben, deshalb würde ichs behalten
 # Get the proper rownames for the tables
+
 rownames(table.ctrl1) <- row_names
 rownames(table.ctrl2) <- row_names
 rownames(table.ctrl3) <- row_names
@@ -240,7 +249,8 @@ View(table.ctrl1)
 
 **************************************************************************************************************
 ```{r}
-#### Apply a sliding window/moving average of 3 points to the data ####
+# Apply a sliding window/moving average of 3 points to the data to reduce noise in the data and obtain smoother curves (not possible for fraction 1 and 25)
+
 smooth_table <- function(tbl) {
   data.frame(tbl[1], (tbl[1:23] + tbl[2:24] + tbl[3:25]) / 3, tbl[25])
 }
@@ -255,6 +265,7 @@ table.rnase3.SW <- smooth_table(table.rnase3)
 
 ```{r}
 # Get the proper rownames for the tables
+
 colnames(table.ctrl1.SW) <- colnames(table.ctrl1)
 colnames(table.ctrl2.SW) <- colnames(table.ctrl2)
 colnames(table.ctrl3.SW) <- colnames(table.ctrl3)
@@ -267,8 +278,8 @@ View(table.ctrl1.SW)
 
 **************************************************************************************************************
 ```{r}
-#### Normaliztion over the amount to sum = 100 (%) ####
-# Funktion zur Zeilennormalisierung (auf 100 %)
+# Normalization of the fractions: Sum of all fraction values equals 100 (%)
+
 normalize_table <- function(tbl) {
   tbl * 100 / rowSums(tbl)
 }
@@ -284,6 +295,8 @@ tables.rnase <- list(
   rnase2 = table.rnase2.SW,
   rnase3 = table.rnase3.SW)
 
+# Calculation of the percentages of the fractions in the normalized table (table.ctrl1.SW)
+
 norm_tables.ctrl <- lapply(tables.ctrl, normalize_table)
 norm_tables.rnase <- lapply(tables.rnase, normalize_table)
 
@@ -292,15 +305,14 @@ norm_tables.rnase$rnase1
 
 **************************************************************************************************************
 ```{r}
-# Replace NA, NaN with 0 if any
-# Funktion zum Ersetzen von NA und NaN durch 0
+# Function for replacing NA and NaN with 0
+
 clean_table <- function(tbl) {
   tbl <- rapply(tbl, function(x) ifelse(is.na(x), 0, x), how = "replace")
   tbl <- rapply(tbl, function(x) ifelse(is.nan(x), 0, x), how = "replace")
   return(tbl)
 }
 
-# Liste der Tabellen
 tables.norm.ctrl <- list(
   ctrl1 = table.ctrl1.SW.norm,
   ctrl2 = table.ctrl2.SW.norm,
@@ -311,7 +323,8 @@ tables.norm.rnase <- list(
   rnase2 = table.rnase2.SW.norm,
   rnase3 = table.rnase3.SW.norm)
 
-# Bereinigen
+# Getting the clean table
+
 tables.norm.ctrl <- lapply(tables.norm.ctrl, clean_table)
 tables.norm.rnase <- lapply(tables.norm.rnase, clean_table)
 
@@ -321,9 +334,10 @@ View(tables.norm.ctrl$ctrl1)
 
 **************************************************************************************************************
 ```{r}
-# Average value for normalization of CTRL and RNASE samples to 100
 my.list.ctrl.norm <- list(table.ctrl1.SW, table.ctrl2.SW, table.ctrl3.SW)
 my.list.rnase.norm <- list(table.rnase1.SW, table.rnase2.SW, table.rnase3.SW)
+
+# Addition of all data-frames in the list my.list.ctrl.norm (element-wise) and Division of the Sum with 3 to get the mean of all 3 replicates
 
 ctrl_norm_mean <- Reduce("+", my.list.ctrl.norm)/length(my.list.ctrl.norm)
 rnase_norm_mean <- Reduce("+", my.list.rnase.norm)/length(my.list.rnase.norm)
@@ -331,20 +345,23 @@ rnase_norm_mean <- Reduce("+", my.list.rnase.norm)/length(my.list.rnase.norm)
 
 ```{r}
 # Change names of the columns: from "fraction1" to "fraction25"
+
 col_fractions <- paste("fraction",1:25,sep="")
 colnames(ctrl_norm_mean) <- col_fractions
 colnames(rnase_norm_mean) <- col_fractions
 ```
 
 ```{r}
-# Normalization to 100 for each protein (= the sum of the amount of protein from fraction1 to fraction25 is 100)
+# second normalization of the fractions (mean destroyed first normalization): Sum of all fraction values equals 100 (%)
+
 ctrl_norm_mean <- ctrl_norm_mean*100/rowSums(ctrl_norm_mean)
 rnase_norm_mean <- rnase_norm_mean*100/rowSums(rnase_norm_mean)
 
 ```
 
 ```{r}
-# Replace the NaN and NA values by 0 if any
+# Function for replacing NA and NaN with 0
+
 replace_na_nan <- function(x) rapply(x, function(y) ifelse(is.na(y) | is.nan(y), 0, y), how = "replace")
 
 ctrl_norm_mean <- replace_na_nan(ctrl_norm_mean)
@@ -352,11 +369,13 @@ rnase_norm_mean <- replace_na_nan(rnase_norm_mean)
 ```
 
 ```{r}
-# If one of the curve is 0 over all the fractions of one condition, the other condition will be set to 0 to take it out of the analysis
+# If a curve is 0 in all fractions, the other fraction is also set to 0 and is excluded from the analysis
+
 ctrl_norm_mean[rowSums(rnase_norm_mean[1:25])==0,] <- 0
 rnase_norm_mean[rowSums(ctrl_norm_mean[1:25])==0,] <- 0
 
 View(ctrl_norm_mean)
+View(rnase_norm_mean)
 ```
 
 Weiter hab ich noch nicht den Code bearbeitet 

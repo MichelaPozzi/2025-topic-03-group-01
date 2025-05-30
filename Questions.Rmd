@@ -9,3 +9,5 @@ Questions:
 7. Die Datenverteilung, die wir machen sollen, soll aussehen, wie im Readme von Maïwen Caudron-Herger mit dem grünen und roten Graphen? Und dadrauf sollen dann det t-test bzw die Correlation test angewendet werden oder? Also das ist alles Teil der Data exploration
 
 8. Precipitation Proteine mit Shift, sind die RNA-dependent?
+
+9. Warum wird im Code von Maiwen der Mittelwert aus nur 2 der 3 Daten ermittelt? (Data_set ab Zeile 153)
