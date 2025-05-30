@@ -278,3 +278,385 @@ names(fraction.tables) <- paste("fraction", 1:25, sep = "")
 selected_proteins <- names(fraction.tables)
 ```
 
+---
+title: "Data set"
+author: "Julia Annika Ferdin"
+date: "2025-05-04"
+output: html_document
+---
+**************************************************************************************************************
+Mass spectrometry analysis of non-synchronized HeLa cells
+**************************************************************************************************************
+
+Script is divided into different parts:
+1 - Read dataset, normalization between replicated, sliding window?, normalization to sum = 100
+2 - Find local maxima greater than 2 as fit parameters
+3 - Gaussian fit on each curve (per protein, three control and three Rnase replicates)
+4 - Quality control of fit an if possible adjustment
+5 - Asses p-values and FDR-adjusted p-values for each maximum
+6 - Evaluate shifts by using selection criteria
+7 - Compute final table and export as csv file
+Graphics 1 - Average curves for one protein of interest - function curves_plot
+Graphics 2 - All curves for one protein of interest- function curves_all
+
+
+**************************************************************************************************************
+1 - Read dataset, normalization between replicated, sliding window?, normalization to sum = 100
+**************************************************************************************************************
+
+```{r}
+#Reads table, by indicating path to directory where the dataset is stored, and stores it to variable NS_Table (NS for Non-synchronizied HeLa-cells)
+
+NS_Table <- read.table("Daten/Daten_Kommata_behoben.csv", header=TRUE, row.names=1, sep = ";")
+```
+
+```{r}
+#The first 12 titles of the table (NS_Table) rows/colums are read out
+
+#Row names are protein names
+head(rownames(NS_Table),12)
+
+#Columns indicate the respective fractions from 1 to 25, and their replicated
+head(colnames(NS_Table),12)
+```
+
+**************************************************************************************************************
+Rearrange and reorder the columns to their fraction and treatment to simplify the following work steps. 
+
+Creating 3 vectors that describe the characteristics of the columns (i.e., samples) in the data set:
+levels_CR → indicates whether the sample was treated with RNASE or as a CTRL
+levels_fraction → labels the column with the replicate number (1–3) for either CTRL or RNASE
+fraction_names → creates the variables fraction1 to fraction25 to assign the replicates to each fraction
+
+```{r}
+#A vector consists of 2 variables (CTRL, RNASE) --> c("CTRL", "RNASE")
+#The factor() function encodes a vector as a factor. The 2 variables CTRL and RNASE are ordered into 2 different levels (characters)
+#rep(vector,75) repeats the factor() function 75 times, because we have 150 columns (75 times CTRL and RNASE)
+#The factor is defined as the variable 'treatment'
+
+levels_CR <- factor(rep(c("CTRL", "RNASE"),75))
+```
+
+```{r}
+#Every sample of every fraction gets its own level to disconnect them from each other -> 6 levels per fraction because we have 3 CTRLs and 3 RNASEs per fraction
+
+levels_fraction <- factor(rep(c("Ctrl_Rep1","RNase_Rep1","Ctrl_Rep2","RNase_Rep2","Ctrl_Rep3","RNase_Rep3"),25))
+View(levels_fraction)
+```
+
+```{r}
+# Creation of a matrix with 6 rows and 25 columns. The matrix is filled by row from fraction1 to fraction25 so every column has one single fraction.
+# sep="" compares the word fraction with the numbers 1 to 25 without a blank space.
+# paste("fraction",1:25,sep="") creates a vector with the strings fraction1 to fraction25
+# as.vector changes the created matrix into a vector with 150 elements sorted from 6 times fraction1 to 6 times fraction25
+
+fraction_names <- as.vector(matrix(rep(paste("fraction",1:25,sep=""),6), nrow = 6, ncol=25, byrow = TRUE))
+
+View(matrix(rep(paste("fraction",1:25,sep=""),6), nrow = 6, ncol=25, byrow = TRUE))
+```
+
+```{r}
+# The number of rows are stored in a variable
+n_row <- nrow(NS_Table)
+
+# The row names (protein names) are stored in a variable
+row_names <- rownames(NS_Table)
+```
+
+```{r}
+# Creation of a data frame with levels_CR, levels_fraction and fraction_names. This assigns every replicate of the factions (levels_fraction) to their fraction (fraction_names) and their kind of treatment, CRTL or RNASE (levels_CR).
+
+colmns_sorted <- data.frame(row.names = colnames(NS_Table), levels_CR = levels_CR, levels_fraction = levels_fraction, fraction_names = fraction_names)
+
+View(colmns_sorted)
+
+#Check for missing values, there are none 
+anyNA(NS_Table)
+```
+
+
+**************************************************************************************************************
+Normalization step between the replicates in each fraction and for each treatment using the mean value method
+
+```{r}
+# lapply executes for every with paste  created string (the fractions) a function fx
+# colmns_sorted$fraction == fx: checks which columns are part of the fractions fx
+# NS_Table[, ...] filters just these columns and assigns them to the list "fraction.tables"
+# names(fraction.tables): the list "fraction.tables" gets names for its segments and assigns them to the variable selected_proteins 
+
+fraction.tables <- lapply(paste("fraction", 1:25, sep = ""), function(fx) {NS_Table[, colmns_sorted$fraction == fx]})
+
+names(fraction.tables) <- paste("fraction", 1:25, sep = "")
+
+selected_proteins <- names(fraction.tables)
+```
+
+
+```{r}
+# List with just CTRL/RNASE columns for each fraction
+# subset filters just the fractions that fulfill the conditions: fraction_names == fx --> fraction name is part of the funtion fx, levels_CR == "CTRL" --> protein was treated as a CTRL
+# rownames() takes the rownames of the filtert fractions and asigns them to the variable col
+# NS_Table[, cols, drop = FALSE] the names that are part of NS_Table are filterd out and drop = FALSE makes sure that fraction.tables.CTRL will be a dataframe
+
+# Liste mit nur CTRL-Spalten für jede Fraktion
+fraction.tables.CTRL <- lapply(selected_proteins, function(fx) {
+  cols <- rownames(subset(colmns_sorted, fraction_names == fx & levels_CR == "CTRL")) 
+  NS_Table[, cols, drop = FALSE]
+  })
+
+# Liste mit nur RNASE-Spalten für jede Fraktion
+fraction.tables.RNASE <- lapply(selected_proteins, function(fx) {
+  cols <- rownames(subset(colmns_sorted, fraction_names == fx & levels_CR == "RNASE"))
+  NS_Table[, cols, drop = FALSE]})
+
+names(fraction.tables.CTRL) <- selected_proteins
+names(fraction.tables.RNASE) <- selected_proteins
+
+View(fraction.tables.CTRL[["fraction3"]])
+```
+
+```{r}
+# sapply(df, mean) calculates the mean of every column of the dataframe fraction.tables.CTRL
+
+avg.tables.CTRL <- lapply(fraction.tables.CTRL, function(df) {
+  sapply(df, mean)
+})
+
+avg.tables.RNASE <- lapply(fraction.tables.RNASE, function(df) {
+  sapply(df, mean)
+})
+
+avg.tables.CTRL[["fraction1"]]
+avg.tables.RNASE[["fraction1"]]
+```
+```{r}
+#--> prinzpiell wird mit diesem Code gesagt, dass mindestens 1 Wert immer ein Messfehler sein muss, müssen wir uns überlegen, ob wir das genauso machen wollen oder ob wir alle 3 Messwerte mit einbeziehen.
+# Determine normalization factor for each condition (i.e. sample), as the mean of the 2 most similar replicates.
+# Create a function norm_fact for this step:
+
+norm_fact <- function(x) {
+				if( (abs(x[1]-x[2])<abs(x[1]-x[3])) && (abs(x[1]-x[2])<abs(x[2]-x[3])) ) 
+					{mean(c(x[1],x[2]))} else if( (abs(x[1]-x[3])<abs(x[1]-x[2])) && (abs(x[1]-x[3])<abs(x[2]-x[3])) )
+												  {mean(c(x[1],x[3]))} else {mean(c(x[2],x[3]))} 
+}
+
+
+print(norm_fact(avg.tables.CTRL[["fraction1"]]))
+```
+
+```{r}
+# normalization of the mean value vectors - inversely proportional to the size of the values
+# norm_factor / vec: gives a new vector indicating how strong each element is relative to the norm factor (mean)
+
+norm_mean_frxn_CTRL <- lapply(avg.tables.CTRL, function(vec) {
+  norm_factor <- norm_fact(vec)
+  norm_factor / vec 
+})
+
+norm_mean_frxn_RNASE <- lapply(avg.tables.RNASE, function(vec) {
+  norm_factor <- norm_fact(vec)
+  norm_factor / vec 
+})
+
+print(norm_mean_frxn_CTRL[[1]])
+```
+
+
+```{r}
+# Correction factor for the overall protein quantity
+# Normalization vectors for replicates 1-3
+# function(x) x[1]: extracts the first element of each vector in the list
+# norm.ctrl1 is a numeric vector consisting of the 1st element of each normalized CTRL vector
+
+norm.ctrl1 <- sapply(norm_mean_frxn_CTRL, function(x) x[1])
+norm.ctrl2 <- sapply(norm_mean_frxn_CTRL, function(x) x[2])
+norm.ctrl3 <- sapply(norm_mean_frxn_CTRL, function(x) x[3])
+
+norm.rnase1 <- sapply(norm_mean_frxn_RNASE, function(x) x[1])
+norm.rnase2 <- sapply(norm_mean_frxn_RNASE, function(x) x[2])
+norm.rnase3 <- sapply(norm_mean_frxn_RNASE, function(x) x[3])
+```
+
+```{r}
+# Defines logical vectors (TRUE, FALSE), which are later used to create subtables - separately for treatment (Ctrl vs. RNase) and replica (Rep1, Rep2, Rep3)
+# colmns_sorted$levels_fraction =="Ctrl_Rep1": checks at which position exactly in the columns_sorted Ctrl_Rep1 can be found (marks it with TRUE)
+
+data.ctrl1 <- colmns_sorted$levels_fraction =="Ctrl_Rep1"
+data.ctrl2 <- colmns_sorted$levels_fraction =="Ctrl_Rep2"
+data.ctrl3 <- colmns_sorted$levels_fraction =="Ctrl_Rep3"
+data.rnase1 <- colmns_sorted$levels_fraction =="RNase_Rep1"
+data.rnase2 <- colmns_sorted$levels_fraction =="RNase_Rep2"
+data.rnase3 <- colmns_sorted$levels_fraction =="RNase_Rep3"
+```
+
+**************************************************************************************************************
+```{r}
+# Normalization step, fraction-wise
+# takes specific columns from the protein intensity table and scales each row according to a normalization factor to compensate for measurement differences between replicates
+# mask: A logical vector (TRUE/FALSE) that specifies which columns of NS_Table are selected
+# selected <- NS_Table[, mask]: from NS_Table only the columns marked with TRUE in mask are selected
+# (`*`, selected, norm_vec, SIMPLIFY = FALSE): Multiplication of colums of selected and the vector norm_vec saved as a list
+
+normalize_group <- function(mask, norm_vec) {
+  selected <- NS_Table[, mask]                  
+  as.data.frame(mapply(`*`, selected, norm_vec, SIMPLIFY = FALSE))
+}
+
+# logical vectors (data.ctrl1) and vectors with normalization-factors (norm.ctrl1) form groups
+# normalize_group(): multiplication of the vectors with their normalization-factor
+
+table.ctrl1  <- normalize_group(data.ctrl1,  norm.ctrl1)
+table.ctrl2  <- normalize_group(data.ctrl2,  norm.ctrl2)
+table.ctrl3  <- normalize_group(data.ctrl3,  norm.ctrl3)
+table.rnase1 <- normalize_group(data.rnase1, norm.rnase1)
+table.rnase2 <- normalize_group(data.rnase2, norm.rnase2)
+table.rnase3 <- normalize_group(data.rnase3, norm.rnase3)
+
+```
+
+```{r}
+# Get the proper rownames for the tables
+
+rownames(table.ctrl1) <- row_names
+rownames(table.ctrl2) <- row_names
+rownames(table.ctrl3) <- row_names
+rownames(table.rnase1) <- row_names
+rownames(table.rnase2) <- row_names
+rownames(table.rnase3) <- row_names
+
+View(table.ctrl1)
+```
+
+**************************************************************************************************************
+```{r}
+# Apply a sliding window/moving average of 3 points to the data to reduce noise in the data and obtain smoother curves (not possible for fraction 1 and 25)
+
+smooth_table <- function(tbl) {
+  data.frame(tbl[1], (tbl[1:23] + tbl[2:24] + tbl[3:25]) / 3, tbl[25])
+}
+
+table.ctrl1.SW <- smooth_table(table.ctrl1)
+table.ctrl2.SW <- smooth_table(table.ctrl2)
+table.ctrl3.SW <- smooth_table(table.ctrl3)
+table.rnase1.SW <- smooth_table(table.rnase1)
+table.rnase2.SW <- smooth_table(table.rnase2)
+table.rnase3.SW <- smooth_table(table.rnase3)
+```
+
+```{r}
+# Get the proper rownames for the tables
+
+colnames(table.ctrl1.SW) <- colnames(table.ctrl1)
+colnames(table.ctrl2.SW) <- colnames(table.ctrl2)
+colnames(table.ctrl3.SW) <- colnames(table.ctrl3)
+colnames(table.rnase1.SW) <- colnames(table.rnase1)
+colnames(table.rnase2.SW) <- colnames(table.rnase2)
+colnames(table.rnase3.SW) <- colnames(table.rnase3)
+
+View(table.ctrl1.SW)
+```
+
+**************************************************************************************************************
+```{r}
+# Normalization of the fractions: Sum of all fraction values equals 100 (%)
+
+normalize_table <- function(tbl) {
+  tbl * 100 / rowSums(tbl)
+}
+
+
+tables.ctrl <- list(
+  ctrl1 = table.ctrl1.SW,
+  ctrl2 = table.ctrl2.SW,
+  ctrl3 = table.ctrl3.SW)
+
+tables.rnase <- list(
+  rnase1 = table.rnase1.SW,
+  rnase2 = table.rnase2.SW,
+  rnase3 = table.rnase3.SW)
+
+# Calculation of the percentages of the fractions in the normalized table (table.ctrl1.SW)
+
+norm_tables.ctrl <- lapply(tables.ctrl, normalize_table)
+norm_tables.rnase <- lapply(tables.rnase, normalize_table)
+
+norm_tables.rnase$rnase1
+```
+
+**************************************************************************************************************
+```{r}
+# Function for replacing NA and NaN with 0
+
+clean_table <- function(tbl) {
+  tbl <- rapply(tbl, function(x) ifelse(is.na(x), 0, x), how = "replace")
+  tbl <- rapply(tbl, function(x) ifelse(is.nan(x), 0, x), how = "replace")
+  return(tbl)
+}
+
+tables.norm.ctrl <- list(
+  ctrl1 = table.ctrl1.SW.norm,
+  ctrl2 = table.ctrl2.SW.norm,
+  ctrl3 = table.ctrl3.SW.norm)
+
+tables.norm.rnase <- list(
+  rnase1 = table.rnase1.SW.norm,
+  rnase2 = table.rnase2.SW.norm,
+  rnase3 = table.rnase3.SW.norm)
+
+# Getting the clean table
+
+tables.norm.ctrl <- lapply(tables.norm.ctrl, clean_table)
+tables.norm.rnase <- lapply(tables.norm.rnase, clean_table)
+
+View(tables.norm.ctrl$ctrl1)
+
+```
+
+**************************************************************************************************************
+```{r}
+my.list.ctrl.norm <- list(table.ctrl1.SW, table.ctrl2.SW, table.ctrl3.SW)
+my.list.rnase.norm <- list(table.rnase1.SW, table.rnase2.SW, table.rnase3.SW)
+
+# Addition of all data-frames in the list my.list.ctrl.norm (element-wise) and Division of the Sum with 3 to get the mean of all 3 replicates
+
+ctrl_norm_mean <- Reduce("+", my.list.ctrl.norm)/length(my.list.ctrl.norm)
+rnase_norm_mean <- Reduce("+", my.list.rnase.norm)/length(my.list.rnase.norm)
+```
+
+```{r}
+# Change names of the columns: from "fraction1" to "fraction25"
+
+col_fractions <- paste("fraction",1:25,sep="")
+colnames(ctrl_norm_mean) <- col_fractions
+colnames(rnase_norm_mean) <- col_fractions
+```
+
+```{r}
+# second normalization of the fractions (mean destroyed first normalization): Sum of all fraction values equals 100 (%)
+
+ctrl_norm_mean <- ctrl_norm_mean*100/rowSums(ctrl_norm_mean)
+rnase_norm_mean <- rnase_norm_mean*100/rowSums(rnase_norm_mean)
+
+```
+
+```{r}
+# Function for replacing NA and NaN with 0
+
+replace_na_nan <- function(x) rapply(x, function(y) ifelse(is.na(y) | is.nan(y), 0, y), how = "replace")
+
+ctrl_norm_mean <- replace_na_nan(ctrl_norm_mean)
+rnase_norm_mean <- replace_na_nan(rnase_norm_mean)
+```
+
+```{r}
+# If a curve is 0 in all fractions, the other fraction is also set to 0 and is excluded from the analysis
+
+ctrl_norm_mean[rowSums(rnase_norm_mean[1:25])==0,] <- 0
+rnase_norm_mean[rowSums(ctrl_norm_mean[1:25])==0,] <- 0
+
+View(ctrl_norm_mean)
+View(rnase_norm_mean)
+```
+
+Weiter hab ich noch nicht den Code bearbeitet 
+LG Ben
