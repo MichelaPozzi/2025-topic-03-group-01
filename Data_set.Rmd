@@ -27,7 +27,7 @@ Graphics 2 - All curves for one protein of interest- function curves_all
 ```{r}
 #Reads table, by indicating path to directory where the dataset is stored, and stores it to variable NS_Table (NS for Non-synchronizied HeLa-cells)
 
-NS_Table <- read.table("Daten/Daten_Kommata_behoben.csv", header=TRUE, row.names=1, sep = ";")
+NS_Table <- read.table("Daten/Data, copy but dont open.csv", header=TRUE, row.names=1, sep = ";")
 ```
 
 ```{r}
