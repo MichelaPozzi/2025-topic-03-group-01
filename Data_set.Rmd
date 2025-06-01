@@ -412,36 +412,39 @@ find_peaks <- function(x, window = 2) {
     }
   }
 
-  return(peaks)
-}
-
-#Test, ob die Peak-Positionen richtig ausgegeben werden
-probe = c(3, 5, 7, 9, 3, 10, 5, 20, 20, 4, 2, 1, 1)
-find_peaks(probe)
-
-
-```
-
-
-```{r}
- # part added to deal with plateaux
-     n = length(pks)
+  
+# part added to deal with plateaux
+# Ergibt diese Operation überhaupt Sinn, Plateaus haben ja auch nur einen Hochpunkt, und alle anderen (ähnlichen) werden doch ohnehin nicht erkannt werden?
+     n = length(peaks)
      if (n>1) {
      			rem <- numeric(0)
-     			for (i in 1:(n-1)) { if  ((pks[i]+1) == pks[(i+1)]) {rem <- c(rem, pks[i+1]) } }
-     			for (i in 1:(n-1)) { if  ((pks[i]+2) == pks[(i+1)]) {rem <- c(rem, pks[i+1]) } }
-     			pks <- pks[! pks %in% rem]
-     		  }	
+     			for (i in 1:(n-1)) { if  ((peaks[i]+1) == peaks[(i+1)]) {rem <- c(rem, peaks[i+1]) } }
+     			for (i in 1:(n-1)) { if  ((peaks[i]+2) == peaks[(i+1)]) {rem <- c(rem, peaks[i+1]) } }
+     			peaks <- peaks[! peaks%in% rem]
+     		  }	 
+  
+
+# part added to deal with the 1st and 25th values, in case they are max
+     if ( sum(x[1]>x[2:(window+1)]) == 2 ) {peaks <- c(peaks, 1)} 
+     if ( sum(x[25]>x[24:(25-window)]) == 2 ) {peaks <- c(peaks, 25)}
+     peaks <- unlist(peaks)
+     peaks
+     
+ return(peaks)
+     
+} 
+  
+     
+
+
+
+#Test, ob die Peak-Positionen richtig ausgegeben werden
+#test_vec2 = as.numeric(ctrl_norm_mean[4, ])
+#find_peaks(test_vec2)
+#z = c(30, 2, 2, 2, 2, 2, 5, 4, 3, 2, 2, 2, 2, 2, 31, 30, 31, 32, 2, 2, 2, 2, 2, 2, 30)
+#find_peaks(z)
 ```
 
-```{r}
-# part added to deal with the 1st and 25th values, in case they are max
-     if ( sum(x[1]>x[2:(m+1)]) == 2 ) {pks <- c(pks, 1)} 
-     if ( sum(x[25]>x[24:(25-m)]) == 2 ) {pks <- c(pks, 25)}
-     pks <- unlist(pks)
-     pks
-}
-```
 
 ***********************************************************************************************************
 ```{r}
