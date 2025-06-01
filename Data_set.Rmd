@@ -389,23 +389,39 @@ LG Ben
 # Identify also shoulders not found by peak calling
 
 **************************************************************************************************************
-```{r}
-# Define the function find_peaks
-# A "peak" is defined as a local maxima with m points either side of it being smaller than it.
-# Hence, the bigger the parameter m, the more stringent the peak finding procedure
-# m set to 2
 
-find_peaks <- function (x, m = 2){
-    shape <- diff(sign(diff(x, na.pad = FALSE)))
-    pks <- sapply(which(shape < 0), FUN = function(i){
-       z <- i - m + 1
-       z <- ifelse(z > 0, z, 1)
-       w <- i + m + 1
-       w <- ifelse(w < length(x), w, length(x))
-       if(all(x[c(z : i, (i + 2) : w)] <= x[i + 1])) return(i + 1) else return(numeric(0))
-     })
-   pks <- unlist(pks)
+```{r}
+#Function find_peaks
+#Peak is local maximum with "window" points on each side being smaller than it
+#Bigger window =>more stringent peak finding procedure 
+
+find_peaks <- function(x, window = 2) {
+  slope_changes <- diff(sign(diff(x)))
+  peak_indices <- which(slope_changes < 0)
+
+  peaks <- c()
+
+  for (i in peak_indices) {
+    left <- max(1, i - window + 1)
+    right <- min(length(x), i + window + 1)
+
+    neighbors <- c(x[left:i], x[(i + 2):right])
+
+    if (all(neighbors <= x[i + 1])) {
+      peaks <- c(peaks, i + 1)
+    }
+  }
+
+  return(peaks)
+}
+
+#Test, ob die Peak-Positionen richtig ausgegeben werden
+probe = c(3, 5, 7, 9, 3, 10, 5, 20, 20, 4, 2, 1, 1)
+find_peaks(probe)
+
+
 ```
+
 
 ```{r}
  # part added to deal with plateaux
