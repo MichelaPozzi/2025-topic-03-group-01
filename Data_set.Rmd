@@ -468,52 +468,49 @@ rnase_norm_mean$maxima <- apply(rnase_norm_mean, 1, function(x) {
 ```
 
 ***********************************************************************************************************
-# Step to retrieve the so-called "shoulder" - Group of fraction where there is a larger amount of protein that was not identified as "maxima" using the function "find_peaks"
+# Identifying shoulders
+# "shoulders" are regions of elevated signal intensity that are not sharp enough to be detected as a "peak" by the peak detection function find_peaks — but still indicate meaningful protein presence.
 
 ```{r}
-# Get fractions where (RNASE fraction value > 2%). Dataframe with 0/1 and RNASE maxima
-# Define new tables called ctrl_3 and rnase_3 that will be used temporary
+# Identify the RNAse fractions with signal intensity > 2%. 
+# Create a new data frame containing 0 (= this fraction value was ≤2% ) and 1 (= this fraction value was >2%.), as well as the intensity maxima.
+# The two new data frames are created, rnase_3 and ctrl_3, as copies of the previously calculated, normalized mean tables (*_norm_mean).
+
 rnase_3 <- rnase_norm_mean
+# Compares each value in columns 1 to 25 (the fractions) of the rnase_norm_mean dataframe with the threshold of 2%.
+# Converts TRUE to 1 and FALSE to 0. 
 rnase_3[1:25] <- (rnase_norm_mean[1:25] > 2)*1
 
-
-# Get fractions where (CTRL fraction value > 2%). Dataframe with 0/1 and CTRL maxima
+# Identify the CTRL fractions with signal intensity > 2%. 
+# Create a new data frames containing 0 / 1, as well as the intensity maxima.
 ctrl_3 <- ctrl_norm_mean
 ctrl_3[1:25] <- (ctrl_norm_mean[1:25] > 2)*1
 ```
 
 ```{r}
-# Remove regions around maxima (3 fractions) in order not to identify those regions as "shoulder"
+# Removes and excludes 3 fractions left and right of each peak (7 in total) from the shoulder search.
 # Wie können überhaupt noch Werte auf "1" bleiben, sie können natürlich mehr als 2% haben, aber einer hätte als Maximum erkannt werden müssen, und somit hätten alle anderen drum herum gestrichen werden müssen?!
-th_max_reg <- function(x) {
-							ls <- as.numeric(unlist(x$maxima))
-							n <- length(ls)
-							dt <- as.data.frame(matrix(rep(1,25),1,25))
-							if (n == 0) {dt[1:25] = 1} else {
-							for (i in 1:n) { 
-											if (ls[i] < 1) {dt[1:25] = 1}
-											else if (ls[i] == 1) {dt[1:4] = 0}
-											else if (ls[i] == 2) {dt[1:5] = 0}
-											else if (ls[i] == 3) {dt[1:6] = 0}
-											else if (ls[i] == 4) {dt[1:7] = 0}
-											else if (ls[i] == 5) {dt[1:8] = 0}
-											
-											else if (ls[i]>=6  && ls[i]<=20) {dt[(ls[i]-3):(ls[i]+3)] = 0}
-											
-											else if (ls[i] == 21) {dt[18:24] = 0}
-											else if (ls[i] == 22) {dt[19:25] = 0}
-											else if (ls[i] == 23) {dt[20:25] = 0}
-											else if (ls[i] == 24) {dt[21:25] = 0}
-											else {dt[22:25] = 0}
-											}
-														   }	
-							x[1:25] <- x[1:25]*dt
-							x <- unlist(x)
-							x[1:25]
-						  }
 
-rnase_3[1:25] <- t(apply( rnase_3, 1, function(x) {th_max_reg(x)} ))
-ctrl_3[1:25] <- t(apply( ctrl_3, 1, function(x) {th_max_reg(x)} ))
+th_max_reg_simple <- function(x) {
+  peaks <- as.numeric(unlist(x$maxima)) # Converts the maxima column from *_norm_mean to a numeric vector.
+  mask <- rep(1, 25)
+  
+  for (peak in peaks) { # peak = current peak value, peaks = detected maxima (column 26)
+    if (peak > 0) { 
+      left <- max(1, peak - 3)
+      right <- min(25, peak + 3) # For each peak, the range from peak–3 to peak+3 is calculated.
+      mask[left:right] <- 0 # These 7 fractions (the peak itself and 3 before & after it) are masked out by setting their positions in the mask to 0.
+    }
+  }
+
+  x_values <- as.numeric(x[1:25]) # because $maxima contained characters. 
+  x_values <- x_values * mask # Fractions with mask = 1 are retained. Fractions with mask = 0 are set to 0.
+  return(x_values)
+}
+
+# Applies the function row by row to the entire rnase_3 or ctrl_3 DataFrame.
+rnase_3[1:25] <- t(apply(rnase_3, 1, th_max_reg_simple))
+ctrl_3[1:25]  <- t(apply(ctrl_3, 1, th_max_reg_simple))
 ```
 
 ```{r}
