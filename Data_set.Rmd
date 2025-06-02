@@ -149,6 +149,7 @@ avg.tables.RNASE <- lapply(fraction.tables.RNASE, function(df) {
 avg.tables.CTRL[["fraction1"]]
 avg.tables.RNASE[["fraction1"]]
 ```
+
 ```{r}
 #--> prinzpiell wird mit diesem Code gesagt, dass mindestens 1 Wert immer ein Messfehler sein muss, müssen wir uns überlegen, ob wir das genauso machen wollen oder ob wir alle 3 Messwerte mit einbeziehen.
 # Determine normalization factor for each condition (i.e. sample), as the mean of the 2 most similar replicates.
@@ -313,22 +314,12 @@ clean_table <- function(tbl) {
   return(tbl)
 }
 
-#tables.norm.ctrl <- list(
-#  ctrl1 = table.ctrl1.SW.norm,
-#  ctrl2 = table.ctrl2.SW.norm,
-#  ctrl3 = table.ctrl3.SW.norm)
-
-#tables.norm.rnase <- list(
-#  rnase1 = table.rnase1.SW.norm,
-#  rnase2 = table.rnase2.SW.norm,
-#  rnase3 = table.rnase3.SW.norm)
-
 # Getting the clean table
 
 tables.norm.ctrl <- lapply(norm_tables.ctrl, clean_table)
 tables.norm.rnase <- lapply(norm_tables.rnase, clean_table)
 
-#View(tables.norm.ctrl$ctrl1)
+View(tables.norm.ctrl$ctrl1)
 
 ```
 
