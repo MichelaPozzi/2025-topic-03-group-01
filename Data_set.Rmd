@@ -543,7 +543,7 @@ peaks_regions = function(x) {
     #Calculate middle of the block
     half_length = floor(rle_result$lengths[peak_blocks[i]] /2)
     
-    #Estimated peak position
+    #Middle position
     peak_positions[i] = end_of_block - half_length
   }
   
@@ -591,7 +591,7 @@ ctrl_3$ctrl_max <- apply(ctrl_3, 1, function(x) {
 
 ***********************************************************************************************************
 ```{r}
-# Get the number of maxima for RNASE and CTRL
+# Get the total number of maxima for RNASE and CTRL
 # New column: "nb_max" (column 29)
 
 rnase_3$nb_max <- apply(rnase_3, 1, function(x) {
