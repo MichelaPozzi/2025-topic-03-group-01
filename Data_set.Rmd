@@ -61,7 +61,7 @@ levels_CR <- factor(rep(c("CTRL", "RNASE"),75))
 #Every sample of every fraction gets its own level to disconnect them from each other -> 6 levels per fraction because we have 3 CTRLs and 3 RNASEs per fraction
 
 levels_fraction <- factor(rep(c("Ctrl_Rep1","RNase_Rep1","Ctrl_Rep2","RNase_Rep2","Ctrl_Rep3","RNase_Rep3"),25))
-View(levels_fraction)
+#View(levels_fraction)
 ```
 
 ```{r}
@@ -72,7 +72,7 @@ View(levels_fraction)
 
 fraction_names <- as.vector(matrix(rep(paste("fraction",1:25,sep=""),6), nrow = 6, ncol=25, byrow = TRUE))
 
-View(matrix(rep(paste("fraction",1:25,sep=""),6), nrow = 6, ncol=25, byrow = TRUE))
+#View(matrix(rep(paste("fraction",1:25,sep=""),6), nrow = 6, ncol=25, byrow = TRUE))
 ```
 
 ```{r}
@@ -88,7 +88,7 @@ row_names <- rownames(NS_Table)
 
 colmns_sorted <- data.frame(row.names = colnames(NS_Table), levels_CR = levels_CR, levels_fraction = levels_fraction, fraction_names = fraction_names)
 
-View(colmns_sorted)
+#View(colmns_sorted)
 
 #Check for missing values, there are none 
 anyNA(NS_Table)
@@ -132,7 +132,7 @@ fraction.tables.RNASE <- lapply(selected_proteins, function(fx) {
 names(fraction.tables.CTRL) <- selected_proteins
 names(fraction.tables.RNASE) <- selected_proteins
 
-View(fraction.tables.CTRL[["fraction3"]])
+#View(fraction.tables.CTRL[["fraction3"]])
 ```
 
 ```{r}
@@ -245,7 +245,7 @@ rownames(table.rnase1) <- row_names
 rownames(table.rnase2) <- row_names
 rownames(table.rnase3) <- row_names
 
-View(table.ctrl1)
+#View(table.ctrl1)
 ```
 
 **************************************************************************************************************
@@ -274,7 +274,7 @@ colnames(table.rnase1.SW) <- colnames(table.rnase1)
 colnames(table.rnase2.SW) <- colnames(table.rnase2)
 colnames(table.rnase3.SW) <- colnames(table.rnase3)
 
-View(table.ctrl1.SW)
+#View(table.ctrl1.SW)
 ```
 
 **************************************************************************************************************
@@ -319,7 +319,7 @@ clean_table <- function(tbl) {
 tables.norm.ctrl <- lapply(norm_tables.ctrl, clean_table)
 tables.norm.rnase <- lapply(norm_tables.rnase, clean_table)
 
-View(tables.norm.ctrl$ctrl1)
+#View(tables.norm.ctrl$ctrl1)
 
 ```
 
@@ -510,9 +510,9 @@ ctrl_3[1:25]  <- t(apply(ctrl_3, 1, th_max_reg_simple))
 # Apply on the whole dataframe
 
 peaks_regions = function(x) {
-  rle_result = rle(as.numeric(x[1:25]))
+  rle_result = rle(as.numeric(x[1:25])) # rle() finds all contiguous equivalent sequences
   
-  #Find positions of the blocks of ones
+  #Find positions of all blocks of ones with length ≥4. These blocks are considered “shoulder regions”.
   peak_blocks = which(rle_result$values == 1 & rle_result$lengths >= 4)
   
   #If there are no such blocks of length >4, return an empty vector
