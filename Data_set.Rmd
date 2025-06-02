@@ -521,28 +521,42 @@ ctrl_3[1:25] <- t(apply( ctrl_3, 1, function(x) {th_max_reg(x)} ))
 # Use the function rle -> $lengths and $values
 # Apply on the whole dataframe
 
-peaks_reg <- function(x) {
-							res <- rle(as.numeric(x[1:25]))
-							pos_res <- which(res$lengths>=4 & res$values==1)
-							if (length(pos_res) == 0) {
-														vct <- numeric(0)
-														}
-							else {							
-								vct <- numeric(0)
-								for (i in 1:length(pos_res)) { vct <- c( vct,   sum(res$lengths[1:pos_res[i]]) - as.integer(res$lengths[pos_res[1]]/2) ) }
-								  }
-								  
-							vct <- unlist(vct)
-							vct
-						 }
+peaks_regions = function(x) {
+  rle_result = rle(as.numeric(x[1:25]))
+  
+  #Find positions of the blocks of ones
+  peak_blocks = which(rle_result$values == 1 & rle_result$lengths >= 4)
+  
+  #If there are no such blocks of length >4, return an empty vector
+  if (length(peak_blocks) == 0) {
+    return(numeric(0))
+  }
+  
+  #Calculate estimate middle for the peak blocks
+  peak_positions = numeric(length(peak_blocks))
+  
+  for(i in seq_along(peak_blocks)) {
+    
+    #Position of the end of the respective block 
+    end_of_block = sum(rle_result$lengths[1:peak_blocks[i]])
+    
+    #Calculate middle of the block
+    half_length = floor(rle_result$lengths[peak_blocks[i]] /2)
+    
+    #Estimated peak position
+    peak_positions[i] = end_of_block - half_length
+  }
+  
+  return(peak_positions)
+}
 ```
 
 ```{r}
 # get the "shoulders" in the curves
 # New column: "peaks" (column 27)
 
-rnase_3$peaks <- apply(rnase_3, 1, function(x) { peaks_reg(x) } )
-ctrl_3$peaks <- apply(ctrl_3, 1, function(x) { peaks_reg(x) } )
+rnase_3$peaks <- apply(rnase_3, 1, function(x) { peaks_regions(x) } )
+ctrl_3$peaks <- apply(ctrl_3, 1, function(x) { peaks_regions(x) } )
 
 ```
 
