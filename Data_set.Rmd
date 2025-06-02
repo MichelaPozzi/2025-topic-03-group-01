@@ -430,7 +430,7 @@ find_peaks <- function(x, window = 2) {
      peaks <- unlist(peaks)
      peaks
      
- return(peaks)
+ #return(peaks)
      
 } 
   
@@ -484,6 +484,7 @@ ctrl_3[1:25] <- (ctrl_norm_mean[1:25] > 2)*1
 
 ```{r}
 # Remove regions around maxima (3 fractions) in order not to identify those regions as "shoulder"
+# Wie können überhaupt noch Werte auf "1" bleiben, sie können natürlich mehr als 2% haben, aber einer hätte als Maximum erkannt werden müssen, und somit hätten alle anderen drum herum gestrichen werden müssen?!
 th_max_reg <- function(x) {
 							ls <- as.numeric(unlist(x$maxima))
 							n <- length(ls)
