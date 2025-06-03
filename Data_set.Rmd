@@ -468,8 +468,8 @@ rnase_norm_mean$maxima <- apply(rnase_norm_mean, 1, function(x) {
 # The two new data frames are created, rnase_3 and ctrl_3, as copies of the previously calculated, normalized mean tables (*_norm_mean).
 
 rnase_3 <- rnase_norm_mean
-# Compares each value in columns 1 to 25 (the fractions) of the rnase_norm_mean dataframe with the threshold of 2%.
-# Converts TRUE to 1 and FALSE to 0. 
+# Compare each value in columns 1 to 25 (the fractions) of the rnase_norm_mean dataframe with the threshold of 2%.
+# Convert TRUE to 1 and FALSE to 0. 
 rnase_3[1:25] <- (rnase_norm_mean[1:25] > 2)*1
 
 # Identify the CTRL fractions with signal intensity > 2%. 
@@ -479,11 +479,11 @@ ctrl_3[1:25] <- (ctrl_norm_mean[1:25] > 2)*1
 ```
 
 ```{r}
-# Removes and excludes 3 fractions left and right of each peak (7 in total) from the shoulder search.
+# Remove and exclude 3 fractions left and right of each peak (7 in total) from the shoulder search.
 # Wie können überhaupt noch Werte auf "1" bleiben, sie können natürlich mehr als 2% haben, aber einer hätte als Maximum erkannt werden müssen, und somit hätten alle anderen drum herum gestrichen werden müssen?!
 
 th_max_reg_simple <- function(x) {
-  peaks <- as.numeric(unlist(x$maxima)) # Converts the maxima column from *_norm_mean to a numeric vector.
+  peaks <- as.numeric(unlist(x$maxima)) # Convert the maxima column from *_norm_mean to a numeric vector.
   mask <- rep(1, 25)
   
   for (peak in peaks) { # peak = current peak value, peaks = detected maxima (column 26)
@@ -499,18 +499,20 @@ th_max_reg_simple <- function(x) {
   return(x_values)
 }
 
-# Applies the function row by row to the entire rnase_3 or ctrl_3 DataFrame.
+# Apply the function row by row to the entire rnase_3 or ctrl_3 DataFrame.
 rnase_3[1:25] <- t(apply(rnase_3, 1, th_max_reg_simple))
 ctrl_3[1:25]  <- t(apply(ctrl_3, 1, th_max_reg_simple))
 ```
 
 ```{r}
-# Get the regions (marked with 1, at least 4 consecutive fractions) and select the middle of it
-# Use the function rle -> $lengths and $values
+# Detect "shoulder regions"
+# Define a function that identifies signal regions where there are at least 4 consecutive fractions with an intensity above 2% using the data frames rnase_3 and ctrl_3.
+
+# select the middle of it
 # Apply on the whole dataframe
 
 peaks_regions = function(x) {
-  rle_result = rle(as.numeric(x[1:25])) # rle() finds all contiguous equivalent sequences
+  rle_result = rle(as.numeric(x[1:25])) # rle() finds all consecutive equal values -> $lengths and $values
   
   #Find positions of all blocks of ones with length ≥4. These blocks are considered “shoulder regions”.
   peak_blocks = which(rle_result$values == 1 & rle_result$lengths >= 4)
@@ -540,7 +542,8 @@ peaks_regions = function(x) {
 ```
 
 ```{r}
-# get the "shoulders" in the curves
+# Calculate the positions of the "shoulders" for each protein row, i.e. regions with ≥4 consecutive fractions with signal >2%
+# Save the shoulder positions as a new column called peaks in the respective data frames rnase_3 and ctrl_3.
 # New column: "peaks" (column 27)
 
 rnase_3$peaks <- apply(rnase_3, 1, function(x) { peaks_regions(x) } )
@@ -550,19 +553,19 @@ ctrl_3$peaks <- apply(ctrl_3, 1, function(x) { peaks_regions(x) } )
 
 ***********************************************************************************************************
 ```{r}
-# Get the list of all maxima (maxima and peaks) for RNASE and CTRL
+# Calculate the total of all relevant signal maxima (real peaks and shoulders) for each protein row in the dataframe 
 # New column: "ctrl_max" and "rnase_max" (column 28) respectively
 
 						   						
 rnase_3$rnase_max <- apply(rnase_3, 1, function(x) {
-												 ls_max <- as.numeric(unlist(x$maxima))
+												 ls_max <- as.numeric(unlist(x$maxima)) # ls_max = numerical vector with the peak positions of this protein
 												 ls_peaks <- as.numeric(unlist(x$peaks))
 												 
-												 rnase_max <- c(ls_max, ls_peaks)
+												 rnase_max <- c(ls_max, ls_peaks) # Combine to common vector.
 												 rnase_max <- unlist(rnase_max)
-												 rnase_max <- rnase_max[rnase_max!=0]
-												 rnase_max <- sort(rnase_max, decreasing = FALSE)
-												 if (length(rnase_max) == 0) {0} else {rnase_max}
+												 rnase_max <- rnase_max[rnase_max!=0] # Remove all 0 entries from the result vector, as these do not represent real signals.
+												 rnase_max <- sort(rnase_max, decreasing = FALSE) # Sort all peak and shoulder positions in ascending order (1 → 25)
+												 if (length(rnase_max) == 0) {0} else {rnase_max} # If there are no peaks or shoulders, 0 (as a placeholder) is stored.
 												 })
 
 ctrl_3$ctrl_max <- apply(ctrl_3, 1, function(x) {
@@ -573,25 +576,25 @@ ctrl_3$ctrl_max <- apply(ctrl_3, 1, function(x) {
 												 ctrl_max <- unlist(ctrl_max)
 												 ctrl_max <- ctrl_max[ctrl_max!=0]
 												 ctrl_max <- sort(ctrl_max, decreasing = FALSE)
-												 if (length(ctrl_max) == 0) {0} else {ctrl_max}
+												 if (length(ctrl_max) == 0) {0} else {ctrl_max} 
 												 })
 ```
 
 ***********************************************************************************************************
 ```{r}
-# Get the total number of maxima for RNASE and CTRL
+# Determine the number of maxima per protein row in the rnase_3 and ctrl_3 data tables – but only if there are any.
 # New column: "nb_max" (column 29)
 
 rnase_3$nb_max <- apply(rnase_3, 1, function(x) {
 												 ls_max <- as.numeric(unlist(x$rnase_max))
-												 n = length(ls_max)
-												 if (sum(ls_max) == 0) {0} else {n}
+												 n = length(ls_max) # => Answers: How many peaks (maxima and shoulders) does this protein have?
+												 if (sum(ls_max) == 0) {0} else {n} # If TRUE, then the result should be 0, instead of length(ls_max), which would then be 1. 
 												 })
 												 
 ctrl_3$nb_max <- apply(ctrl_3, 1, function(x) {
 												 ls_max <- as.numeric(unlist(x$ctrl_max))
 												 n = length(ls_max)
-												 if (sum(ls_max) == 0) {0} else {n}
+												 if (sum(ls_max) == 0) {0} else {n} 
 												 })
 ```
 
