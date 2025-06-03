@@ -530,10 +530,10 @@ peaks_regions = function(x) {
     #Position of the end of the respective block 
     end_of_block = sum(rle_result$lengths[1:peak_blocks[i]])
     
-    #Calculate middle of the block
+    #Calculate half length (middle) of the block
     half_length = floor(rle_result$lengths[peak_blocks[i]] /2)
     
-    #Middle position
+    #Middle position of the shoulder 
     peak_positions[i] = end_of_block - half_length
   }
   
@@ -612,6 +612,7 @@ ctrl_3$nb_max <- apply(ctrl_3, 1, function(x) {
 lg <- dim(rnase_3)[1]
 # Definition of a matrix with numbers ranging from 1 to lg (matrix with 1 row and lg columns)
 vect <- matrix(c(1:lg), 1, lg)
+View(vect)
 ```
 
 ```{r}
