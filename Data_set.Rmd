@@ -365,8 +365,8 @@ rnase_norm_mean <- replace_na_nan(rnase_norm_mean)
 ctrl_norm_mean[rowSums(rnase_norm_mean[1:25])==0,] <- 0
 rnase_norm_mean[rowSums(ctrl_norm_mean[1:25])==0,] <- 0
 
-View(ctrl_norm_mean)
-View(rnase_norm_mean)
+#View(ctrl_norm_mean)
+#View(rnase_norm_mean)
 ```
 
 Weiter hab ich noch nicht den Code bearbeitet 
@@ -606,18 +606,24 @@ ctrl_3$nb_max <- apply(ctrl_3, 1, function(x) {
 # Function to fit a gaussian on the raw mean data to obtain: fit_c, fit_mean, fit_sigma
 # Function to get the residue value: fit_res
 # Function to check if the fit was successful: fitted (TRUE/FALSE)
+```{r}
+#Chunk, der gelöscht werden kann:
+View(ctrl_3)
+```
 
 ```{r}
-# Number of rows of the table - is the total number of proteins
+# Number of rows of the table - is the total number of proteins -> 4765
 lg <- dim(rnase_3)[1]
 # Definition of a matrix with numbers ranging from 1 to lg (matrix with 1 row and lg columns)
 vect <- matrix(c(1:lg), 1, lg)
-View(vect)
+#View(vect)
 ```
 
 ```{r}
 # Functions to optimize for Gaussian fitting - Gaussians with 1 to 6 peaks
 # Each parameter C, mean and sigma will be optimized for each CTRL and RNASE profile
+
+# Defines a Gaussian function with one peak and calculates the residual error between the signal profile and the theoretical Gaussian curve.
 f1 <- function(data, q) {
 					C1 <- q[1]
 					mean1 <- q[2]
