@@ -615,21 +615,22 @@ vect <- matrix(c(1:lg), 1, lg)
 ```
 
 ```{r}
-# Goal: Functions to optimize for Gaussian fitting - Gaussians with 1 to 6 peaks
+# Goal: Generate functions to optimize for Gaussian fitting 
+# f1 - f6: Gaussian curves with 1 to 6 peaks
 # The parameters C, mean and sigma will be optimized for each CTRL and RNASE profile
 
-# Defines a Gaussian function with one peak and calculates the residual error between the signal profile and the theoretical Gaussian curve.
+# Defines a Gaussian function with one peak and calculates the residual error between the theoretical Gaussian curve and the measured values. 
 f1 <- function(data, q) {
-					C1 <- q[1]      #Amplitude of the peak
-					mean1 <- q[2]   #Position of the peak
-					sigma1 <- q[3]  #Standard deviation for the gauss function, that will be created 
+					C1 <- q[1]      # Amplitude of the peak
+					mean1 <- q[2]   # Position of the peak
+					sigma1 <- q[3]  # Standard deviation for the gauss function
 					
-					#Difference between values for theoretical gauss function and the measured values stored in data$df.y for the 25 fractions = Residuals. Gauss function is used for discrete values at these positions 
+					# Difference between values for theoretical gauss function and the measured values stored in data$df.y for the 25 fractions = Residuals.
 					res <- (C1 * exp(-(data$y-mean1)**2/(2 * sigma1**2))) - data$df.y 
-					sum(res * res)  #Residuals squared
+					sum(res * res)  # Residuals squared
           }
 
-#Add the two created gauss functions to gain a joined function, that describes both peaks. Values of the joined function are defined by the sum of the two values originating from the two gauss functions.
+# Add the two created gauss functions to get a joined function, that describes both peaks. The values of the joined function are defined by the sum of the two values that originate from the two gauss functions.
 f2 <- function(data, q) {
 					C1 <- q[1]
 					mean1 <- q[2]
@@ -638,9 +639,10 @@ f2 <- function(data, q) {
 					mean2 <- q[5]
 					sigma2 <- q[6]
 					res <- ( C1 * exp(-(data$y-mean1)**2/(2 * sigma1**2)) + C2 * exp(-(data$y-mean2)**2/(2 * sigma2**2)) ) - data$df.y
-					sum(res * res) #Residuals squared for the new gauss function with two peaks
-				 }
-#Continue the pattern and create joined functions to describe 3, 4, 5, or 6 peaks, and calculate the residuals squared, respectively. 
+					sum(res * res) # Residuals squared for the new gauss function with two peaks
+}
+
+# Continue the pattern and create joined functions to describe 3, 4, 5, or 6 peaks, and calculate the residuals squared, respectively. 
 f3 <- function(data, q) {
 					C1 <- q[1]
 					mean1 <- q[2]
@@ -719,28 +721,28 @@ f6 <- function(data, q) {
 ***********************************************************************************************************
 ```{r}
 # Fit the RNASE mean curves 
-# Goal: Get the amplitude of the fit at each peak - new column (31): fit_c
+# Goal: Get the amplitude of the fit at each peak - new column (30): fit_c
 # $par[1]: Identifies amplitude of peak
 
 #******** Notes ********												  		  	         									  
-# optim(values fo optimization, function to be minimized, data, method: Broyden–Fletcher–Goldfarb–Shanno algorithm, control of tolerance and accuracy) changes the parameters (of "vector"!) systematically to minimize the error.
-# optim returns a result object with, among other things, the best parameter set (fit$par) and the minimum value of the function.
+# optim (values for optimization, function to be minimized, data, method: Broyden–Fletcher–Goldfarb–Shanno algorithm, control of tolerance and accuracy) changes the parameters (of "vector"!) systematically to minimize the error (of the functions fn)
+# optim returns a result object with, among other things, the best parameter set (fit$par) and the minimum residual value of the function.
 # tryCatch => to catch errors (warnings / aborts) during code execution and react to them specifically (error => empty numeric vector)	
 #***********************	
 
 rnase_3$fit_c <- apply(vect, 2, function(t) {
                           df.y <- c(as.numeric(rnase_norm_mean[t,1:25])) # df.y contains 25 values describing the signal profile of a protein.
-                          y <- c(1:25) # y = fraction (x-axis)
-                          data <- data.frame(y = y, df.y = df.y) # data describes the signal distribution of a protein across the fractions.
-                          Mean_rnase_list <- as.numeric(unlist(rnase_3[t,"rnase_max"])) # mean_rnase_list contains peak positions (vektor).
-                          n <- length(Mean_rnase_list) # Determine how many peaks/shoulders were found.
+                          y <- c(1:25) # y = fraction 
+                          data <- data.frame(y = y, df.y = df.y) # data frame, that describes the signal distribution of a protein across the fractions.
+                          Mean_rnase_list <- as.numeric(unlist(rnase_3[t,"rnase_max"])) # mean_rnase_list contains peak positions (as a vector).
+                          n <- length(Mean_rnase_list) # Determine how many peaks were found.
 
                           gauss <- numeric(0)
                           # Before optimization of the parameters, check the number of maxima for the profile of the protein
 												  if (n==0) { gauss <- 0 } else {
 												    
 												  				  								if (n==1) {
-		  		  	         									                       #vector contains amplitude, peak-position and width. => values for optimization
+		  		  	         									                      # vector contains amplitude, peak-position and width. => values for optimization
 												  				  								          vector <- c(rnase_norm_mean[t,Mean_rnase_list[1]], Mean_rnase_list[1], 1 )
 
 												  		  	         									  gauss <- tryCatch(round( (fit <- optim(vector, f1, data = data, method="BFGS", control=list(reltol=1e-9)))$par[1],digits = 1 ),error=function(e) numeric(0))
@@ -782,8 +784,9 @@ rnase_3$fit_c <- apply(vect, 2, function(t) {
 ***********************************************************************************************************
 ```{r}
 # Fit the RNASE mean curves 
-# Goal: Get the position of the peak(s) - new column (32): fit_mean
+# Goal: Get the position of the peak(s) - new column (31): fit_mean
 # $par[2]: Identifies the mean position/fraction of the peak
+
 rnase_3$fit_mean <- apply(vect, 2, function(t) {
 												  df.y <- c(as.numeric(rnase_norm_mean[t,1:25]))
 												  y <- c(1:25)
@@ -828,8 +831,9 @@ rnase_3$fit_mean <- apply(vect, 2, function(t) {
 ***********************************************************************************************************
 ```{r}
 # Fit the RNASE mean curves 
-# Goal: Get the covariance (sigma) of the peak(s) - new column (33): fit_sigma
+# Goal: Get the covariance (sigma) of the peak(s) - new column (32): fit_sigma
 # $par[3]: Identifies Standard Deviation for the respective peaks
+
 rnase_3$fit_sigma <- apply(vect, 2, function(t) {
 												  df.y <- c(as.numeric(rnase_norm_mean[t,1:25]))
 												  y <- c(1:25)
@@ -874,9 +878,10 @@ rnase_3$fit_sigma <- apply(vect, 2, function(t) {
 ***********************************************************************************************************
 ```{r}
 # Fit the RNASE mean curves 
-# Goal: Get the residual sum of the squares - new column (34): fit_res
+# Goal: Get the residual sum of squares - new column (33): fit_res
 # $value: Identifies the minimal error found by optim with the altered (optimized) parameters
-# --> Allows statements to be made about the qiality of the fitting
+# --> Allows statements to be made about the quality of the fitting
+
 rnase_3$fit_res <- apply(vect, 2, function(t) {
 												  df.y <- c(as.numeric(rnase_norm_mean[t,1:25]))
 												  y <- c(1:25)
@@ -920,7 +925,7 @@ rnase_3$fit_res <- apply(vect, 2, function(t) {
 
 ***********************************************************************************************************
 ```{r}
-# Check whether a fit curve could be found or not for the protein - new column: fitted
+# Check whether a fit curve could be found or not for the protein - new column (34): fitted
 rnase_3$fitted <- apply(rnase_3, 1, function(x) { 
 																				 list_c <- as.numeric(unlist(x$fit_c))
 																				 list_m <- as.numeric(unlist(x$fit_mean))
@@ -931,11 +936,26 @@ rnase_3$fitted <- apply(rnase_3, 1, function(x) {
 																				 })
 ```
 
+
+```{r}
+# How many times did the fitting return false and did not work
+dim(rnase_3)[1] - sum(rnase_3$fitted)
+
+# Vector of the positions, that returned false 
+failed_rnase = which(rnase_3$fitted == FALSE)
+
+# Overview of the positions, that did not work
+rnase_3[failed_rnase, ]
+```
+
 ***********************************************************************************************************
 # Repeat the same with the CTRL condition
 ***********************************************************************************************************
 ```{r}
-# Fit the CTRL mean curves and get the amplitude of the fit at each peak - new column: fit_c
+# Fit the CTRL mean curves 
+# Goal: Get the amplitude of the fit at each peak - new column (30): fit_c
+# $par[1]: Identifies amplitude of peak
+
 ctrl_3$fit_c <- apply(vect, 2, function(t) {
   
   df.y <- c(as.numeric(rnase_norm_mean[t,1:25]))
@@ -981,7 +1001,10 @@ ctrl_3$fit_c <- apply(vect, 2, function(t) {
 
 ***********************************************************************************************************
 ```{r}
-# Fit the CTRL mean curves and get the position of the peak(s) - new column: fit_mean
+# Fit the CTRL mean curves 
+# Goal: Get the position of the peak(s) - new column (31): fit_mean
+# $par[2]: Identifies the mean position/fraction of the peak
+
 ctrl_3$fit_mean <- apply(vect, 2, function(t) {
 												  df.y <- c(as.numeric(ctrl_norm_mean[t,1:25]))
 												  y <- c(1:25)
@@ -1025,7 +1048,10 @@ ctrl_3$fit_mean <- apply(vect, 2, function(t) {
 
 ***********************************************************************************************************
 ```{r}
-# Fit the CTRL mean curves and get the covariance (sigma) of the peak(s) - new column: fit_sigma
+# Fit the CTRL mean curves 
+# Goal: Get the covariance (sigma) of the peak(s) - new column (32): fit_sigma
+# $par[3]: Identifies Standard Deviation for the respective peaks
+
 ctrl_3$fit_sigma <- apply(vect, 2, function(t) {
 												  df.y <- c(as.numeric(ctrl_norm_mean[t,1:25]))
 												  y <- c(1:25)
@@ -1069,7 +1095,12 @@ ctrl_3$fit_sigma <- apply(vect, 2, function(t) {
 
 ***********************************************************************************************************
 ```{r}
-# Fit the CTRL mean curves and get the residual sum of the squares - new column: fit_res
+# Fit the CTRL mean curves 
+# Goal: Get the residual sum of squares - new column (33): fit_res
+# $value: Identifies the minimal error found by optim with the altered (optimized) parameters
+# --> Allows statements to be made about the quality of the fitting
+
+
 ctrl_3$fit_res <- apply(vect, 2, function(t) {
 												  df.y <- c(as.numeric(ctrl_norm_mean[t,1:25]))
 												  y <- c(1:25)
@@ -1113,7 +1144,7 @@ ctrl_3$fit_res <- apply(vect, 2, function(t) {
 
 ***********************************************************************************************************
 ```{r}
-# Check whether a fit curve could be found or not for the protein - new column: fitted
+# Check whether a fit curve could be found or not for the protein - new column (34): fitted
 ctrl_3$fitted <- apply(ctrl_3, 1, function(x) { 
 																				 list_c <- as.numeric(unlist(x$fit_c))
 																				 list_m <- as.numeric(unlist(x$fit_mean))
@@ -1123,6 +1154,21 @@ ctrl_3$fitted <- apply(ctrl_3, 1, function(x) {
 																				 if (sum(list) == 0) {FALSE} else {TRUE}
 																				 })	
 ```
+
+
+```{r}
+# How many times did the fitting return false and did not work
+dim(ctrl_3)[1] - sum(ctrl_3$fitted)
+
+# Vector of the positions, that returned false 
+failed_ctrl = which(ctrl_3$fitted == FALSE)
+
+# Overview of the positions, that did not work
+ctrl_3[failed_ctrl, ]
+```
+
+
+
 
 ***********************************************************************************************************
 ```{r}
