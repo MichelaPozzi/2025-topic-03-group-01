@@ -424,10 +424,6 @@ find_peaks <- function(x, window = 2) {
      
 } 
   
-     
-
-
-
 #Test, ob die Peak-Positionen richtig ausgegeben werden
 #test_vec2 = as.numeric(ctrl_norm_mean[4, ])
 #find_peaks(test_vec2)
@@ -624,11 +620,12 @@ vect <- matrix(c(1:lg), 1, lg)
 
 # Defines a Gaussian function with one peak and calculates the residual error between the signal profile and the theoretical Gaussian curve.
 f1 <- function(data, q) {
-					C1 <- q[1]
-					mean1 <- q[2]
-					sigma1 <- q[3]
-					res <- (C1 * exp(-(data$y-mean1)**2/(2 * sigma1**2))) - data$df.y
-					sum(res * res)
+					C1 <- q[1]        # amplitude
+					mean1 <- q[2]     # position of peak
+					sigma1 <- q[3]    # standard deviation
+					# Calculate the difference (residuals) between the theoretical Gaussian curve and the measured values data$df.y.
+					res <- (C1 * exp(- (data$y-mean1)**2/(2 * sigma1**2))) - data$df.y # data$df.y = measured intensities in each fraction for the corresponding protein.
+					sum(res * res)    # Measure of how well the theoretical peak fits the data.
 				 }
 
 f2 <- function(data, q) {
@@ -719,36 +716,51 @@ f6 <- function(data, q) {
 
 ***********************************************************************************************************
 ```{r}
-# Fit the RNASE mean curves and get the amplitude of the fit at each peak - new column: fit_c
+# Fit the RNASE mean curves 
+# Get the amplitude of the fit at each peak - new column: fit_c
+
+#******** Notes ********												  		  	         									  
+# optim(values fo optimization, function to be minimized, data, method: Broyden–Fletcher–Goldfarb–Shanno algorithm, control of tolerance and accuracy) changes the parameters (of "vector"!) systematically to minimize the error.
+# optim returns a result object with, among other things, the best parameter set (fit$par) and the minimum value of the function.
+# tryCatch => to catch errors (warnings / aborts) during code execution and react to them specifically (error => empty numeric vector)	
+#***********************	
+
 rnase_3$fit_c <- apply(vect, 2, function(t) {
-                          df.y <- c(as.numeric(rnase_norm_mean[t,1:25]))
-                          y <- c(1:25)
-                          data <- data.frame(y = y, df.y = df.y)
-                          Mean_rnase_list <- as.numeric(unlist(rnase_3[t,"rnase_max"]))
-                          n <- length(Mean_rnase_list)
+                          df.y <- c(as.numeric(rnase_norm_mean[t,1:25])) # df.y contains 25 values describing the signal profile of a protein.
+                          y <- c(1:25) # y = fraction (x-axis)
+                          data <- data.frame(y = y, df.y = df.y) # data describes the signal distribution of a protein across the fractions.
+                          Mean_rnase_list <- as.numeric(unlist(rnase_3[t,"rnase_max"])) # mean_rnase_list contains peak positions (vektor).
+                          n <- length(Mean_rnase_list) # Determine how many peaks/shoulders were found.
                           gauss <- numeric(0)
                           # Before optimization of the parameters, check the number of maxima for the profile of the protein
 												  if (n==0) { gauss <- 0 } else {
+												    
 												  				  								if (n==1) {
-												  		  	         									  vector <- c( rnase_norm_mean[t,Mean_rnase_list[1]], Mean_rnase_list[1], 1 )
+												  		  	         									  # vector contains amplitude, peak-position and width. => values for optimization
+												  				  								          vector <- c(rnase_norm_mean[t,Mean_rnase_list[1]], Mean_rnase_list[1], 1 )
 												  		  	         									  gauss <- tryCatch(round( (fit <- optim(vector, f1, data = data, method="BFGS", control=list(reltol=1e-9)))$par[1],digits = 1 ),error=function(e) numeric(0))
 												  				           								  } else {
+													  				           								    
 												  				  												  if (n==2) {
 												  				                 											 vector <- c( rnase_norm_mean[t,Mean_rnase_list[1]],Mean_rnase_list[1],1,rnase_norm_mean[t,Mean_rnase_list[2]],Mean_rnase_list[2],1 )
 												  				                 											 gauss <- tryCatch(round( (fit <- optim(vector, f2, data = data, method="BFGS", control=list(reltol=1e-9)))$par[c(1,4)],digits = 1 ),error=function(e) numeric(0))
 												  	  		                     											 } else {
+												  	  		                     											   
 												  				  																	if (n==3) {
 												  				  																			   vector <- c( rnase_norm_mean[t,Mean_rnase_list[1]],Mean_rnase_list[1],1,rnase_norm_mean[t,Mean_rnase_list[2]],Mean_rnase_list[2],1,rnase_norm_mean[t,Mean_rnase_list[3]],Mean_rnase_list[3],1 )
 												  				  																			   gauss <- tryCatch(round( (fit <- optim(vector, f3, data = data, method="BFGS", control=list(reltol=1e-9)))$par[c(1,4,7)],digits = 1 ),error=function(e) numeric(0))
 												  				 																			   } else {
+												  				 																			     
 												  				  																					  if (n==4) {
 												  				  																								 vector <- c( rnase_norm_mean[t,Mean_rnase_list[1]],Mean_rnase_list[1],1,rnase_norm_mean[t,Mean_rnase_list[2]],Mean_rnase_list[2],1,rnase_norm_mean[t,Mean_rnase_list[3]],Mean_rnase_list[3],1,rnase_norm_mean[t,Mean_rnase_list[4]],Mean_rnase_list[4],1 )
 												  				  																								 gauss <- tryCatch(round( (fit <- optim(vector, f4, data = data, method="BFGS", control=list(reltol=1e-9)))$par[c(1,4,7,10)],digits = 1 ),error=function(e) numeric(0))
 												  				  																								 } else {
+												  				  																								   
 												                  																										 if (n==5) {
 												                  																													vector <- c( rnase_norm_mean[t,Mean_rnase_list[1]],Mean_rnase_list[1],1,rnase_norm_mean[t,Mean_rnase_list[2]],Mean_rnase_list[2],1,rnase_norm_mean[t,Mean_rnase_list[3]],Mean_rnase_list[3],1,rnase_norm_mean[t,Mean_rnase_list[4]],Mean_rnase_list[4],1,rnase_norm_mean[t,Mean_rnase_list[5]],Mean_rnase_list[5],1 )
 												                  																													gauss <- tryCatch(round( (fit <- optim(vector, f5, data = data, method="BFGS", control=list(reltol=1e-9)))$par[c(1,4,7,10,13)],digits = 1 ),error=function(e) numeric(0))
 												                																													} else {
+												                																													  
 												                   																														    vector <- c( rnase_norm_mean[t,Mean_rnase_list[1]],Mean_rnase_list[1],1,rnase_norm_mean[t,Mean_rnase_list[2]],Mean_rnase_list[2],1,rnase_norm_mean[t,Mean_rnase_list[3]],Mean_rnase_list[3],1,rnase_norm_mean[t,Mean_rnase_list[4]],Mean_rnase_list[4],1,rnase_norm_mean[t,Mean_rnase_list[5]],Mean_rnase_list[5],1,rnase_norm_mean[t,Mean_rnase_list[6]],Mean_rnase_list[6],1 )
 												                   																														    gauss <- tryCatch(round( (fit <- optim(vector, f6, data = data, method="BFGS", control=list(reltol=1e-9)))$par[c(1,4,7,10,13,16)],digits = 1 ),error=function(e) numeric(0))
 												                  																															}
