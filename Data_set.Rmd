@@ -1229,6 +1229,7 @@ rnase_3$fit_param <- apply(vect, 2, function(z) {
 # Set the fraction to min 1 and max 25.
 # Calculate accordingly the amplitude of the fit at these positions.
 
+# Column 36 created
 ctrl_3$fit_mean_fxn <- apply(vect, 2, function(z) {
 												   fit_param <- as.numeric(unlist(ctrl_3[z,"fit_param"]))
 												   n <- length(fit_param)/3
@@ -1243,7 +1244,7 @@ ctrl_3$fit_mean_fxn <- apply(vect, 2, function(z) {
 												   if (ctrl_3[z,"fitted"] == "FALSE") {0} else {list_mean}
 												   })
 												   
-
+# Column 37 created
 ctrl_3$fit_c_fxn <- apply(vect, 2, function(z) {
 												   fit_param <- as.numeric(unlist(ctrl_3[z,"fit_param"]))
 												   n <- length(fit_param)/3
@@ -1305,6 +1306,17 @@ rnase_3$fit_c_fxn <- apply(vect, 2, function(z) {
 												   list_c
 												   })
 ```
+
+```{r}
+#test, whether peak adaptation and amplitude adaptation from the last step was successful, and the values have changed
+
+#ctrl_3[sapply(ctrl_3$fit_mean, function(x) any(as.numeric(unlist(x)) >25, na.rm = TRUE)), ]
+ctrl_3[263, "fit_mean"]
+ctrl_3[263, "fit_c"]
+ctrl_3[263, "fit_mean_fxn"]
+ctrl_3[263, "fit_c_fxn"]
+```
+
 
 ***********************************************************************************************************
 3 - Gaussian fit on each curve (per protein, three control and three Rnase replicates)
