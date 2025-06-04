@@ -151,7 +151,6 @@ avg.tables.RNASE[["fraction1"]]
 ```
 
 ```{r}
-#--> prinzpiell wird mit diesem Code gesagt, dass mindestens 1 Wert immer ein Messfehler sein muss, müssen wir uns überlegen, ob wir das genauso machen wollen oder ob wir alle 3 Messwerte mit einbeziehen.
 # Determine normalization factor for each condition (i.e. sample), as the mean of the 2 most similar replicates.
 # Create a function norm_fact for this step:
 
@@ -383,7 +382,7 @@ LG Ben
 
 ```{r}
 #Function find_peaks
-#Peak is local maximum with "window" points on each side being smaller than it
+#Peak is local maximum with smaller "window" points on each side
 #Bigger window =>more stringent peak finding procedure 
 
 find_peaks <- function(x, window = 2) {
