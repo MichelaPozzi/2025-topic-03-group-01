@@ -601,17 +601,13 @@ ctrl_3$nb_max <- apply(ctrl_3, 1, function(x) {
 # Function to fit a gaussian on the raw mean data to obtain: fit_c, fit_mean, fit_sigma
 # Function to get the residue value: fit_res
 # Function to check if the fit was successful: fitted (TRUE/FALSE)
-```{r}
-#Chunk, der gelöscht werden kann:
-View(ctrl_3)
-```
+
 
 ```{r}
 # Number of rows of the table - is the total number of proteins -> 4765
 lg <- dim(rnase_3)[1]
 # Definition of a matrix with numbers ranging from 1 to lg (matrix with 1 row and lg columns)
 vect <- matrix(c(1:lg), 1, lg)
-#View(vect)
 ```
 
 ```{r}
@@ -1168,13 +1164,18 @@ ctrl_3[failed_ctrl, ]
 ```
 
 
+```{r}
+all(c(5, 6, 7) == c(5, 9, 7))
+
+
+```
 
 
 ***********************************************************************************************************
 ```{r}
 # Control that the mean values are sorted.
 # Fit_c and fit_sigma need to be sorted accordingly.
-# Create a sorted parameters vector - new column: fit_param
+# Create a sorted parameters vector - new column (35): fit_param
 
 ctrl_3$fit_param <- apply(vect, 2, function(z) {
 												# Get the parameters after fitting
@@ -1185,8 +1186,8 @@ ctrl_3$fit_param <- apply(vect, 2, function(z) {
 												vector <- numeric(0)
 												
 												# Sort the parameters
-												if ((n==1) && c(list_c, list_mean, list_sigma) == c(0,0,0)) {fit_param <- c(0,0,0)} else { fit_param <- as.data.frame(matrix( c(list_c, list_mean, list_sigma),n,3,byrow="FALSE" ))
-																																 fit_param <- fit_param[order(fit_param$V2),]
+												if ((n==1) && all(c(list_c, list_mean, list_sigma) == c(0,0,0))) {fit_param <- c(0,0,0)} else { fit_param <- as.data.frame(matrix( c(list_c, list_mean, list_sigma),n,3,byrow="FALSE" ))
+																																 fit_param <- fit_param[order(fit_param$V2),] # Data Frame is ordered by incresing mean values
 																																 fit_param <- unlist(fit_param)
 																																 }
 												fit_param
@@ -1202,13 +1203,25 @@ rnase_3$fit_param <- apply(vect, 2, function(z) {
 												vector <- numeric(0)
 												
 												# Sort the parameters
-												if ((n==1) && c(list_c, list_mean, list_sigma) == c(0,0,0)) {fit_param <- c(0,0,0)} else { fit_param <- as.data.frame(matrix( c(list_c, list_mean, list_sigma),n,3,byrow="FALSE" ))
+												if ((n==1) && all(c(list_c, list_mean, list_sigma) == c(0,0,0))) {fit_param <- c(0,0,0)} else { fit_param <- as.data.frame(matrix( c(list_c, list_mean, list_sigma),n,3,byrow="FALSE" ))
 																																 fit_param <- fit_param[order(fit_param$V2),]
 																																 fit_param <- unlist(fit_param)
 																																 }
 												fit_param
 												})
 ```
+
+```{r}
+#Visual representation for better understanding, no further relevance for the code
+#rnase_3[c(20:40), "fit_param"]
+
+#list_c1 <- as.numeric(unlist(ctrl_3[3,"fit_c"]))
+											#	list_mean1 <- as.numeric(unlist(ctrl_3[3,"fit_mean"]))
+											#	list_sigma1 <- as.numeric(unlist(ctrl_3[3,"fit_sigma"]))
+											#	n1 <- length(list_c1)
+#as.data.frame(matrix( c(list_c1, list_mean1, list_sigma1),n1,3,byrow="FALSE"))
+```
+
 
 ***********************************************************************************************************
 ```{r}
@@ -1224,7 +1237,7 @@ ctrl_3$fit_mean_fxn <- apply(vect, 2, function(z) {
 												   list_mean <- unlist(fit_param[,2])
 												   list_sigma <- unlist(fit_param[,3])
 												   
-												   if (list_mean[n] > 25) {list_mean[n] <- 25}
+												   if (list_mean[n] > 25) {list_mean[n] <- 25} # fit_param was ordered in the previous step by increasing mean values, list_mean[n] therefore is the greatest mean value 
 												   if (list_mean[1] < 1) {list_mean[1] <- 1}
 												   unlist(list_mean)
 												   if (ctrl_3[z,"fitted"] == "FALSE") {0} else {list_mean}
@@ -1241,11 +1254,14 @@ ctrl_3$fit_c_fxn <- apply(vect, 2, function(z) {
 												   
 												   if (list_mean[n] > 25) {
 												   						   q <- c(list_c[n],list_mean[n],list_sigma[n])
-															 			   list_c[n] <- (q[1] * exp(-(25-q[2])**2/(2 * q[3]**2)))
+												   						    # Sets the new amplitude of the peak not to the actual peak height, but to the function value of the gaussian function at x = 25 (edge of the observed range)
+															 			   list_c[n] <- (q[1] * exp(-(25-q[2])**2/(2 * q[3]**2))) 
+															 			  
 												   						   }
 												   list_mean[n] <- 25
 												   if (list_mean[1] < 1) {
 												   						  q <- c(list_c[1],list_mean[1],list_sigma[1])
+												   						  # Sets the new amplitude of the peak not to the actual peak height, but to the function value of the gaussian function at x = 1 (edge of the observed range)
 															 			  list_c[1] <- (q[1] * exp(-(1-q[2])**2/(2 * q[3]**2)))
 												   						  }
 												   unlist(list_c)
