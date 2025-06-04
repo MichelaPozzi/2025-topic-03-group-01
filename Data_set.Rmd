@@ -615,8 +615,8 @@ vect <- matrix(c(1:lg), 1, lg)
 ```
 
 ```{r}
-# Functions to optimize for Gaussian fitting - Gaussians with 1 to 6 peaks
-# Each parameter C, mean and sigma will be optimized for each CTRL and RNASE profile
+# Expectation: Functions to optimize for Gaussian fitting - Gaussians with 1 to 6 peaks
+# The parameters C, mean and sigma will be optimized for each CTRL and RNASE profile
 
 # Defines a Gaussian function with one peak and calculates the residual error between the signal profile and the theoretical Gaussian curve.
 f1 <- function(data, q) {
@@ -719,7 +719,7 @@ f6 <- function(data, q) {
 ***********************************************************************************************************
 ```{r}
 # Fit the RNASE mean curves 
-# Get the amplitude of the fit at each peak - new column: fit_c
+# Expectation: Get the amplitude of the fit at each peak - new column: fit_c
 
 #******** Notes ********												  		  	         									  
 # optim(values fo optimization, function to be minimized, data, method: Broyden–Fletcher–Goldfarb–Shanno algorithm, control of tolerance and accuracy) changes the parameters (of "vector"!) systematically to minimize the error.
