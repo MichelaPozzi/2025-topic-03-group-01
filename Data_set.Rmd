@@ -619,13 +619,15 @@ View(vect)
 # Functions to optimize for Gaussian fitting - Gaussians with 1 to 6 peaks
 # Each parameter C, mean and sigma will be optimized for each CTRL and RNASE profile
 f1 <- function(data, q) {
-					C1 <- q[1]
-					mean1 <- q[2]
-					sigma1 <- q[3]
-					res <- (C1 * exp(-(data$y-mean1)**2/(2 * sigma1**2))) - data$df.y
-					sum(res * res)
+					C1 <- q[1]      #Amplitude of the peak
+					mean1 <- q[2]   #Position of the peak
+					sigma1 <- q[3]  #Standard deviation for the gauss function, that will be created 
+					
+					#Difference between values for theoretical gauss function and the measured values stored in data$df.y for the 25 fractions = Residuals. Gauss function is used for discrete values at these positions 
+					res <- (C1 * exp(-(data$y-mean1)**2/(2 * sigma1**2))) - data$df.y 
+					sum(res * res)  #Residuals squared
 				 }
-
+#Add the two created gauss functions to gain a joined function, that describes both peaks. Values of the joined function are defined by the sum of the two values originating from the two gauss functions.
 f2 <- function(data, q) {
 					C1 <- q[1]
 					mean1 <- q[2]
@@ -634,9 +636,9 @@ f2 <- function(data, q) {
 					mean2 <- q[5]
 					sigma2 <- q[6]
 					res <- ( C1 * exp(-(data$y-mean1)**2/(2 * sigma1**2)) + C2 * exp(-(data$y-mean2)**2/(2 * sigma2**2)) ) - data$df.y
-					sum(res * res)
+					sum(res * res) #Residuals squared for the new gauss function with two peaks
 				 }
-
+#Continue the pattern and create joined functions to describe 3, 4, 5, or 6 peaks, and calculate the residuals squared, respectively. 
 f3 <- function(data, q) {
 					C1 <- q[1]
 					mean1 <- q[2]
@@ -718,14 +720,15 @@ f6 <- function(data, q) {
 rnase_3$fit_c <- apply(vect, 2, function(t) {
                           df.y <- c(as.numeric(rnase_norm_mean[t,1:25]))
                           y <- c(1:25)
-                          data <- data.frame(y = y, df.y = df.y)
-                          Mean_rnase_list <- as.numeric(unlist(rnase_3[t,"rnase_max"]))
+                          data <- data.frame(y = y, df.y = df.y)#individual dataframe created for every protein 
+                          Mean_rnase_list <- as.numeric(unlist(rnase_3[t,"rnase_max"]))#vector with all peak positions
                           n <- length(Mean_rnase_list)
                           gauss <- numeric(0)
                           # Before optimization of the parameters, check the number of maxima for the profile of the protein
 												  if (n==0) { gauss <- 0 } else {
 												  				  								if (n==1) {
 												  		  	         									  vector <- c( rnase_norm_mean[t,Mean_rnase_list[1]], Mean_rnase_list[1], 1 )
+												  		  	         									  #Vektor = (Max. Intensitätswert, Position dieses Wertes, 1)
 												  		  	         									  gauss <- tryCatch(round( (fit <- optim(vector, f1, data = data, method="BFGS", control=list(reltol=1e-9)))$par[1],digits = 1 ),error=function(e) numeric(0))
 												  				           								  } else {
 												  				  												  if (n==2) {
