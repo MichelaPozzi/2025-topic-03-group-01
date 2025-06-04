@@ -615,7 +615,7 @@ vect <- matrix(c(1:lg), 1, lg)
 ```
 
 ```{r}
-# Expectation: Functions to optimize for Gaussian fitting - Gaussians with 1 to 6 peaks
+# Goal: Functions to optimize for Gaussian fitting - Gaussians with 1 to 6 peaks
 # The parameters C, mean and sigma will be optimized for each CTRL and RNASE profile
 
 # Defines a Gaussian function with one peak and calculates the residual error between the signal profile and the theoretical Gaussian curve.
@@ -719,7 +719,8 @@ f6 <- function(data, q) {
 ***********************************************************************************************************
 ```{r}
 # Fit the RNASE mean curves 
-# Expectation: Get the amplitude of the fit at each peak - new column: fit_c
+# Goal: Get the amplitude of the fit at each peak - new column (31): fit_c
+# $par[1]: Identifies amplitude of peak
 
 #******** Notes ********												  		  	         									  
 # optim(values fo optimization, function to be minimized, data, method: Broyden–Fletcher–Goldfarb–Shanno algorithm, control of tolerance and accuracy) changes the parameters (of "vector"!) systematically to minimize the error.
@@ -780,7 +781,9 @@ rnase_3$fit_c <- apply(vect, 2, function(t) {
 
 ***********************************************************************************************************
 ```{r}
-# Fit the RNASE mean curves and get the position of the peak(s) - new column: fit_mean
+# Fit the RNASE mean curves 
+# Goal: Get the position of the peak(s) - new column (32): fit_mean
+# $par[2]: Identifies the mean position/fraction of the peak
 rnase_3$fit_mean <- apply(vect, 2, function(t) {
 												  df.y <- c(as.numeric(rnase_norm_mean[t,1:25]))
 												  y <- c(1:25)
@@ -824,7 +827,9 @@ rnase_3$fit_mean <- apply(vect, 2, function(t) {
 
 ***********************************************************************************************************
 ```{r}
-# Fit the RNASE mean curves and get the covariance (sigma) of the peak(s) - new column: fit_sigma
+# Fit the RNASE mean curves 
+# Goal: Get the covariance (sigma) of the peak(s) - new column (33): fit_sigma
+# $par[3]: Identifies Standard Deviation for the respective peaks
 rnase_3$fit_sigma <- apply(vect, 2, function(t) {
 												  df.y <- c(as.numeric(rnase_norm_mean[t,1:25]))
 												  y <- c(1:25)
@@ -868,7 +873,10 @@ rnase_3$fit_sigma <- apply(vect, 2, function(t) {
 
 ***********************************************************************************************************
 ```{r}
-# Fit the RNASE mean curves and get the residual sum of the squares - new column: fit_res
+# Fit the RNASE mean curves 
+# Goal: Get the residual sum of the squares - new column (34): fit_res
+# $value: Identifies the minimal error found by optim with the altered (optimized) parameters
+# --> Allows statements to be made about the qiality of the fitting
 rnase_3$fit_res <- apply(vect, 2, function(t) {
 												  df.y <- c(as.numeric(rnase_norm_mean[t,1:25]))
 												  y <- c(1:25)
