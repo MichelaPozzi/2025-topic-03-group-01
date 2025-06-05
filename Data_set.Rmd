@@ -96,8 +96,6 @@ colmns_sorted <- data.frame(row.names = colnames(NS_Table), levels_CR = levels_C
 #Check for missing values, there are none 
 anyNA(NS_Table)
 ```
-
-
 **************************************************************************************************************
 Normalization step between the replicates in each fraction and for each treatment using the mean value method
 
@@ -371,18 +369,15 @@ rnase_norm_mean[rowSums(ctrl_norm_mean[1:25])==0,] <- 0
 #View(rnase_norm_mean)
 ```
 
-Weiter hab ich noch nicht den Code bearbeitet 
-LG Ben
-
 **************************************************************************************************************
 2 - Find local maxima greater than 2 as fit parameters from average curves
 **************************************************************************************************************
-#### Find local maxima in each protein mean profile (peak calling step - function find_peaks) ####
-# Restriction to values above an absolut threshold of 2 (to get rid of the noise)
-# Identify also shoulders not found by peak calling
+
+Identify local maxima by peak calling for the mean of each protein.
+In order to get rid of the noise, only values above 2 are considered.
+Find shoulders that were not discovered previously
 
 **************************************************************************************************************
-
 ```{r}
 #Function find_peaks
 #Peak is local maximum with smaller "window" points on each side
@@ -406,7 +401,7 @@ find_peaks <- function(x, window = 2) {
   }
 
   
-# part added to deal with plateaux
+# part added to deal with plateau
 # Ergibt diese Operation überhaupt Sinn, Plateaus haben ja auch nur einen Hochpunkt, und alle anderen (ähnlichen) werden doch ohnehin nicht erkannt werden?
      n = length(peaks)
      if (n>1) {
@@ -416,7 +411,6 @@ find_peaks <- function(x, window = 2) {
      			peaks <- peaks[! peaks%in% rem]
      		  }	 
   
-
 # part added to deal with the 1st and 25th values, in case they are max
      if ( sum(x[1]>x[2:(window+1)]) == 2 ) {peaks <- c(peaks, 1)} 
      if ( sum(x[25]>x[24:(25-window)]) == 2 ) {peaks <- c(peaks, 25)}
@@ -457,8 +451,7 @@ rnase_norm_mean$maxima <- apply(rnase_norm_mean, 1, function(x) {
 ```
 
 ***********************************************************************************************************
-# Identifying shoulders
-# "shoulders" are regions of elevated signal intensity that are not sharp enough to be detected as a "peak" by the peak detection function find_peaks — but still indicate meaningful protein presence.
+Find shoulders, regions that are not recognized as peaks, even though they have a high signal intensity.
 
 ```{r}
 # Identify the RNAse fractions with signal intensity > 2%. 
@@ -597,14 +590,12 @@ ctrl_3$nb_max <- apply(ctrl_3, 1, function(x) {
 ```
 
 ***********************************************************************************************************
-#### Gaussian fit of the mean curves (mean of the three replicates per condition)
+Take the mean curves of the three replicates per condition and perform a gaussian fit on them.
 ***********************************************************************************************************
-# Addition of new columns in the table ctrl_3 and rnase_3
-# Use of the information stored in the table ctrl_norm_mean and rnase_norm_mean
-# Function to fit a gaussian on the raw mean data to obtain: fit_c, fit_mean, fit_sigma
-# Function to get the residue value: fit_res
-# Function to check if the fit was successful: fitted (TRUE/FALSE)
-
+Add new columns to the tables ctrl_3 and rnase_3.
+Fit a gaussian curve on ctrl_norm_mean and rnase_norm_mean to get fit_c, fit_mean and fit_sigma.
+Use fit_res to obtain the residue value.
+Check with fitted (boolean), whether the fit was successfull
 
 ```{r}
 # Number of rows of the table - is the total number of proteins -> 4765
@@ -948,7 +939,7 @@ rnase_3[failed_rnase, ]
 ```
 
 ***********************************************************************************************************
-# Repeat the same with the CTRL condition
+Use the CTRL condition and repeat this process with it
 ***********************************************************************************************************
 ```{r}
 # Fit the CTRL mean curves 
@@ -1224,7 +1215,6 @@ rnase_3$fit_param <- apply(vect, 2, function(z) {
 											#	n1 <- length(list_c1)
 #as.data.frame(matrix( c(list_c1, list_mean1, list_sigma1),n1,3,byrow="FALSE"))
 ```
-
 
 ***********************************************************************************************************
 ```{r}
