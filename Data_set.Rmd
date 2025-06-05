@@ -1320,12 +1320,12 @@ ctrl_3[263, "fit_c_fxn"]
 # Number of peaks -> nb_peaks
 
 #raw data:
-#table.ctrl1.SW.norm 
-#table.ctrl2.SW.norm 
-#table.ctrl3.SW.norm 
-#table.rnase1.SW.norm 
-#table.rnase2.SW.norm 
-#table.rnase3.SW.norm
+#norm_tables.ctrl$ctrl1 
+#norm_tables.ctrl$ctrl2 
+#norm_tables.ctrl$ctrl3 
+#norm_tables.rnase$rnase1 
+#norm_tables.rnase$rnase2 
+#norm_tables.rnase$rnase3
 
 # reference mean data with additional columns (temporary tables as defined earlier in the script):
 # ctrl_3
@@ -1453,34 +1453,34 @@ gauss_fit <- function(pos, table_mean, table_rep) {
 ```{r}
 # Make new tables with the fitted values for each curve
 
-table.ctrl1.fit <- t(apply(vect, 2, function(d) { gauss_fit(d, ctrl_3, table.ctrl1.SW.norm)  }))
-rownames(table.ctrl1.fit) <- rownames(table.ctrl1.SW.norm)
-colnames(table.ctrl1.fit) <- colnames(table.ctrl1.SW.norm[1:25])
+table.ctrl1.fit <- t(apply(vect, 2, function(d) { gauss_fit(d, ctrl_3, norm_tables.ctrl$ctrl1)  }))
+rownames(table.ctrl1.fit) <- rownames(norm_tables.ctrl$ctrl1)
+colnames(table.ctrl1.fit) <- colnames(norm_tables.ctrl$ctrl1[1:25])
 table.ctrl1.fit <- as.data.frame(table.ctrl1.fit)
 
-table.ctrl2.fit <- t(apply(vect, 2, function(d) { gauss_fit(d, ctrl_3, table.ctrl2.SW.norm)  }))
-rownames(table.ctrl2.fit) <- rownames(table.ctrl2.SW.norm)
-colnames(table.ctrl2.fit) <- colnames(table.ctrl2.SW.norm[1:25])
+table.ctrl2.fit <- t(apply(vect, 2, function(d) { gauss_fit(d, ctrl_3, norm_tables.ctrl$ctrl2)  }))
+rownames(table.ctrl2.fit) <- rownames(norm_tables.ctrl$ctrl2)
+colnames(table.ctrl2.fit) <- colnames(norm_tables.ctrl$ctrl2[1:25])
 table.ctrl2.fit <- as.data.frame(table.ctrl2.fit)
 
-table.ctrl3.fit <- t(apply(vect, 2, function(d) { gauss_fit(d, ctrl_3, table.ctrl3.SW.norm)  }))
-rownames(table.ctrl3.fit) <- rownames(table.ctrl3.SW.norm)
-colnames(table.ctrl3.fit) <- colnames(table.ctrl3.SW.norm[1:25])
+table.ctrl3.fit <- t(apply(vect, 2, function(d) { gauss_fit(d, ctrl_3, norm_tables.ctrl$ctrl3)  }))
+rownames(table.ctrl3.fit) <- rownames(norm_tables.ctrl$ctrl3)
+colnames(table.ctrl3.fit) <- colnames(norm_tables.ctrl$ctrl3[1:25])
 table.ctrl3.fit <- as.data.frame(table.ctrl3.fit)
 
-table.rnase1.fit <- t(apply(vect, 2, function(d) { gauss_fit(d, rnase_3, table.rnase1.SW.norm)  }))
-rownames(table.rnase1.fit) <- rownames(table.rnase1.SW.norm)
-colnames(table.rnase1.fit) <- colnames(table.rnase1.SW.norm[1:25])
+table.rnase1.fit <- t(apply(vect, 2, function(d) { gauss_fit(d, rnase_3, norm_tables.rnase$rnase1)  }))
+rownames(table.rnase1.fit) <- rownames(norm_tables.rnase$rnase1)
+colnames(table.rnase1.fit) <- colnames(norm_tables.rnase$rnase1[1:25])
 table.rnase1.fit <- as.data.frame(table.rnase1.fit)
 
-table.rnase2.fit <- t(apply(vect, 2, function(d) { gauss_fit(d, rnase_3, table.rnase2.SW.norm)  }))
-rownames(table.rnase2.fit) <- rownames(table.rnase2.SW.norm)
-colnames(table.rnase2.fit) <- colnames(table.rnase2.SW.norm[1:25])
+table.rnase2.fit <- t(apply(vect, 2, function(d) { gauss_fit(d, rnase_3, norm_tables.rnase$rnase2)  }))
+rownames(table.rnase2.fit) <- rownames(norm_tables.rnase$rnase2)
+colnames(table.rnase2.fit) <- colnames(norm_tables.rnase$rnase2[1:25])
 table.rnase2.fit <- as.data.frame(table.rnase2.fit)
 
-table.rnase3.fit <- t(apply(vect, 2, function(d) { gauss_fit(d, rnase_3, table.rnase3.SW.norm)  }))
-rownames(table.rnase3.fit) <- rownames(table.rnase3.SW.norm)
-colnames(table.rnase3.fit) <- colnames(table.rnase2.SW.norm[1:25])
+table.rnase3.fit <- t(apply(vect, 2, function(d) { gauss_fit(d, rnase_3, norm_tables.rnase$rnase3)  }))
+rownames(table.rnase3.fit) <- rownames(norm_tables.rnase$rnase3)
+colnames(table.rnase3.fit) <- colnames(norm_tables.rnase$rnase2[1:25])
 table.rnase3.fit <- as.data.frame(table.rnase3.fit)
 ```
 
@@ -1532,62 +1532,38 @@ table.rnase3.fit$check_sum <- apply(vect, 2, function(x) { check <- round(sum(as
 # all at once in a vector (in the order: C1, mean1, sigma1, C2, mean2, sigma2, ..)
 
 gauss_fit_param <- function(pos, table_mean, table_rep) {
-								df.y <- c(as.numeric(table_rep[pos,1:25]))
-								y <- c(1:25)
-								data <- data.frame(y = y, df.y = df.y)
-								list_c <- as.numeric(unlist(table_mean[pos,"fit_c"]))
-								list_mean <- as.numeric(unlist(table_mean[pos,"fit_mean"]))
-								list_sigma <- as.numeric(unlist(table_mean[pos,"fit_sigma"]))
-								list <- c(list_c, list_mean, list_sigma)
-								n <- length(list_c)
-								vector <- numeric(0)
-									  if ((n==1) && (list == c(0,0,0))) {q <- rep(0,3)} else {
-												  											if (n==1) {
-												  														vector <- c(list_c[1],list_mean[1],list_sigma[1])
-												  														q <- tryCatch(round( (fit <- optim(vector, f1, data = data, method="BFGS", control=list(reltol=1e-9)))$par,digits = 1 ),error=function(e) c(0,0,0))
-												  														
-												  														} else {
-												  																if (n==2) {
-												  																			vector <- c(list_c[1],list_mean[1],list_sigma[1],list_c[2],list_mean[2],list_sigma[2])
-																															q <- tryCatch(round( (fit <- optim(vector, f2, data = data, method="BFGS", control=list(reltol=1e-9)))$par,digits = 1 ),error=function(e) c(0,0,0))
-																															
-												  																			} else {
-												  																					if (n==3) {
-												  																								vector <- c(list_c[1],list_mean[1],list_sigma[1],list_c[2],list_mean[2],list_sigma[2],list_c[3],list_mean[3],list_sigma[3])
-												  																								q <- tryCatch(round( (fit <- optim(vector, f3, data = data, method="BFGS", control=list(reltol=1e-9)))$par,digits = 1 ),error=function(e) c(0,0,0))
-												  				
-												  																								} else {
-												  																										if (n==4) {
-												  																													vector <- c(list_c[1],list_mean[1],list_sigma[1],list_c[2],list_mean[2],list_sigma[2],list_c[3],list_mean[3],list_sigma[3],list_c[4],list_mean[4],list_sigma[4])
-												  																													q <- tryCatch(round( (fit <- optim(vector, f4,data = data,  method="BFGS", control=list(reltol=1e-9)))$par,digits = 1 ),error=function(e) c(0,0,0))
-												  																											
-												  																													} else {
-												  																															if (n==5) {
-												  																																		vector <- c(list_c[1],list_mean[1],list_sigma[1],list_c[2],list_mean[2],list_sigma[2],list_c[3],list_mean[3],list_sigma[3],list_c[4],list_mean[4],list_sigma[4],list_c[5],list_mean[5],list_sigma[5])
-												  																																		q <- tryCatch(round( (fit <- optim(vector, f5, data = data, method="BFGS", control=list(reltol=1e-9)))$par,digits = 1 ),error=function(e) c(0,0,0))
-												  																																	
-												  																																		} else {
-												  																																				vector <- c(list_c[1],list_mean[1],list_sigma[1],list_c[2],list_mean[2],list_sigma[2],list_c[3],list_mean[3],list_sigma[3],list_c[4],list_mean[4],list_sigma[4],list_c[5],list_mean[5],list_sigma[5],list_c[6],list_mean[6],list_sigma[6])
-												  																																				q <- tryCatch(round( (fit <- optim(vector, f6, data = data, method="BFGS", control=list(reltol=1e-9)))$par,digits = 1 ),error=function(e) c(0,0,0))
-												  																																			
-												  																																				}
-												  																															}
-												  																										}
-												  																					}
-												  																}
-												  											}
+  df.y <- as.numeric(table_rep[pos, 1:25])
+  if (length(df.y) == 0) return(rep(0, 3))
 
-																#vector mit parameters
-																q
-								}
+  y <- 1:25
+  data <- data.frame(y = y, df.y = df.y)
+
+  list_c <- as.numeric(unlist(table_mean[pos, "fit_c"]))
+  list_mean <- as.numeric(unlist(table_mean[pos, "fit_mean"]))
+  list_sigma <- as.numeric(unlist(table_mean[pos, "fit_sigma"]))
+  n <- length(list_c)
+
+  if (n == 1 && all(c(list_c, list_mean, list_sigma) == c(0, 0, 0))) return(rep(0, 3))
+
+  vector <- as.numeric(rbind(list_c, list_mean, list_sigma))
+  fit_fun <- get(paste0("f", n))  # Dynamisch z. B. f1, f2, ..., f6
+
+  q <- tryCatch(
+    round(optim(vector, fit_fun, data = data, method = "BFGS", control = list(reltol = 1e-9))$par, digits = 1),
+    error = function(e) rep(0, 3 * n)
+  )
+
+  return(q)
+}
 
 
-table.ctrl1.fit$fit_param <- apply(vect, 2, function(x) { gauss_fit_param(x, ctrl_3, table.ctrl1.SW.norm) })
-table.ctrl2.fit$fit_param <- apply(vect, 2, function(x) { gauss_fit_param(x, ctrl_3, table.ctrl2.SW.norm) })
-table.ctrl3.fit$fit_param <- apply(vect, 2, function(x) { gauss_fit_param(x, ctrl_3, table.ctrl3.SW.norm) })
-table.rnase1.fit$fit_param <- apply(vect, 2, function(x) { gauss_fit_param(x, rnase_3, table.rnase1.SW.norm) })
-table.rnase2.fit$fit_param <- apply(vect, 2, function(x) { gauss_fit_param(x, rnase_3, table.rnase2.SW.norm) })
-table.rnase3.fit$fit_param <- apply(vect, 2, function(x) { gauss_fit_param(x, rnase_3, table.rnase3.SW.norm) })
+table.ctrl1.fit$fit_param <- sapply(vect, function(x) gauss_fit_param(x, ctrl_3, norm_tables.ctrl$ctrl1), simplify = FALSE)
+table.ctrl2.fit$fit_param <- sapply(vect, function(x) gauss_fit_param(x, ctrl_3, norm_tables.ctrl$ctrl2), simplify = FALSE)
+table.ctrl3.fit$fit_param <- sapply(vect, function(x) gauss_fit_param(x, ctrl_3, norm_tables.ctrl$ctrl3), simplify = FALSE)
+
+table.rnase1.fit$fit_param <- sapply(vect, function(x)  gauss_fit_param(x, rnase_3, norm_tables.rnase$rnase1), simplify = FALSE) 
+table.rnase2.fit$fit_param <- sapply(vect, function(x)  gauss_fit_param(x, rnase_3, norm_tables.rnase$rnase2), simplify = FALSE)
+table.rnase3.fit$fit_param <- sapply(vect, function(x)  gauss_fit_param(x, rnase_3, norm_tables.rnase$rnase3), simplify = FALSE) 
 
 ```
 
@@ -1604,61 +1580,62 @@ gauss_fit_res <- function(pos, table_mean, table_rep) {
   list <- c(list_c, list_mean, list_sigma)
   n <- length(list_c)
   vector <- numeric(0)
-  if ((n==1) && (list == c(0,0,0))) {q <- rep(0,3)} else {
+  if ((n==1) && identical(list, c(0,0,0))) {q <- rep(0,3)} else {
     if (n==1) {
       vector <- c(list_c[1],list_mean[1],list_sigma[1])
-      q <- tryCatch(round( (fit <- optim(vector, f1, data = data, method="BFGS", control=list(reltol=1e-9)))$value,digits = 1 ),error=function(e) c(0,0,0))
-      
-    } else {
+      q <- tryCatch(round( (fit <- optim(vector, f1, data = data, method="BFGS", control=list(reltol=1e-9)))$value,digits = 1),error=function(e) c(0,0,0)) } 
+    else {
       if (n==2) {
         vector <- c(list_c[1],list_mean[1],list_sigma[1],list_c[2],list_mean[2],list_sigma[2])
-        q <- tryCatch(round( (fit <- optim(vector, f2, data = data, method="BFGS", control=list(reltol=1e-9)))$value,digits = 1 ),error=function(e) c(0,0,0))
-        
+        q <- tryCatch(round( (fit <- optim(vector, f2, data = data, method="BFGS", control=list(reltol=1e-9)))$value,digits = 1),error=function(e) c(0,0,0))
       } else {
         if (n==3) {
           vector <- c(list_c[1],list_mean[1],list_sigma[1],list_c[2],list_mean[2],list_sigma[2],list_c[3],list_mean[3],list_sigma[3])
-          q <- tryCatch(round( (fit <- optim(vector, f3, data = data, method="BFGS", control=list(reltol=1e-9)))$value,digits = 1 ),error=function(e) c(0,0,0))
-          
+          q <- tryCatch(round( (fit <- optim(vector, f3, data = data, method="BFGS", control=list(reltol=1e-9)))$value,digits = 1),error=function(e) c(0,0,0))
         } else {
           if (n==4) {
             vector <- c(list_c[1],list_mean[1],list_sigma[1],list_c[2],list_mean[2],list_sigma[2],list_c[3],list_mean[3],list_sigma[3],list_c[4],list_mean[4],list_sigma[4])
-            q <- tryCatch(round( (fit <- optim(vector, f4,data = data,  method="BFGS", control=list(reltol=1e-9)))$value,digits = 1 ),error=function(e) c(0,0,0))
-            
+            q <- tryCatch(round( (fit <- optim(vector, f4,data = data,  method="BFGS", control=list(reltol=1e-9)))$value,digits = 1),error=function(e) c(0,0,0))
           } else {
             if (n==5) {
               vector <- c(list_c[1],list_mean[1],list_sigma[1],list_c[2],list_mean[2],list_sigma[2],list_c[3],list_mean[3],list_sigma[3],list_c[4],list_mean[4],list_sigma[4],list_c[5],list_mean[5],list_sigma[5])
-              q <- tryCatch(round( (fit <- optim(vector, f5, data = data, method="BFGS", control=list(reltol=1e-9)))$value,digits = 1 ),error=function(e) c(0,0,0))
-              
+              q <- tryCatch(round( (fit <- optim(vector, f5, data = data, method="BFGS", control=list(reltol=1e-9)))$value,digits = 1),error=function(e) c(0,0,0))
             } else {
               vector <- c(list_c[1],list_mean[1],list_sigma[1],list_c[2],list_mean[2],list_sigma[2],list_c[3],list_mean[3],list_sigma[3],list_c[4],list_mean[4],list_sigma[4],list_c[5],list_mean[5],list_sigma[5],list_c[6],list_mean[6],list_sigma[6])
-              q <- tryCatch(round( (fit <- optim(vector, f6, data = data, method="BFGS", control=list(reltol=1e-9)))$value,digits = 1 ),error=function(e) c(0,0,0))
-              
+              q <- tryCatch(round( (fit <- optim(vector, f6, data = data, method="BFGS", control=list(reltol=1e-9)))$value,digits = 1),error=function(e) c(0,0,0))
             }
           }
         }
       }
     }
   }
-```
-
-```{r}
-#vector mit parameters
-  q <- unlist(q)
-  if (length(q) == 1) {
-    if (q > 1000) {0} else {
-      as.numeric(q)}
-  } else {0}
 }
 ```
 
 ```{r}
-table.ctrl1.fit$fit_res <- apply(vect, 2, function(x) { gauss_fit_res(x, ctrl_3, table.ctrl1.SW.norm) })
-table.ctrl2.fit$fit_res <- apply(vect, 2, function(x) { gauss_fit_res(x, ctrl_3, table.ctrl2.SW.norm) })
-table.ctrl3.fit$fit_res <- apply(vect, 2, function(x) { gauss_fit_res(x, ctrl_3, table.ctrl3.SW.norm) })
+#vector mit parameters
+#vector mit parameters
+q <- unlist(q)
+
+if (length(q) == 1 && is.numeric(q)) {
+  if (q > 1000) {
+    0
+  } else {
+    as.numeric(q)
+  }
+} else {
+  0
+}
+```
+
+```{r}
+table.ctrl1.fit$fit_res <- apply(vect, 2, function(x) { gauss_fit_res(x, ctrl_3, norm_tables.ctrl$ctrl1) })
+table.ctrl2.fit$fit_res <- apply(vect, 2, function(x) { gauss_fit_res(x, ctrl_3, norm_tables.ctrl$ctrl2) })
+table.ctrl3.fit$fit_res <- apply(vect, 2, function(x) { gauss_fit_res(x, ctrl_3, norm_tables.ctrl$ctrl3) })
 												  
-table.rnase1.fit$fit_res <- apply(vect, 2, function(x) { gauss_fit_res(x, rnase_3, table.rnase1.SW.norm) })
-table.rnase2.fit$fit_res <- apply(vect, 2, function(x) { gauss_fit_res(x, rnase_3, table.rnase2.SW.norm) })
-table.rnase3.fit$fit_res <- apply(vect, 2, function(x) { gauss_fit_res(x, rnase_3, table.rnase3.SW.norm) })
+table.rnase1.fit$fit_res <- apply(vect, 2, function(x) { gauss_fit_res(x, rnase_3, norm_tables.rnase$rnase1) })
+table.rnase2.fit$fit_res <- apply(vect, 2, function(x) { gauss_fit_res(x, rnase_3, norm_tables.rnase$rnase2) })
+table.rnase3.fit$fit_res <- apply(vect, 2, function(x) { gauss_fit_res(x, rnase_3, norm_tables.rnase$rnase3) })
 
 ```
 
@@ -1843,13 +1820,13 @@ fine_fit <- function(fit)			{
 												  																										}
 												  																					}
 												  																}
-												  											}
+												  }
+												  return(dffit$df.y * 100 / (sum(dffit$df.y) * 0.1))
+}
 ```
 
 ```{r}
 # *0.1 to scale the resulting curve at the level of the normalized raw data. The sum here is at the end 1000 and not 100, but the values fits to the raw data.
-												  dffit$df.y*100/(sum(dffit$df.y)*0.1)
-}	
 
 table.ctrl1.fit.fine <- t(apply(vect, 2, function(t) {
 													fit_param <- as.numeric(unlist(table.ctrl1.fit[t,"fit_param"]))
@@ -1871,34 +1848,12 @@ table.ctrl3.fit.fine <- t(apply(vect, 2, function(t) {
 													}))
 rownames(table.ctrl3.fit.fine) <- rownames(table.ctrl3.fit)
 colnames(table.ctrl3.fit.fine) <- lapply(seq(0,25,0.1), as.character)
-
-
-table.rnase1.fit.fine <- t(apply(vect, 2, function(t) {
-													fit_param <- as.numeric(unlist(table.rnase1.fit[t,"fit_param"]))
-													fine_fit(fit_param)
-													}))
-rownames(table.rnase1.fit.fine) <- rownames(table.rnase1.fit)
-colnames(table.rnase1.fit.fine) <- lapply(seq(0,25,0.1), as.character)
-
-table.rnase2.fit.fine <- t(apply(vect, 2, function(t) {
-													fit_param <- as.numeric(unlist(table.rnase2.fit[t,"fit_param"]))
-													fine_fit(fit_param)
-													}))
-rownames(table.rnase2.fit.fine) <- rownames(table.rnase2.fit)
-colnames(table.rnase2.fit.fine) <- lapply(seq(0,25,0.1), as.character)
-
-table.rnase3.fit.fine <- t(apply(vect, 2, function(t) {
-													fit_param <- as.numeric(unlist(table.rnase3.fit[t,"fit_param"]))
-													fine_fit(fit_param)
-													}))
-rownames(table.rnase3.fit.fine) <- rownames(table.rnase3.fit)
-colnames(table.rnase3.fit.fine) <- lapply(seq(0,25,0.1), as.character)
 ```
 
 
 ***********************************************************************************************************
 ```{r}
- Function to calculate the fit value at a given peak (with 0.1 instead of 1 fraction precision)
+ #Function to calculate the fit value at a given peak (with 0.1 instead of 1 fraction precision)
 # The function will be used in the next step to evaluate the p-value at each maximum
 # Return the amplitude of the fit curve at a given position
 
@@ -1936,3 +1891,21 @@ fine_fit_corr <- function(pos,vector,table_rep)	 {
 4 - Quality control of fit an if possible adjustment
 ***********************************************************************************************************
 
+```{r}
+row_data1 <- as.numeric(table.ctrl1.fit["AHNK_HUMAN", ])
+row_data2 <- as.numeric(table.rnase1.fit["AHNK_HUMAN", ])
+
+# Plot
+plot(row_data1, row_data2,
+     type = "l",                # Linienplot
+     main = "Plot for AHNK_HUMAN",
+     xlab = "Columns",
+     ylab = "Values",
+     col = "blue",
+     lwd = 2)
+
+lines(row_data2,
+      type = "l",                # Linienplot
+     col = "red",
+     lwd = 2)
+```
