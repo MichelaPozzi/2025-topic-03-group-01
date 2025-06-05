@@ -1838,3 +1838,54 @@ fine_fit_corr <- function(pos,vector,table_rep)	 {
 4 - Quality control of fit an if possible adjustment
 ***********************************************************************************************************
 
+
+```{r}
+# Beispiel: Zwei Dataframes mit gleichen Spaltennamen
+set.seed(42)
+df1 <- as.data.frame(matrix(rnorm(1000, mean = 5), nrow = 100))  # z. B. Gruppe A
+df2 <- as.data.frame(matrix(rnorm(1000, mean = 6), nrow = 100))  # z. B. Gruppe B
+
+# Sicherstellen, dass Spalten übereinstimmen
+stopifnot(identical(names(df1), names(df2)))
+
+# T-Test pro Spaltenpaar
+t_test_ergebnisse <- lapply(seq_along(df1), function(i) {
+  t_res <- t.test(df1[[i]], df2[[i]])
+  data.frame(
+    spalte = names(df1)[i],
+    p_wert = t_res$p.value,
+    mittelwert_df1 = mean(df1[[i]], na.rm = TRUE),
+    mittelwert_df2 = mean(df2[[i]], na.rm = TRUE),
+    t_wert = t_res$statistic,
+    df = t_res$parameter
+  )
+})
+
+# Ergebnisse zusammenführen
+t_test_ergebnisse_df <- do.call(rbind, t_test_ergebnisse)
+
+# Optional: Nach p-Wert sortieren
+t_test_ergebnisse_df <- t_test_ergebnisse_df[order(t_test_ergebnisse_df$p_wert), ]
+
+# Ausgabe
+print(t_test_ergebnisse_df)
+
+```
+
+```{r}
+# Beispiel-DataFrames
+df1 <- data.frame(result = c("success", "failure", "success", "success", "failure"))
+df2 <- data.frame(result = c("failure", "failure", "success", "failure", "failure", "success"))
+
+# Zähle die Anzahl der "success" und die Gesamtanzahl
+success1 <- sum(df1$result == "success")
+n1 <- nrow(df1)
+
+success2 <- sum(df2$result == "success")
+n2 <- nrow(df2)
+
+# Proportionstest (zweiseitig)
+prop.test(x = c(success1, success2), n = c(n1, n2), correct = FALSE)
+
+```
+
