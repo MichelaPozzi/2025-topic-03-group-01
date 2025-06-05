@@ -369,6 +369,25 @@ rnase_norm_mean[rowSums(ctrl_norm_mean[1:25])==0,] <- 0
 #View(rnase_norm_mean)
 ```
 
+```{r}
+row_dat1 <- as.numeric(ctrl_norm_mean["AHNK_HUMAN", ])
+row_dat2 <- as.numeric(rnase_norm_mean["AHNK_HUMAN", ])
+
+# Plot
+plot(row_dat1,
+     type = "l",                # Linienplot
+     main = "Plot for AHNK_HUMAN",
+     xlab = "Fractions",
+     ylab = "Values",
+     col = "blue",
+     lwd = 2)
+
+lines(row_dat2,
+      type = "l",
+      col = "red",
+      lwd = 2)
+```
+
 **************************************************************************************************************
 2 - Find local maxima greater than 2 as fit parameters from average curves
 **************************************************************************************************************
@@ -1892,20 +1911,96 @@ fine_fit_corr <- function(pos,vector,table_rep)	 {
 ***********************************************************************************************************
 
 ```{r}
-row_data1 <- as.numeric(table.ctrl1.fit["AHNK_HUMAN", ])
-row_data2 <- as.numeric(table.rnase1.fit["AHNK_HUMAN", ])
+row_data1 <- as.numeric(table.ctrl1.fit["PRKDC_HUMAN", ])
+row_data2 <- as.numeric(table.rnase1.fit["PRKDC_HUMAN", ])
 
 # Plot
-plot(row_data1, row_data2,
+plot(row_data1,
      type = "l",                # Linienplot
      main = "Plot for AHNK_HUMAN",
-     xlab = "Columns",
+     xlab = "Fractions",
      ylab = "Values",
      col = "blue",
      lwd = 2)
 
 lines(row_data2,
-      type = "l",                # Linienplot
-     col = "red",
-     lwd = 2)
+      type = "l",
+      col = "red",
+      lwd = 2)
 ```
+
+```{r}
+# Beispiel: Zwei Dataframes mit gleichen Spaltennamen
+
+df1 <- table.ctrl1.fit[1:25] # Gruppe A
+df2 <- table.rnase1.fit[1:25] # Gruppe B
+
+df_numeric1 <- as.data.frame(lapply(df1, function(x) as.numeric(as.character(x))))
+df_numeric2 <- as.data.frame(lapply(df2, function(x) as.numeric(as.character(x))))
+
+colnames(df_numeric1) <- colnames(table.ctrl1.fit[1:25])
+colnames(df_numeric2) <- colnames(table.ctrl1.fit[1:25])
+
+rownames(df_numeric1) <- rownames(table.ctrl1.fit[1:25])
+rownames(df_numeric2) <- rownames(table.ctrl1.fit[1:25])
+
+# T-Test pro Spaltenpaar
+t_test_ergebnisse <- lapply(seq_along(df1), function(i) {
+  t_res <- t.test(df_numeric1[[i]], df_numeric2[[i]])
+  data.frame(
+    zeile = names(df1)[i],
+    p_wert = t_res$p.value,
+    mittelwert_df1 = mean(df_numeric1[[i]], na.rm = TRUE),
+    mittelwert_df2 = mean(df_numeric2[[i]], na.rm = TRUE),
+    t_wert = t_res$statistic,
+    df = t_res$parameter
+  )
+})
+
+# Ergebnisse zusammenführen
+t_test_ergebnisse_df <- do.call(rbind, t_test_ergebnisse)
+
+# Optional: Nach p-Wert sortieren
+t_test_ergebnisse_df <- t_test_ergebnisse_df[order(t_test_ergebnisse_df$p_wert), ]
+
+# Ausgabe
+print(t_test_ergebnisse_df)
+
+```
+
+```{r}
+# T-Test pro Zeilenpaar
+t_test_ergebnisse1 <- lapply(seq_len(nrow(df_numeric1)), function(i) {
+  x <- as.numeric(df_numeric1[i, ])
+  y <- as.numeric(df_numeric2[i, ])
+
+  # Nur t-Test, wenn beide Gruppen mindestens 2 gültige Werte haben
+  if (sum(!is.na(x)) >= 2 && sum(!is.na(y)) >= 2) {
+    t_res <- t.test(x, y)
+    data.frame(
+      zeile = rownames(df_numeric1)[i],
+      p_wert = t_res$p.value,
+      mittelwert_df1 = mean(x, na.rm = TRUE),
+      mittelwert_df2 = mean(y, na.rm = TRUE),
+      t_wert = t_res$statistic,
+      df = t_res$parameter
+    )
+  } else {
+    NULL
+  }
+})
+
+# Entferne NULLs (wo T-Test nicht möglich war)
+t_test_ergebnisse1 <- Filter(Negate(is.null), t_test_ergebnisse)
+
+# Ergebnisse zusammenführen
+t_test_ergebnisse_df1 <- do.call(rbind, t_test_ergebnisse)
+
+# Optional: Nach p-Wert sortieren
+t_test_ergebnisse_df1 <- t_test_ergebnisse_df1[order(t_test_ergebnisse_df1$p_wert), ]
+
+# Ausgabe
+print(t_test_ergebnisse_df1)
+
+```
+
