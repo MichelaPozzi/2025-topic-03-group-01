@@ -369,6 +369,25 @@ rnase_norm_mean[rowSums(ctrl_norm_mean[1:25])==0,] <- 0
 #View(rnase_norm_mean)
 ```
 
+```{r}
+row_dat1 <- as.numeric(ctrl_norm_mean["AHNK_HUMAN", ])
+row_dat2 <- as.numeric(rnase_norm_mean["AHNK_HUMAN", ])
+
+# Plot
+plot(row_dat1,
+     type = "l",                # Linienplot
+     main = "Plot for AHNK_HUMAN",
+     xlab = "Fractions",
+     ylab = "Values",
+     col = "blue",
+     lwd = 2)
+
+lines(row_dat2,
+      type = "l",
+      col = "red",
+      lwd = 2)
+```
+
 **************************************************************************************************************
 2 - Find local maxima greater than 2 as fit parameters from average curves
 **************************************************************************************************************
@@ -1848,6 +1867,27 @@ table.ctrl3.fit.fine <- t(apply(vect, 2, function(t) {
 													}))
 rownames(table.ctrl3.fit.fine) <- rownames(table.ctrl3.fit)
 colnames(table.ctrl3.fit.fine) <- lapply(seq(0,25,0.1), as.character)
+
+table.rnase1.fit.fine <- t(apply(vect, 2, function(t) {
+													fit_param <- as.numeric(unlist(table.rnase1.fit[t,"fit_param"]))
+													fine_fit(fit_param)
+													}))
+rownames(table.rnase1.fit.fine) <- rownames(table.rnase1.fit)
+colnames(table.rnase1.fit.fine) <- lapply(seq(0,25,0.1), as.character)
+
+table.rnase2.fit.fine <- t(apply(vect, 2, function(t) {
+													fit_param <- as.numeric(unlist(table.rnase2.fit[t,"fit_param"]))
+													fine_fit(fit_param)
+													}))
+rownames(table.rnase2.fit.fine) <- rownames(table.rnase2.fit)
+colnames(table.rnase2.fit.fine) <- lapply(seq(0,25,0.1), as.character)
+
+table.rnase3.fit.fine <- t(apply(vect, 2, function(t) {
+													fit_param <- as.numeric(unlist(table.rnase3.fit[t,"fit_param"]))
+													fine_fit(fit_param)
+													}))
+rownames(table.rnase3.fit.fine) <- rownames(table.rnase3.fit)
+colnames(table.rnase3.fit.fine) <- lapply(seq(0,25,0.1), as.character)
 ```
 
 
@@ -1890,4 +1930,145 @@ fine_fit_corr <- function(pos,vector,table_rep)	 {
 ***********************************************************************************************************
 4 - Quality control of fit an if possible adjustment
 ***********************************************************************************************************
+
+```{r}
+row_data1 <- as.numeric(table.ctrl1.fit["PRKDC_HUMAN", ])
+row_data2 <- as.numeric(table.rnase1.fit["PRKDC_HUMAN", ])
+
+# Plot
+plot(row_data1,
+     type = "l",                # Linienplot
+     main = "Plot for AHNK_HUMAN",
+     xlab = "Fractions",
+     ylab = "Values",
+     col = "blue",
+     lwd = 2)
+
+lines(row_data2,
+      type = "l",
+      col = "red",
+      lwd = 2)
+
+
+row_data3 <- as.numeric(table.ctrl1.fit.fine["PRKDC_HUMAN", ])
+row_data4 <- as.numeric(table.rnase1.fit.fine["PRKDC_HUMAN", ])
+
+# Plot
+plot(row_data4,
+     type = "l",                # Linienplot
+     main = "Plot for AHNK_HUMAN",
+     xlab = "Fractions",
+     ylab = "Values",
+     col = "blue",
+     lwd = 2)
+
+lines(row_data3,
+      type = "l",
+      col = "red",
+      lwd = 2)
+```
+
+```{r}
+df1 <- table.ctrl1.fit[1:25] # Gruppe A
+df2 <- table.rnase1.fit[1:25] # Gruppe B
+
+df_numeric1 <- as.data.frame(lapply(df1, function(x) as.numeric(as.character(x))))
+df_numeric2 <- as.data.frame(lapply(df2, function(x) as.numeric(as.character(x))))
+
+colnames(df_numeric1) <- colnames(table.ctrl1.fit[1:25])
+colnames(df_numeric2) <- colnames(table.rnase1.fit[1:25])
+
+rownames(df_numeric1) <- rownames(table.ctrl1.fit[1:25])
+rownames(df_numeric2) <- rownames(table.rnase1.fit[1:25])
+
+```
+
+
+```{r}
+# T-Test pro Zeilenpaar
+t_test_ergebnisse <- lapply(seq_len(nrow(df_numeric1)), function(i) {
+  x <- as.numeric(df_numeric1[i, ])
+  y <- as.numeric(df_numeric2[i, ])
+
+  # Nur t-Test, wenn beide Gruppen mindestens 2 gültige Werte haben
+  if (sum(!is.na(x)) >= 2 && sum(!is.na(y)) >= 2) {
+    t_res <- t.test(x, y)
+    data.frame(
+      zeile = rownames(df_numeric1)[i],
+      p_wert = t_res$p.value,
+      mittelwert_df1 = mean(x, na.rm = TRUE),
+      mittelwert_df2 = mean(y, na.rm = TRUE),
+      t_wert = t_res$statistic,
+      df = t_res$parameter
+    )
+  } else {
+    NULL
+  }
+})
+
+# Entferne NULLs (wo T-Test nicht möglich war)
+t_test_ergebnisse <- Filter(Negate(is.null), t_test_ergebnisse)
+
+# Ergebnisse zusammenführen
+t_test_ergebnisse_df <- do.call(rbind, t_test_ergebnisse)
+
+# Optional: Nach p-Wert sortieren
+t_test_ergebnisse_df <- t_test_ergebnisse_df[order(t_test_ergebnisse_df$p_wert), ]
+
+# Ausgabe
+print(t_test_ergebnisse_df)
+
+```
+```{r}
+df3 <- table.ctrl1.fit.fine # Gruppe A
+df4 <- table.rnase1.fit.fine[1:25] # Gruppe B
+
+df_numeric3 <- as.data.frame(lapply(df3, function(x) as.numeric(as.character(x))))
+df_numeric4 <- as.data.frame(lapply(df4, function(x) as.numeric(as.character(x))))
+
+colnames(df_numeric3) <- colnames(table.ctrl1.fit.fine[1:25])
+colnames(df_numeric4) <- colnames(table.rnase1.fit.fine[1:25])
+
+rownames(df_numeric3) <- rownames(table.ctrl1.fit.fine[1:25])
+rownames(df_numeric4) <- rownames(table.rnase1.fit.fine[1:25])
+
+```
+
+```{r}
+# T-Test pro Zeilenpaar
+t_test_ergebnisse2 <- lapply(seq_len(nrow(df_numeric3)), function(i) {
+  x <- as.numeric(df_numeric3[i, ])
+  y <- as.numeric(df_numeric4[i, ])
+
+  # Nur t-Test, wenn beide Gruppen mindestens 2 gültige Werte haben
+  if (sum(!is.na(x)) >= 2 && sum(!is.na(y)) >= 2) {
+    t_res2 <- t.test(x, y)
+    data.frame(
+      zeile = rownames(df_numeric3)[i],
+      p_wert = t_res2$p.value,
+      mittelwert_df3 = mean(x, na.rm = TRUE),
+      mittelwert_df4 = mean(y, na.rm = TRUE),
+      t_wert = t_res2$statistic,
+      df = t_res2$parameter
+    )
+  } else {
+    NULL
+  }
+})
+
+# Entferne NULLs (wo T-Test nicht möglich war)
+t_test_ergebnisse2 <- Filter(Negate(is.null), t_test_ergebnisse2)
+
+# Ergebnisse zusammenführen
+t_test_ergebnisse_df2 <- do.call(rbind, t_test_ergebnisse2)
+
+# Optional: Nach p-Wert sortieren
+t_test_ergebnisse_df2 <- t_test_ergebnisse_df2[order(t_test_ergebnisse_df2$p_wert), ]
+
+# Ausgabe
+print(t_test_ergebnisse_df2)
+
+```
+
+
 
