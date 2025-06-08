@@ -1528,6 +1528,26 @@ table.rnase2.fit <- rapply(table.rnase2.fit, f=function(x) ifelse(is.nan(x),0,x)
 table.rnase3.fit <- rapply(table.rnase3.fit, f=function(x) ifelse(is.nan(x),0,x), how="replace" )
 ```
 
+```{r}
+row_data1 <- as.numeric(table.ctrl2.fit["PRKDC_HUMAN", ])
+row_data2 <- as.numeric(table.rnase2.fit["PRKDC_HUMAN", ])
+
+# Plot
+plot(row_data1,
+     type = "l",                # Linienplot
+     main = "Plot for AHNK_HUMAN",
+     xlab = "Fractions",
+     ylab = "Values",
+     col = "blue",
+     lwd = 2)
+
+lines(row_data2,
+      type = "l",
+      col = "red",
+      lwd = 2)
+```
+
+
 ***********************************************************************************************************
 ```{r}
 #Figure out sum of fitted curves which should be about 100 percent
@@ -1907,6 +1927,80 @@ rownames(table.rnase3.fit.fine) <- rownames(table.rnase3.fit)
 colnames(table.rnase3.fit.fine) <- lapply(seq(0,25,0.1), as.character)
 ```
 
+```{r}
+table.ctrl.fit.fine <- (table.ctrl1.fit.fine + table.ctrl2.fit.fine + table.ctrl3.fit.fine) / 3
+table.rnase.fit.fine <- (table.rnase1.fit.fine + table.rnase2.fit.fine + table.rnase3.fit.fine) / 3
+```
+
+```{r}
+row_data3 <- as.numeric(table.ctrl1.fit.fine["PRKDC_HUMAN", ])
+row_data4 <- as.numeric(table.rnase1.fit.fine["PRKDC_HUMAN", ])
+
+# Plot
+plot(row_data4,
+     type = "l",                # Linienplot
+     main = "Plot for AHNK_HUMAN",
+     xlab = "Fractions",
+     ylab = "Values",
+     col = "blue",
+     lwd = 2)
+
+lines(row_data3,
+      type = "l",
+      col = "red",
+      lwd = 2)
+```
+
+
+```{r}
+df1 <- table.ctrl1.fit[1:25] # Gruppe A
+df2 <- table.rnase1.fit[1:25] # Gruppe B
+
+df_numeric1 <- as.data.frame(lapply(df1, function(x) as.numeric(as.character(x))))
+df_numeric2 <- as.data.frame(lapply(df2, function(x) as.numeric(as.character(x))))
+
+colnames(df_numeric1) <- colnames(table.ctrl1.fit[1:25])
+colnames(df_numeric2) <- colnames(table.rnase1.fit[1:25])
+
+rownames(df_numeric1) <- rownames(table.ctrl1.fit[1:25])
+rownames(df_numeric2) <- rownames(table.rnase1.fit[1:25])
+
+```
+
+```{r}
+# T-Test pro Zeilenpaar
+t_test_ergebnisse <- lapply(seq_len(nrow(df_numeric1)), function(i) {
+  x <- as.numeric(df_numeric1[i, ])
+  y <- as.numeric(df_numeric2[i, ])
+
+  # Nur t-Test, wenn beide Gruppen mindestens 2 gültige Werte haben
+  if (sum(!is.na(x)) >= 2 && sum(!is.na(y)) >= 2) {
+    t_res <- t.test(x, y)
+    data.frame(
+      zeile = rownames(df_numeric1)[i],
+      p_wert = t_res$p.value,
+      mittelwert_df1 = mean(x, na.rm = TRUE),
+      mittelwert_df2 = mean(y, na.rm = TRUE),
+      t_wert = t_res$statistic,
+      df = t_res$parameter
+    )
+  } else {
+    NULL
+  }
+})
+
+# Entferne NULLs (wo T-Test nicht möglich war)
+t_test_ergebnisse <- Filter(Negate(is.null), t_test_ergebnisse)
+
+# Ergebnisse zusammenführen
+t_test_ergebnisse_df <- do.call(rbind, t_test_ergebnisse)
+
+# Optional: Nach p-Wert sortieren
+t_test_ergebnisse_df <- t_test_ergebnisse_df[order(t_test_ergebnisse_df$p_wert), ]
+
+# Ausgabe
+print(t_test_ergebnisse_df)
+```
 
 ***********************************************************************************************************
 ```{r}
@@ -1951,149 +2045,6 @@ fine_fit_corr <- function(pos,vector,table_rep)	 {
 4 - Quality control of fit an if possible adjustment
 ***********************************************************************************************************
 
-```{r}
-row_data1 <- as.numeric(table.ctrl1.fit["PRKDC_HUMAN", ])
-row_data2 <- as.numeric(table.rnase1.fit["PRKDC_HUMAN", ])
-
-# Plot
-plot(row_data1,
-     type = "l",                # Linienplot
-     main = "Plot for AHNK_HUMAN",
-     xlab = "Fractions",
-     ylab = "Values",
-     col = "blue",
-     lwd = 2)
-
-lines(row_data2,
-      type = "l",
-      col = "red",
-      lwd = 2)
-
-
-row_data3 <- as.numeric(table.ctrl1.fit.fine["PRKDC_HUMAN", ])
-row_data4 <- as.numeric(table.rnase1.fit.fine["PRKDC_HUMAN", ])
-
-# Plot
-plot(row_data4,
-     type = "l",                # Linienplot
-     main = "Plot for AHNK_HUMAN",
-     xlab = "Fractions",
-     ylab = "Values",
-     col = "blue",
-     lwd = 2)
-
-lines(row_data3,
-      type = "l",
-      col = "red",
-      lwd = 2)
-```
-
-```{r}
-df1 <- table.ctrl1.fit[1:25] # Gruppe A
-df2 <- table.rnase1.fit[1:25] # Gruppe B
-
-df_numeric1 <- as.data.frame(lapply(df1, function(x) as.numeric(as.character(x))))
-df_numeric2 <- as.data.frame(lapply(df2, function(x) as.numeric(as.character(x))))
-
-colnames(df_numeric1) <- colnames(table.ctrl1.fit[1:25])
-colnames(df_numeric2) <- colnames(table.rnase1.fit[1:25])
-
-rownames(df_numeric1) <- rownames(table.ctrl1.fit[1:25])
-rownames(df_numeric2) <- rownames(table.rnase1.fit[1:25])
-
-```
-
-
-```{r}
-# T-Test pro Zeilenpaar
-t_test_ergebnisse <- lapply(seq_len(nrow(df_numeric1)), function(i) {
-  x <- as.numeric(df_numeric1[i, ])
-  y <- as.numeric(df_numeric2[i, ])
-
-  # Nur t-Test, wenn beide Gruppen mindestens 2 gültige Werte haben
-  if (sum(!is.na(x)) >= 2 && sum(!is.na(y)) >= 2) {
-    t_res <- t.test(x, y)
-    data.frame(
-      zeile = rownames(df_numeric1)[i],
-      p_wert = t_res$p.value,
-      mittelwert_df1 = mean(x, na.rm = TRUE),
-      mittelwert_df2 = mean(y, na.rm = TRUE),
-      t_wert = t_res$statistic,
-      df = t_res$parameter
-    )
-  } else {
-    NULL
-  }
-})
-
-# Entferne NULLs (wo T-Test nicht möglich war)
-t_test_ergebnisse <- Filter(Negate(is.null), t_test_ergebnisse)
-
-# Ergebnisse zusammenführen
-t_test_ergebnisse_df <- do.call(rbind, t_test_ergebnisse)
-
-# Optional: Nach p-Wert sortieren
-t_test_ergebnisse_df <- t_test_ergebnisse_df[order(t_test_ergebnisse_df$p_wert), ]
-
-# Ausgabe
-print(t_test_ergebnisse_df)
-
-```
-```{r}
-df3 <- table.ctrl1.fit.fine # Gruppe A
-df4 <- table.rnase1.fit.fine[1:25] # Gruppe B
-
-df_numeric3 <- as.data.frame(lapply(df3, function(x) as.numeric(as.character(x))))
-df_numeric4 <- as.data.frame(lapply(df4, function(x) as.numeric(as.character(x))))
-
-colnames(df_numeric3) <- colnames(table.ctrl1.fit.fine[1:25])
-colnames(df_numeric4) <- colnames(table.rnase1.fit.fine[1:25])
-
-rownames(df_numeric3) <- rownames(table.ctrl1.fit.fine[1:25])
-rownames(df_numeric4) <- rownames(table.rnase1.fit.fine[1:25])
-
-```
-
-```{r}
-# T-Test pro Zeilenpaar
-t_test_ergebnisse2 <- lapply(seq_len(nrow(df_numeric3)), function(i) {
-  x <- as.numeric(df_numeric3[i, ])
-  y <- as.numeric(df_numeric4[i, ])
-
-  # Nur t-Test, wenn beide Gruppen mindestens 2 gültige Werte haben
-  if (sum(!is.na(x)) >= 2 && sum(!is.na(y)) >= 2) {
-    t_res2 <- t.test(x, y)
-    data.frame(
-      zeile = rownames(df_numeric3)[i],
-      p_wert = t_res2$p.value,
-      mittelwert_df3 = mean(x, na.rm = TRUE),
-      mittelwert_df4 = mean(y, na.rm = TRUE),
-      t_wert = t_res2$statistic,
-      df = t_res2$parameter
-    )
-  } else {
-    NULL
-  }
-})
-
-# Entferne NULLs (wo T-Test nicht möglich war)
-t_test_ergebnisse2 <- Filter(Negate(is.null), t_test_ergebnisse2)
-
-# Ergebnisse zusammenführen
-t_test_ergebnisse_df2 <- do.call(rbind, t_test_ergebnisse2)
-
-# Optional: Nach p-Wert sortieren
-t_test_ergebnisse_df2 <- t_test_ergebnisse_df2[order(t_test_ergebnisse_df2$p_wert), ]
-
-# Ausgabe
-print(t_test_ergebnisse_df2)
-
-```
-
-***********************************************************************************************************
-AB HIER WIEDER MAIWENS CODE
-***********************************************************************************************************
-
 # data used:
 # ctrl_3 and ctrl_norm_mean
 # rnase_3 and rnase_norm_mean
@@ -2102,13 +2053,9 @@ AB HIER WIEDER MAIWENS CODE
 
 ```{r}
 # Create summary tables
+ctrl_mean <- cbind(table.ctrl.fit.fine, ctrl_3[, 26:37])
 
-ctrl_mean <- ctrl_3
-ctrl_mean[1:25] <- ctrl_norm_mean[1:25]
-
-rnase_mean <- rnase_3
-rnase_mean[1:25] <- rnase_norm_mean[1:25]
-
+rnase_mean <- cbind(table.rnase.fit.fine, rnase_3[, 26:37])
 ```
 
 ***********************************************************************************************************
@@ -2217,8 +2164,188 @@ rnase_mean$pb_fit <- apply(vect, 2, function(x) {
 ```{r}
 # Create a subtable with the problematic peaks from the control table
 ctrl_mean_corr <- ctrl_mean[ctrl_mean$pb_fit == "TRUE",]
-ctrl_mean_corr <- ctrl_mean_corr[, c(1:25,28)]
+ctrl_mean_corr <- ctrl_mean_corr[, c(1:251,254)]
+
+
+rnase_mean_corr <- rnase_mean[rnase_mean$pb_fit == "TRUE",]
+rnase_mean_corr <- rnase_mean_corr[, c(1:251,254)]
 ```
+
+```{r}
+# Reihennamen beider Tabellen
+rows_rnase1 <- rownames(rnase_mean)
+rows_rnase2 <- rownames(rnase_mean_corr)
+
+rows_ctrl1 <- rownames(ctrl_mean)
+rows_ctrl2 <- rownames(ctrl_mean_corr)
+
+# Reihen, die NICHT in table2 vorkommen (nur die willst du behalten)
+rows_to_keep_rnase_rnase <- setdiff(rows_rnase1, rows_rnase2)
+rows_to_keep_rnase_ctrl <- setdiff(rows_rnase1, rows_ctrl2)
+rows_to_keep_ctrl_rnase <- setdiff(rows_ctrl1, rows_rnase2)
+rows_to_keep_ctrl_ctrl <- setdiff(rows_ctrl1, rows_ctrl2)
+
+# table1 ohne die gemeinsamen Reihen
+rnase_mean_filtert <- rnase_mean[rows_to_keep_rnase_rnase,]
+rnase_mean_filtert_final <- rnase_mean_filtert[rows_to_keep_rnase_ctrl,]
+
+ctrl_mean_filtert <- ctrl_mean[rows_to_keep_ctrl_rnase,]
+ctrl_mean_filtert_final <- ctrl_mean_filtert[rows_to_keep_ctrl_ctrl,]
+```
+
+```{r}
+# eigentlich mit ctrl_mean_filtert_final
+
+df_ctrl <- ctrl_mean_filtert_final[1:251] # Gruppe A
+df_rnase <- rnase_mean_filtert_final[1:251] # Gruppe B
+
+df_numeric_ctrl <- as.data.frame(lapply(df_ctrl, function(x) as.numeric(as.character(x))))
+df_numeric_rnase <- as.data.frame(lapply(df_rnase, function(x) as.numeric(as.character(x))))
+
+colnames(df_numeric_ctrl) <- colnames(ctrl_mean_filtert_final[1:251])
+colnames(df_numeric_rnase) <- colnames(rnase_mean_filtert_final[1:251])
+
+rownames(df_numeric_ctrl) <- rownames(ctrl_mean_filtert_final[1:251])
+rownames(df_numeric_rnase) <- rownames(rnase_mean_filtert_final[1:251])
+
+```
+
+
+```{r}
+# T-Test pro Zeilenpaar
+t_test_final <- lapply(seq_len(nrow(df_numeric_ctrl)), function(i) {
+  x <- as.numeric(df_numeric_ctrl[i, ])
+  y <- as.numeric(df_numeric_rnase[i, ])
+
+  # Nur t-Test, wenn beide Gruppen mindestens 2 gültige Werte haben
+  if (sum(!is.na(x)) >= 2 && sum(!is.na(y)) >= 2) {
+    t_res <- t.test(x, y)
+    data.frame(
+      zeile = rownames(df_numeric_ctrl)[i],
+      p_wert = t_res$p.value,
+      mittelwert = mean(x, na.rm = TRUE),
+      mittelwert = mean(y, na.rm = TRUE),
+      t_wert = t_res$statistic,
+      df = t_res$parameter
+    )
+  } else {
+    NULL
+  }
+})
+
+# Entferne NULLs (wo T-Test nicht möglich war)
+t_test_final <- Filter(Negate(is.null), t_test_final)
+
+# Ergebnisse zusammenführen
+t_test_final_df <- do.call(rbind, t_test_final)
+
+# Optional: Nach p-Wert sortieren
+t_test_final_df <- t_test_final_df[order(t_test_final_df$p_wert), ]
+
+# Ausgabe
+print(t_test_final_df)
+```
+```{r}
+#ctrl_clean <- as.data.frame(lapply(ctrl_mean_filtert_final, function(col) unlist(col)))
+#rnase_clean <- as.data.frame(lapply(rnase_mean_filtert_final, function(col) unlist(col)))
+```
+
+```{r}
+#sapply(names(ctrl_mean_filtert_final), function(col) {
+  #cor(as.numeric(ctrl_mean_filtert_final[[col]]),
+      #as.numeric(rnase_mean_filtert_final[[col]]),
+      #use = "complete.obs", method = "pearson")
+})
+
+```
+
+```{r}
+#Proportion test: Noch nicht angewannd auf Code. Nur für generellen Aufbau
+
+# Ergebnisliste
+prop_tests <- lapply(seq_len(nrow(df1)), function(i) {
+  x <- c(df1$erfolge[i], df2$erfolge[i])     # Erfolge aus beiden Gruppen
+  n <- c(df1$gesamt[i], df2$gesamt[i])       # Versuchszahlen aus beiden Gruppen
+  
+  test <- prop.test(x, n)
+  
+  data.frame(
+    zeile = i,
+    p_wert = test$p.value,
+    anteil_gruppe1 = x[1] / n[1],
+    anteil_gruppe2 = x[2] / n[2],
+    chi_squared = test$statistic,
+    df = test$parameter
+  )
+})
+
+# Ergebnis zusammenführen
+prop_test_df <- do.call(rbind, prop_tests)
+
+# Ausgabe
+print(prop_test_df)
+
+```
+
+```{r}
+pca_ctrl <- as.numeric(as.matrix(ctrl_mean_filtert_final[1:251]))
+pca_rnase <- as.numeric(as.matrix(rnase_mean_filtert_final[1:251]))
+
+pca_ctrl_clean <- pca_ctrl[!is.na(pca_ctrl)]
+pca_rnase_clean <- pca_rnase[!is.na(pca_rnase)]
+
+
+pca_result_ctrl <- prcomp(pca_ctrl_clean, center = TRUE, scale. = TRUE, )
+pca_result_rnase <- prcomp(pca_rnase_clean, center = TRUE, scale. = TRUE)
+
+# Einfaches 2D PCA-Plot
+plot(pca_result_ctrl$x[,1:2], col = "blue", pch = 16,
+     xlab = "PC1", ylab = "PC2", main = "PCA: PC1 vs PC2")
+
+# Oder mit ggplot2
+library(ggplot2)
+pca_df <- as.data.frame(pca_result_ctrl$x)
+ggplot(pca_df, aes(x = PC1, y = PC2)) +
+  geom_point() +
+  theme_minimal()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ```{r}
 # Define a counter (vect3) adapted to the size of the table ctrl_mean_corr

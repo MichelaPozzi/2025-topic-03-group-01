@@ -1639,3 +1639,364 @@ plot(row_data1, row_data2,
      lwd = 2)
 ```
 
+
+
+08.06.25
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+row_data1 <- as.numeric(table.ctrl2.fit["PRKDC_HUMAN", ])
+row_data2 <- as.numeric(table.rnase2.fit["PRKDC_HUMAN", ])
+
+# Plot
+plot(row_data1,
+     type = "l",                # Linienplot
+     main = "Plot for AHNK_HUMAN",
+     xlab = "Fractions",
+     ylab = "Values",
+     col = "blue",
+     lwd = 2)
+
+lines(row_data2,
+      type = "l",
+      col = "red",
+      lwd = 2)
+
+
+row_data3 <- as.numeric(table.ctrl1.fit.fine["PRKDC_HUMAN", ])
+row_data4 <- as.numeric(table.rnase1.fit.fine["PRKDC_HUMAN", ])
+
+# Plot
+plot(row_data4,
+     type = "l",                # Linienplot
+     main = "Plot for AHNK_HUMAN",
+     xlab = "Fractions",
+     ylab = "Values",
+     col = "blue",
+     lwd = 2)
+
+lines(row_data3,
+      type = "l",
+      col = "red",
+      lwd = 2)
+```
+
+
+```{r}
+df1 <- table.ctrl1.fit[1:25] # Gruppe A
+df2 <- table.rnase1.fit[1:25] # Gruppe B
+
+df_numeric1 <- as.data.frame(lapply(df1, function(x) as.numeric(as.character(x))))
+df_numeric2 <- as.data.frame(lapply(df2, function(x) as.numeric(as.character(x))))
+
+colnames(df_numeric1) <- colnames(table.ctrl1.fit[1:25])
+colnames(df_numeric2) <- colnames(table.rnase1.fit[1:25])
+
+rownames(df_numeric1) <- rownames(table.ctrl1.fit[1:25])
+rownames(df_numeric2) <- rownames(table.rnase1.fit[1:25])
+
+```
+
+
+```{r}
+# T-Test pro Zeilenpaar
+t_test_ergebnisse <- lapply(seq_len(nrow(df_numeric1)), function(i) {
+  x <- as.numeric(df_numeric1[i, ])
+  y <- as.numeric(df_numeric2[i, ])
+
+  # Nur t-Test, wenn beide Gruppen mindestens 2 gültige Werte haben
+  if (sum(!is.na(x)) >= 2 && sum(!is.na(y)) >= 2) {
+    t_res <- t.test(x, y)
+    data.frame(
+      zeile = rownames(df_numeric1)[i],
+      p_wert = t_res$p.value,
+      mittelwert_df1 = mean(x, na.rm = TRUE),
+      mittelwert_df2 = mean(y, na.rm = TRUE),
+      t_wert = t_res$statistic,
+      df = t_res$parameter
+    )
+  } else {
+    NULL
+  }
+})
+
+# Entferne NULLs (wo T-Test nicht möglich war)
+t_test_ergebnisse <- Filter(Negate(is.null), t_test_ergebnisse)
+
+# Ergebnisse zusammenführen
+t_test_ergebnisse_df <- do.call(rbind, t_test_ergebnisse)
+
+# Optional: Nach p-Wert sortieren
+t_test_ergebnisse_df <- t_test_ergebnisse_df[order(t_test_ergebnisse_df$p_wert), ]
+
+# Ausgabe
+print(t_test_ergebnisse_df)
+
+```
+
+`
+```{r}
+df_numeric_ctrl1 <- as.data.frame(lapply(table.ctrl1.fit.fine, function(x) as.numeric(as.character(x))))
+
+anyNA(df_numeric_ctrl1)
+
+df_numeric_rnase1 <- as.data.frame(lapply(table.rnase1.fit.fine, function(x) as.numeric(as.character(x))))
+
+colnames(df_numeric_ctrl1) <- colnames(table.ctrl1.fit.fine)
+colnames(df_numeric_rnase1) <- colnames(table.rnase1.fit.fine)
+```
+
+
+```{r}
+# T-Test pro Zeilenpaar
+t_test_ergebnisse2 <- lapply(seq_len(nrow(df_numeric_ctrl1)), function(i) {
+  x <- as.numeric(df_numeric_ctrl1[i, ])
+  y <- as.numeric(df_numeric_rnase1[i, ])
+
+  # t-Test
+    t_res <- t.test(x, y)
+    data.frame(
+      zeile = rownames(df_numeric_ctrl1)[i],
+      p_wert = t_res$p.value,
+      mittelwert_df_ctrl1 = mean(x, na.rm = TRUE),
+      mittelwert_df_rnase1 = mean(y, na.rm = TRUE),
+      t_wert = t_res$statistic,
+      df = t_res$parameter
+    )
+  })
+
+# Ergebnisse zusammenführen
+t_test_ergebnisse_df2 <- do.call(rbind, t_test_ergebnisse2)
+
+# Optional: Nach p-Wert sortieren
+t_test_ergebnisse_df2 <- t_test_ergebnisse_df2[order(t_test_ergebnisse_df2$p_wert), ]
+
+# Ausgabe
+print(t_test_ergebnisse_df2)
+
+```
+
+```{r}
+# Create summary tables
+
+ctrl_mean <- ctrl_3
+ctrl_mean[1:25] <- ctrl_norm_mean[1:25]
+
+rnase_mean <- rnase_3
+rnase_mean[1:25] <- rnase_norm_mean[1:25]
+
+row_data5 <- as.numeric(ctrl_mean["PRKDC_HUMAN", 1:25])
+row_data6 <- as.numeric(rnase_mean["PRKDC_HUMAN", 1:25])
+
+# Plot
+plot(row_data6,
+     type = "l",                # Linienplot
+     main = "Plot for AHNK_HUMAN",
+     xlab = "Fractions",
+     ylab = "Values",
+     col = "blue",
+     lwd = 2)
+
+lines(row_data5,
+      type = "l",
+      col = "red",
+      lwd = 2)
+```
+
+***********************************************************************************************************
+
+```{r}
+# Area under the curve: here, area under the respective maxima
+
+fun_gauss_area <- function(x) {
+						 C <- x[1]
+						 Mean <- x[2]
+						 Sigma <- x[3]
+						 y <- round(seq(1,25,0.2), digits=1)
+						 if (Sigma == 0) {res <- 0} else {
+						 								  res <- C * exp(-(y-Mean)**2/(2 * Sigma**2))
+						 								  }
+						 res <- round(sum(res)*0.2, digits=1)
+						 res
+						 }
+```
+
+```{r}
+# add a column with areas under each maximum and sum of the areas
+# column "fit_area"
+# column "sum_area" - the sum of the areas is expected to be close to 100 (due to the previous normalization step)
+ctrl_mean$fit_area <- apply(vect, 2, function(z) { 
+												  list_c <- as.numeric(unlist(ctrl_mean[z,"fit_c"]))
+												  list_mean <- as.numeric(unlist(ctrl_mean[z,"fit_mean"]))
+												  list_sigma <- as.numeric(unlist(ctrl_mean[z,"fit_sigma"]))
+												  n <- as.numeric(unlist(ctrl_mean[z,"nb_max"]))
+												  area <- numeric(0)
+												  vector <- numeric(0)
+												  area_list <- numeric(0)
+												  
+												  if (n == 0) {area_list <- 0} else {
+												  						for (i in 1:n) {
+												  										vector <- c(list_c[i],list_mean[i],list_sigma[i])
+												  										area <- fun_gauss_area(vector)
+												  										area_list <- c(area_list, area)
+												  										}
+												  						}
+												  area_list
+												  }
+							)
+
+ctrl_mean$sum_area <- apply(vect, 2, function(z) {
+												 list_area <- as.numeric(unlist(ctrl_mean[z,"fit_area"]))
+												 sum_area <- sum(list_area)
+												 sum_area
+												})
+
+rnase_mean$fit_area <- apply(vect, 2, function(z) { 
+												  list_c <- as.numeric(unlist(rnase_mean[z,"fit_c"]))
+												  list_mean <- as.numeric(unlist(rnase_mean[z,"fit_mean"]))
+												  list_sigma <- as.numeric(unlist(rnase_mean[z,"fit_sigma"]))
+												  n <- as.numeric(unlist(rnase_mean[z,"nb_max"]))
+												  area <- numeric(0)
+												  vector <- numeric(0)
+												  area_list <- numeric(0)
+												  
+												  if (n == 0) {area_list <- 0} else {
+												  						for (i in 1:n) {
+												  										vector <- c(list_c[i],list_mean[i],list_sigma[i])
+												  										area <- fun_gauss_area(vector)
+												  										area_list <- c(area_list, area)
+												  										}
+												  						}
+												  area_list
+												  }
+							)
+
+rnase_mean$sum_area <- apply(vect, 2, function(z) {
+												 list_area <- as.numeric(unlist(rnase_mean[z,"fit_area"]))
+												 sum_area <- sum(list_area)
+												 sum_area
+												})
+```
+
+***********************************************************************************************************
+
+```{r}
+# Label peaks which have either a residual value > 260 (no good fitting) or negative area (area under the curve < 0 after fitting)
+# add column "pb_fit"
+
+ctrl_mean$pb_fit <- apply(vect, 2, function(x) {
+												res <- as.numeric(unlist(ctrl_mean[x,"fit_res"]))
+												sigma <- as.numeric(unlist(ctrl_mean[x,"fit_sigma"]))
+												list_area <- unlist(ctrl_mean[x, "fit_area"])
+												neg <- any(list_area < 0)
+												nl <- any(sigma == 0) && (res != 0)
+												if (res > 260 || neg == "TRUE" || nl == "TRUE") {TRUE} else FALSE
+												})
+												
+rnase_mean$pb_fit <- apply(vect, 2, function(x) {
+												res <- as.numeric(unlist(rnase_mean[x,"fit_res"]))
+												sigma <- as.numeric(unlist(rnase_mean[x,"fit_sigma"]))
+												list_area <- unlist(rnase_mean[x, "fit_area"])
+												neg <- any(list_area < 0)
+												nl <- any(sigma == 0) && (res != 0)
+												if (res > 260 || neg == "TRUE" || nl == "TRUE") {TRUE} else FALSE
+												})
+```
+
+***********************************************************************************************************
+#### Make correction for peaks labeled as "problematic" peaks in the column "pb_fit"
+
+```{r}
+# Create a subtable with the problematic peaks from the control table
+#Subtable of rnase is larger than the Ctrl Subtable
+ctrl_mean_corr <- ctrl_mean[ctrl_mean$pb_fit == "TRUE",]
+ctrl_mean_corr <- ctrl_mean_corr[, c(1:25,28)]
+
+rnase_mean_corr <- rnase_mean[rnase_mean$pb_fit == "TRUE",]
+rnase_mean_corr <- rnase_mean_corr[, c(1:25,28)]
+```
+
+```{r}
+# Reihennamen beider Tabellen
+rows_rnase1 <- rownames(rnase_mean)
+rows_rnase2 <- rownames(rnase_mean_corr)
+
+# Reihen, die NICHT in table2 vorkommen (nur die willst du behalten)
+rows_to_keep <- setdiff(rows_rnase1, rows_rnase2)
+
+# table1 ohne die gemeinsamen Reihen
+rnase_mean_filtert <- rnase_mean[rows_to_keep,]
+
+# Reihennamen beider Tabellen
+rows_ctrl1 <- rownames(ctrl_mean)
+rows_ctrl2 <- rownames(ctrl_mean_corr)
+
+# Reihen, die NICHT in table2 vorkommen (nur die willst du behalten)
+rows_to_keep <- setdiff(rows_rnase1, rows_rnase2)
+
+# table1 ohne die gemeinsamen Reihen
+ctrl_mean_filtert <- ctrl_mean[rows_to_keep,]
+```
+
+```{r}
+df_ctrl <- ctrl_mean_filtert[1:25] # Gruppe A
+df_rnase <- rnase_mean_filtert[1:25] # Gruppe B
+
+df_numeric_ctrl <- as.data.frame(lapply(df_ctrl, function(x) as.numeric(as.character(x))))
+df_numeric_rnase <- as.data.frame(lapply(df_rnase, function(x) as.numeric(as.character(x))))
+
+colnames(df_numeric_ctrl) <- colnames(ctrl_mean_filtert[1:25])
+colnames(df_numeric_rnase) <- colnames(rnase_mean_filtert[1:25])
+
+rownames(df_numeric_ctrl) <- rownames(ctrl_mean_filtert[1:25])
+rownames(df_numeric_rnase) <- rownames(rnase_mean_filtert[1:25])
+
+```
+
+
+```{r}
+# T-Test pro Zeilenpaar
+t_test_ergebnisse1 <- lapply(seq_len(nrow(df_numeric_ctrl)), function(i) {
+  x <- as.numeric(df_numeric_ctrl[i, ])
+  y <- as.numeric(df_numeric_rnase[i, ])
+
+  # t-Test
+    t_res <- t.test(x, y)
+    data.frame(
+      zeile = rownames(df_numeric_ctrl)[i],
+      p_wert = t_res$p.value,
+      mittelwert_df_ctrl = mean(x, na.rm = TRUE),
+      mittelwert_df_rnase = mean(y, na.rm = TRUE),
+      t_wert = t_res$statistic,
+      df = t_res$parameter
+    )
+  })
+
+# Ergebnisse zusammenführen
+t_test_ergebnisse_df1 <- do.call(rbind, t_test_ergebnisse1)
+
+# Optional: Nach p-Wert sortieren
+t_test_ergebnisse_df1 <- t_test_ergebnisse_df1[order(t_test_ergebnisse_df1$p_wert), ]
+
+# Ausgabe
+print(t_test_ergebnisse_df1)
+
+```
+
+
+
+
+
+
+
