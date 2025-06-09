@@ -13,3 +13,5 @@ Questions:
 
 10. Mein t-Test gibt immer nur p-Werte von 1 an. Das macht aber egentlich keinen Sinn. Warum macht er das? (2196-2245)
 --> t-test in Zeile 1955 bis 2003
+
+11. Code vom Proportion test --> oder vielleicht Correllation test besser?
