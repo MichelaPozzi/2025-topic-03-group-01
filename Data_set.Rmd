@@ -2245,35 +2245,26 @@ t_test_final_df <- t_test_final_df[order(t_test_final_df$p_wert), ]
 # Ausgabe
 print(t_test_final_df)
 ```
-```{r}
-#ctrl_clean <- as.data.frame(lapply(ctrl_mean_filtert_final, function(col) unlist(col)))
-#rnase_clean <- as.data.frame(lapply(rnase_mean_filtert_final, function(col) unlist(col)))
-```
-
-```{r}
-#sapply(names(ctrl_mean_filtert_final), function(col) {
-  #cor(as.numeric(ctrl_mean_filtert_final[[col]]),
-      #as.numeric(rnase_mean_filtert_final[[col]]),
-      #use = "complete.obs", method = "pearson")
-#})
-
-```
 
 ```{r}
 #Proportion test: Noch nicht angewannd auf Code. Nur für generellen Aufbau
+#Ein Proportionstest prüft, ob ein oder mehrere beobachtete Anteile (Proportionen) von Erfolgen bzw. bestimmten Ereignissen signifikant von einer erwarteten oder einer anderen Proportion abweichen
 
 # Ergebnisliste
-prop_tests <- lapply(seq_len(nrow(df1)), function(i) {
-  x <- c(df1$erfolge[i], df2$erfolge[i])     # Erfolge aus beiden Gruppen
-  n <- c(df1$gesamt[i], df2$gesamt[i])       # Versuchszahlen aus beiden Gruppen
+prop_tests <- lapply(seq_len(nrow(ctrl_mean_filtert_final)), function(i) {
+  
+  x1 <- ctrl_mean_filtert_final$maxima[i]     # Erfolge aus beiden Gruppen
+  n1 <- ctrl_mean_filtert_final$ctrl_max[i]         # Versuchszahlen aus beiden Gruppen
+  x2 <- rnase_mean_filtert_final$maxima[i]       # Erfolge aus beiden Gruppen
+  n2 <- rnase_mean_filtert_final$ctrl_max[i]  
   
   test <- prop.test(x, n)
   
   data.frame(
     zeile = i,
     p_wert = test$p.value,
-    anteil_gruppe1 = x[1] / n[1],
-    anteil_gruppe2 = x[2] / n[2],
+    anteil_gruppe1 = x1 / n1,
+    anteil_gruppe2 = x2 / n2,
     chi_squared = test$statistic,
     df = test$parameter
   )
@@ -2286,6 +2277,42 @@ prop_test_df <- do.call(rbind, prop_tests)
 print(prop_test_df)
 
 ```
+
+```{r}
+# Angenommen, df1 und df2 sind deine beiden DataFrames
+# Und sie enthalten z. B. die Spalten: "maxima" (Erfolge), "nb_max" (Gesamtanzahl)
+
+prop_tests <- lapply(seq_len(nrow(ctrl_mean_filtert_final)), function(i) {
+  # Hole Werte aus beiden DataFrames
+  x1 <- as.numeric(ctrl_mean_filtert_final$maxima[i])
+  x2 <- as.numeric(rnase_mean_filtert_final$maxima[i])
+  n1 <- as.numeric(ctrl_mean_filtert_final$nb_max[i])
+  n2 <- as.numeric(rnase_mean_filtert_final$nb_max[i])
+  
+  # Gültigkeit prüfen
+  if (any(is.na(c(x1, x2, n1, n2))) || any(c(x1, x2, n1, n2) < 0)) {
+    return( c(x1, x2, n1, n2) <- 0)
+  }
+
+  # Proportionstest durchführen
+  test <- prop.test(x = c(x1, x2), n = c(n1, n2))
+  
+  # Ergebnis als DataFrame-Zeile zurückgeben
+  data.frame(
+    zeile = i,
+    p_wert = test$p.value,
+    anteil_df1 = x1 / n1,
+    anteil_df2 = x2 / n2,
+    chi_squared = test$statistic,
+    df = test$parameter
+  )
+})
+
+# Liste in DataFrame umwandeln
+prop_test_df <- do.call(rbind, prop_tests)
+
+```
+
 
 ```{r}
 # Nur numerische Spalten behalten
@@ -2308,7 +2335,8 @@ plot(pca_result_rnase$x[,1:2], col = "blue", pch = 16,
 ```
 ```{r}
 #chech which PCs have the most variance
-summary(pca_result_ctrl)
+#summary(pca_result_ctrl)
+#summary(pca_result_rnase)
 ```
 
 ```{r}
@@ -2410,474 +2438,4 @@ fviz_cluster(km_result_rnase, data = pca_rnase_pc2_pc3,
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-```{r}
-# Define a counter (vect3) adapted to the size of the table ctrl_mean_corr
-# It will be used in the function "apply" below.
-vect3 <- matrix(c(1:dim(ctrl_mean_corr)[1]), 1, dim(ctrl_mean_corr)[1])
-
-ctrl_mean_corr$fit_param_corr <- apply(vect3, 2, function(x) {
-															  list_mean <- as.numeric(unlist(ctrl_mean_corr[x,"ctrl_max"]))
-															  
-															  list_c <- ctrl_mean_corr[x,as.numeric(unlist(ctrl_mean_corr[x,]$ctrl_max))]
-															  
-															  n <- length(list_c)
-															  
-															  fit_param <- numeric(0)
-															  
-															  if (n == 0) {fit_param <- 0} else {
-															  		          for (i in 1:n) {
-															  				  		    # use raw data to fit
-															  				  		    z <- c(1:25)
-															  				  		    df.z <- ctrl_mean_corr[x,1:25]
-															  				  
-															  				  		    # values after maxima
-															  				  	      if (list_mean[i] == 25) {df.z <- df.z} else {
-															  				  		                            p <- list_mean[i]+1
-															  				  		                            df.z[p:25] <- (df.z[p:25]-df.z[(list_mean[i]):24]<=0)*df.z[p:25]
-															  				  		                            m <- which(df.z[p:25] == 0)
-															  				  		                            if (length(m) == 0) {df.z[p:25] <- df.z[p:25]} else {df.z[(p+min(m)-1):25] <- 0}
-															  				  		                            }
-															  				  
-															  				  		    # values before maxima
-															  				 		      p <- list_mean[i]-1
-															  				  		    df.z[1:p] <- (df.z[2:list_mean[i]]-df.z[1:p]>=0)*df.z[1:p]
-															  				  		    m <- which(df.z[1:p] == 0)      
-															  				  		    if (length(m) == 0) {df.z[1:p] <- df.z[1:p]} else {df.z[1:max(m)] <- 0}
-															  				  
-															  				  		    # function to be minimized
-															  				  		    fun1 <- function(q) {
-															  				  					                 C1 <- q[1]
-															  				  					                 mean1 <- q[2]
-															  				  					                 sigma1 <- q[3]
-															  				  					                 res <- (C1 * exp(-(z-mean1)**2/(2 * sigma1**2))) - df.z
-															  				 				 	                   sum(res * res)
-															  				  					                 }
-																			  
-																			  		      # find fit parameters
-																			  		      vector <- c(list_c[i], list_mean[i],2)
-															  				  		    fit <- optim(vector, fun1, method="BFGS", control=list(reltol=1e-9))
-															  				  		    fit_param <- c(fit_param, fit$par)
-															  				  		    fit_param <- round(as.numeric(fit_param), digits=1)
-															  				  		    } # end for loop
-															  					
-															  					    fit_param <- unique(matrix(fit_param,n, 3, byrow=TRUE))
-															  					    fit_param <- as.vector(t(fit_param))
-															  					    fit_param <- as.data.frame(matrix(fit_param,1, length(fit_param), byrow=TRUE))
-															  					    }
-															                fit_param
-															  })
-```
-
-```{r}
-# Distribute the corrected fit parameters in respective columns for later usage.
-ctrl_mean_corr$fit_c_corr <- apply(vect3, 2, function(x) {
-															 list_param <- unlist(ctrl_mean_corr[x, "fit_param_corr"])
-															 n <- length(list_param)/3
-															 fit_c <- unlist(matrix(list_param,n, 3, byrow=TRUE)[,1])
-															 fit_c <- as.data.frame(matrix(fit_c,1, length(fit_c), byrow=TRUE))
-															 fit_c
-															 })
-
-ctrl_mean_corr$fit_mean_corr <- apply(vect3, 2, function(x) {
-															 list_param <- unlist(ctrl_mean_corr[x, "fit_param_corr"])
-															 n <- length(list_param)/3
-															 fit_mean <- unlist(matrix(list_param,n, 3, byrow=TRUE)[,2])
-															 fit_mean <- as.data.frame(matrix(fit_mean,1, length(fit_mean), byrow=TRUE))
-															 fit_mean
-															 })
-
-ctrl_mean_corr$fit_sigma_corr <- apply(vect3, 2, function(x) {
-															 list_param <- unlist(ctrl_mean_corr[x, "fit_param_corr"])
-															 n <- length(list_param)/3
-															 fit_s <- unlist(matrix(list_param,n, 3, byrow=TRUE)[,3])
-															 fit_s <- as.data.frame(matrix(fit_s,1, length(fit_s), byrow=TRUE))
-															 fit_s
-															 })
-```
-
-```{r}
-# Function to calculate the area under the curve at a specific peak
-# as defined by the parameters C, Mean and Sigma
-gauss_area <- function(x) {
-  C <- x[1]
-  Mean <- x[2]
-  Sigma <- x[3]
-  y <- round(seq(1,25,0.2), digits=1)
-  
-  res <- C * exp(-(y-Mean)**2/(2 * Sigma**2))
-  
-  res <- round(sum(res)*0.2, digits=1)
-  res
-}
-
-ctrl_mean_corr$fit_area <- apply(vect3, 2, function(t) { 
-												  list <- as.numeric(unlist(ctrl_mean_corr[t,"fit_param_corr"]))
-												  n <- length(list)/3
-												  vector <- numeric(0)
-												  area_list <- numeric(0)
-												  
-												  for (i in 1:n) {
-												  				  vector <- list[(i*3-2):(i*3)]
-												  				  area <- gauss_area(vector)
-												  				  area_list <- c(area_list, area)
-												  				  }
-												  unlist(area_list)
-												  area_list <- as.data.frame(matrix(area_list,1, length(area_list), byrow=TRUE))
-												  area_list
-												  })
-```
-
-***********************************************************************************************************
-
-```{r}
-# Same for the rnase table
-
-rnase_mean_corr <- rnase_mean[rnase_mean$pb_fit == "TRUE",]
-rnase_mean_corr <- rnase_mean_corr[, c(1:25,28)]
-
-vect4 <- matrix(c(1:dim(rnase_mean_corr)[1]), 1, dim(rnase_mean_corr)[1])
-
-rnase_mean_corr$fit_param_corr <- apply(vect4, 2, function(x) {
-															  list_mean <- as.numeric(unlist(rnase_mean_corr[x,"rnase_max"]))
-															  
-															  list_c <- rnase_mean_corr[x,as.numeric(unlist(rnase_mean_corr[x,]$rnase_max))]
-															  
-															  n <- length(list_c)
-															  
-															  fit_param <- numeric(0)
-															  
-															  if (n == 0) {fit_param <- 0} else {
-															  		for (i in 1:n) {
-															  				  		# raw data to fit
-															  				  		z <- c(1:25)
-															  				  		df.z <- rnase_mean_corr[x,1:25]
-															  				  
-															  				  		
-															  				  		# values after maxima
-															  				  		if (list_mean[i] == 25) {df.z <- df.z} else {
-															  				  		p <- list_mean[i]+1
-															  				  		df.z[p:25] <- (df.z[p:25]-df.z[(list_mean[i]):24]<=0)*df.z[p:25]
-															  				  		m <- which(df.z[p:25] == 0)
-															  				  		if (length(m) == 0) {df.z[p:25] <- df.z[p:25]} else {df.z[(p+min(m)-1):25] <- 0}}
-															  				  
-															  				  		# values before maxima
-															  				 		 p <- list_mean[i]-1
-															  				  		df.z[1:p] <- (df.z[2:list_mean[i]]-df.z[1:p]>=0)*df.z[1:p]
-															  				  		m <- which(df.z[1:p] == 0)
-															  				  		if (length(m) == 0) {df.z[1:p] <- df.z[1:p]} else {df.z[1:max(m)] <- 0}
-															  				  
-															  				  		# function to be minimized
-															  				  		f1 <- function(q) {
-															  				  					C1 <- q[1]
-															  				  					mean1 <- q[2]
-															  				  					sigma1 <- q[3]
-															  				  					res <- (C1 * exp(-(z-mean1)**2/(2 * sigma1**2))) - df.z
-															  				 				 	sum(res * res)
-															  				  					}
-																			  
-																			  		# find fit parameters
-																			  		vector <- c(list_c[i], list_mean[i],2)
-															  				  		fit <- optim(vector, f1, method="BFGS", control=list(reltol=1e-9))
-															  				  		fit_param <- c(fit_param, fit$par)
-															  				  		fit_param <- round(as.numeric(fit_param), digits=1)
-															  				  		}
-															  					
-															            fit_param <- unique(matrix(fit_param,n, 3, byrow=TRUE))
-															            fit_param <- (as.vector(t(fit_param)))
-															            fit_param <- as.data.frame(matrix(fit_param,1, length(fit_param), byrow=TRUE)) 
-															  					}
-															  fit_param
-															  })
-```
-
-```{r}
-rnase_mean_corr$fit_c_corr <- apply(vect4, 2, function(x) {
-															 list_param <- unlist(rnase_mean_corr[x, "fit_param_corr"])
-															 n <- length(list_param)/3
-															 fit_c <- unlist(matrix(list_param,n, 3, byrow=TRUE)[,1])
-															 fit_c <- as.data.frame(matrix(fit_c,1, length(fit_c), byrow=TRUE))
-															 fit_c
-															 })
-
-rnase_mean_corr$fit_mean_corr <- apply(vect4, 2, function(x) {
-															 list_param <- unlist(rnase_mean_corr[x, "fit_param_corr"])
-															 n <- length(list_param)/3
-															 fit_mean <- unlist(matrix(list_param,n, 3, byrow=TRUE)[,2])
-															 fit_mean <- as.data.frame(matrix(fit_mean,1, length(fit_mean), byrow=TRUE))
-															 fit_mean
-															 })
-
-rnase_mean_corr$fit_sigma_corr <- apply(vect4, 2, function(x) {
-															 list_param <- unlist(rnase_mean_corr[x, "fit_param_corr"])
-															 n <- length(list_param)/3
-															 fit_s <- unlist(matrix(list_param,n, 3, byrow=TRUE)[,3])
-															 fit_s <- as.data.frame(matrix(fit_s,1, length(fit_s), byrow=TRUE))
-															 fit_s
-															 })
-
-rnase_mean_corr$fit_area <- apply(vect4, 2, function(t) { 
-												  list <- as.numeric(unlist(rnase_mean_corr[t,"fit_param_corr"]))
-												  n <- length(list)/3
-												  vector <- numeric(0)
-												  area_list <- numeric(0)
-												  
-												  for (i in 1:n) {
-												  				  vector <- list[(i*3-2):(i*3)]
-												  				  area <- gauss_area(vector)
-												  				  area_list <- c(area_list, area)
-												  				  }
-												  unlist(area_list)
-												  area_list <- as.data.frame(matrix(area_list,1, length(area_list), byrow=TRUE))
-												  area_list
-												  })
-```
-
-***********************************************************************************************************
-
-```{r}
-# Take care of the edge (for mean values <1 or >25)
-
-ctrl_mean_corr$fit_mean_fxn <- apply(vect3, 2, function(z) {
-												   list_c <- as.numeric(unlist(ctrl_mean_corr[z,"fit_c_corr"]))
-												   list_mean <- as.numeric(unlist(ctrl_mean_corr[z,"fit_mean_corr"]))
-												   list_sigma <- as.numeric(unlist(ctrl_mean_corr[z,"fit_sigma_corr"]))
-												   n <- length(list_c)
-												   if (list_mean[n] > 25) {list_mean[n] <- 25}
-												   if (list_mean[1] < 1) {list_mean[1] <- 1}
-												   list_mean <- as.data.frame(matrix(list_mean,1, length(list_mean), byrow=TRUE))
-												   list_mean
-												   })
-												   
-ctrl_mean_corr$fit_c_fxn <- apply(vect3, 2, function(z) {
-												   list_c <- as.numeric(unlist(ctrl_mean_corr[z,"fit_c_corr"]))
-												   list_mean <- as.numeric(unlist(ctrl_mean_corr[z,"fit_mean_corr"]))
-												   list_sigma <- as.numeric(unlist(ctrl_mean_corr[z,"fit_sigma_corr"]))
-												   n <- length(list_c)
-												   if (list_mean[n] > 25) {
-												   						   q <- c(list_c[n],list_mean[n],list_sigma[n])
-															 			   list_c[n] <- (q[1] * exp(-(25-q[2])**2/(2 * q[3]**2)))
-												   						   }
-												   if (list_mean[1] < 1) {
-												   						  q <- c(list_c[1],list_mean[1],list_sigma[1])
-															 			  list_c[1] <- (q[1] * exp(-(1-q[2])**2/(2 * q[3]**2)))
-												   						  }
-												   list_c <- as.data.frame(matrix(list_c,1, length(list_c), byrow=TRUE))
-												   list_c
-												   })												   
-
-rnase_mean_corr$fit_mean_fxn <- apply(vect4, 2, function(z) {
-												   list_c <- as.numeric(unlist(rnase_mean_corr[z,"fit_c_corr"]))
-												   list_mean <- as.numeric(unlist(rnase_mean_corr[z,"fit_mean_corr"]))
-												   list_sigma <- as.numeric(unlist(rnase_mean_corr[z,"fit_sigma_corr"]))
-												   n <- length(list_c)
-												   if (list_mean[n] > 25) {list_mean[n] <- 25}
-												   if (list_mean[1] < 1) {list_mean[1] <- 1}
-												   list_mean <- as.data.frame(matrix(list_mean,1, length(list_mean), byrow=TRUE))
-												   list_mean
-												   })
-												   
-rnase_mean_corr$fit_c_fxn <- apply(vect4, 2, function(z) {
-												   list_c <- as.numeric(unlist(rnase_mean_corr[z,"fit_c_corr"]))
-												   list_mean <- as.numeric(unlist(rnase_mean_corr[z,"fit_mean_corr"]))
-												   list_sigma <- as.numeric(unlist(rnase_mean_corr[z,"fit_sigma_corr"]))
-												   n <- length(list_c)
-												   if (list_mean[n] > 25) {
-												   						   q <- c(list_c[n],list_mean[n],list_sigma[n])
-															 			   list_c[n] <- (q[1] * exp(-(25-q[2])**2/(2 * q[3]**2)))
-															 			   }
-												   if (list_mean[1] < 1) {
-												   						  q <- c(list_c[1],list_mean[1],list_sigma[1])
-															 			  list_c[1] <- (q[1] * exp(-(1-q[2])**2/(2 * q[3]**2)))
-												   						  }
-												   list_c <- as.data.frame(matrix(list_c,1, length(list_c), byrow=TRUE))
-												   list_c
-												   })
-```
-
-***********************************************************************************************************
-# Assemble now all the information
-
-```{r}
-# Parts from the original table
-table_ctrl_mean <- ctrl_mean[1:25]
-table_ctrl_mean$ctrl_max <- ctrl_mean$ctrl_max
-table_ctrl_mean$nb_max <- ctrl_mean$nb_max
-table_ctrl_mean$fit_c <- ctrl_mean$fit_c
-table_ctrl_mean$fit_c_fxn <- ctrl_mean$fit_c_fxn
-table_ctrl_mean$fit_mean <- ctrl_mean$fit_mean
-table_ctrl_mean$fit_mean_fxn <- ctrl_mean$fit_mean_fxn
-table_ctrl_mean$fit_sigma <- ctrl_mean$fit_sigma
-table_ctrl_mean$fit_res <- ctrl_mean$fit_res
-table_ctrl_mean$fit_area <- ctrl_mean$fit_area
-table_ctrl_mean$sum_area <- ctrl_mean$sum_area
-table_ctrl_mean$fitted <- ctrl_mean$fitted
-table_ctrl_mean$pb_fit <- ctrl_mean$pb_fit
-```
-
-```{r}
-# Parts from the adjusted table
-table_ctrl_mean$ctrl_max_corr <- apply(vect, 2, function(x) {
-															 pos <- rownames(table_ctrl_mean[x,])
-															 max <- 1
-															 if (dim(ctrl_mean_corr)[1] == 0){
-															 max <- numeric()
-															 } else {
-															        max <- as.numeric(unlist(ctrl_mean_corr[pos,]$ctrl_max)*(table_ctrl_mean[pos,"pb_fit"] == "TRUE"))
-															        }
-															        max
-															 })
-
-table_ctrl_mean$fit_c_corr <- apply(vect, 2, function(x) {
-															 pos <- rownames(table_ctrl_mean[x,])
-															 fit_c <- as.numeric(unlist(ctrl_mean_corr[pos,]$fit_c_corr)*(table_ctrl_mean[pos,"pb_fit"] == "TRUE"))
-															 fit_c
-															 })
-
-table_ctrl_mean$fit_mean_corr <- apply(vect, 2, function(x) {
-															 pos <- rownames(table_ctrl_mean[x,])
-															 fit_mean <- as.numeric(unlist(ctrl_mean_corr[pos,]$fit_mean_corr)*(table_ctrl_mean[pos,"pb_fit"] == "TRUE"))
-															 fit_mean
-															 })
-															 
-table_ctrl_mean$fit_sigma_corr <- apply(vect, 2, function(x) {
-															 pos <- rownames(table_ctrl_mean[x,])
-															 fit_sigma <- as.numeric(unlist(ctrl_mean_corr[pos,]$fit_sigma_corr)*(table_ctrl_mean[pos,"pb_fit"] == "TRUE"))
-															 fit_sigma
-															 })
-															 
-table_ctrl_mean$fit_area_corr <- apply(vect, 2, function(x) {
-															 pos <- rownames(table_ctrl_mean[x,])
-															 fit_area <- as.numeric(unlist(ctrl_mean_corr[pos,]$fit_area)*(table_ctrl_mean[pos,"pb_fit"] == "TRUE"))
-															 fit_area
-															 })															 
-
-table_ctrl_mean$fit_mean_fxn_corr <- apply(vect, 2, function(x) {
-															 pos <- rownames(table_ctrl_mean[x,])
-															 fit_mean_fxn <- as.numeric(unlist(ctrl_mean_corr[pos,]$fit_mean_fxn)*(table_ctrl_mean[pos,"pb_fit"] == "TRUE"))
-															 fit_mean_fxn
-															 })
-
-table_ctrl_mean$fit_c_fxn_corr <- apply(vect, 2, function(x) {
-															 pos <- rownames(table_ctrl_mean[x,])
-															 fit_c_fxn <- as.numeric(unlist(ctrl_mean_corr[pos,]$fit_c_fxn)*(table_ctrl_mean[pos,"pb_fit"] == "TRUE"))
-															 fit_c_fxn
-															 })
-
-table_ctrl_mean$nb_max <- apply(vect, 2, function(x) {
-												 		if (table_ctrl_mean[x,"pb_fit"] == "FALSE") {ls_max <- as.numeric(unlist(table_ctrl_mean[x,"fit_mean_fxn"])) }
-												 		else {ls_max <- as.numeric(unlist(table_ctrl_mean[x,"fit_mean_fxn_corr"]))}
-												 		
-												 		n = length(ls_max)
-												 		if (n == 0) {0} else {
-												 							  if ((n == 1) && (ls_max == 0)) {0} else {n}
-												 							  }
-												 		})
-```
-
-# Same procedure for the RNase table
-
-```{r}
-# Parts from the original table
-table_rnase_mean <- rnase_mean[1:25]
-table_rnase_mean$rnase_max <- rnase_mean$rnase_max
-table_rnase_mean$nb_max <- rnase_mean$nb_max
-table_rnase_mean$fit_c <- rnase_mean$fit_c
-table_rnase_mean$fit_c_fxn <- rnase_mean$fit_c_fxn
-table_rnase_mean$fit_mean <- rnase_mean$fit_mean
-table_rnase_mean$fit_mean_fxn <- rnase_mean$fit_mean_fxn
-table_rnase_mean$fit_sigma <- rnase_mean$fit_sigma
-table_rnase_mean$fit_res <- rnase_mean$fit_res
-table_rnase_mean$fit_area <- rnase_mean$fit_area
-table_rnase_mean$sum_area <- rnase_mean$sum_area
-table_rnase_mean$fitted <- rnase_mean$fitted
-table_rnase_mean$pb_fit <- rnase_mean$pb_fit
-```
-
-```{r}
-# Parts from the adjusted table
-table_rnase_mean$rnase_max_corr <- apply(vect, 2, function(x) {
-															 pos <- rownames(table_rnase_mean[x,])
-															 max <- as.numeric(unlist(rnase_mean_corr[pos,]$rnase_max)*(table_rnase_mean[pos,"pb_fit"] == "TRUE"))
-															 max
-															 })
-
-table_rnase_mean$fit_c_corr <- apply(vect, 2, function(x) {
-															 pos <- rownames(table_rnase_mean[x,])
-															 fit_c <- as.numeric(unlist(rnase_mean_corr[pos,]$fit_c_corr)*(table_rnase_mean[pos,"pb_fit"] == "TRUE"))
-															 fit_c
-															 })
-
-table_rnase_mean$fit_mean_corr <- apply(vect, 2, function(x) {
-															 pos <- rownames(table_rnase_mean[x,])
-															 fit_mean <- as.numeric(unlist(rnase_mean_corr[pos,]$fit_mean_corr)*(table_rnase_mean[pos,"pb_fit"] == "TRUE"))
-															 fit_mean
-															 })
-															 
-table_rnase_mean$fit_sigma_corr <- apply(vect, 2, function(x) {
-															 pos <- rownames(table_rnase_mean[x,])
-															 fit_sigma <- as.numeric(unlist(rnase_mean_corr[pos,]$fit_sigma_corr)*(table_rnase_mean[pos,"pb_fit"] == "TRUE"))
-															 fit_sigma
-															 })
-															 
-table_rnase_mean$fit_area_corr <- apply(vect, 2, function(x) {
-															 pos <- rownames(table_rnase_mean[x,])
-															 fit_area <- as.numeric(unlist(rnase_mean_corr[pos,]$fit_area)*(table_rnase_mean[pos,"pb_fit"] == "TRUE"))
-															 fit_area
-															 })
-
-table_rnase_mean$fit_mean_fxn_corr <- apply(vect, 2, function(x) {
-															 pos <- rownames(table_rnase_mean[x,])
-															 fit_mean_fxn <- as.numeric(unlist(rnase_mean_corr[pos,]$fit_mean_fxn)*(table_rnase_mean[pos,"pb_fit"] == "TRUE"))
-															 fit_mean_fxn
-															 })
-
-table_rnase_mean$fit_c_fxn_corr <- apply(vect, 2, function(x) {
-															 pos <- rownames(table_rnase_mean[x,])
-															 fit_c_fxn <- as.numeric(unlist(rnase_mean_corr[pos,]$fit_c_fxn)*(table_rnase_mean[pos,"pb_fit"] == "TRUE"))
-															 fit_c_fxn
-															 })
-															 
-table_rnase_mean$nb_max <- apply(vect, 2, function(x) {
-												 		if (table_rnase_mean[x,"pb_fit"] == "FALSE") {ls_max <- as.numeric(unlist(table_rnase_mean[x,"fit_mean_fxn"])) }
-												 		else {ls_max <- as.numeric(unlist(table_rnase_mean[x,"fit_mean_fxn_corr"]))}
-												 		
-												 		n = length(ls_max)
-												 		if (n == 0) {0} else {
-												 							  if ((n == 1) && (ls_max == 0)) {0} else {n}
-												 							  }
-												 		})
-```
-
-***********************************************************************************************************
-5 - Asses p-values and FDR-adjusted p-values for each maximum
-***********************************************************************************************************
 
