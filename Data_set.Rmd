@@ -2255,7 +2255,7 @@ print(t_test_final_df)
   #cor(as.numeric(ctrl_mean_filtert_final[[col]]),
       #as.numeric(rnase_mean_filtert_final[[col]]),
       #use = "complete.obs", method = "pearson")
-})
+#})
 
 ```
 
@@ -2288,31 +2288,123 @@ print(prop_test_df)
 ```
 
 ```{r}
-pca_ctrl <- as.numeric(as.matrix(ctrl_mean_filtert_final[1:251]))
-pca_rnase <- as.numeric(as.matrix(rnase_mean_filtert_final[1:251]))
+# Nur numerische Spalten behalten
+pca_ctrl_numeric <- ctrl_mean_filtert_final[1:251, sapply(ctrl_mean_filtert_final, is.numeric)]
+pca_rnase_numeric <- rnase_mean_filtert_final[1:251, sapply(rnase_mean_filtert_final, is.numeric)]
 
-pca_ctrl_clean <- pca_ctrl[!is.na(pca_ctrl)]
-pca_rnase_clean <- pca_rnase[!is.na(pca_rnase)]
-
+# Zeilen mit NAs entfernen
+pca_ctrl_clean <- pca_ctrl_numeric[complete.cases(pca_ctrl_numeric), ]
+pca_rnase_clean <- pca_rnase_numeric[complete.cases(pca_rnase_numeric), ]
 
 pca_result_ctrl <- prcomp(pca_ctrl_clean, center = TRUE, scale. = TRUE, )
 pca_result_rnase <- prcomp(pca_rnase_clean, center = TRUE, scale. = TRUE)
 
 # Einfaches 2D PCA-Plot
 plot(pca_result_ctrl$x[,1:2], col = "blue", pch = 16,
-     xlab = "PC1", ylab = "PC2", main = "PCA: PC1 vs PC2")
+     xlab = "PC1", ylab = "PC2", main = "PCA: PC1 vs PC2 CTRL")
 
-# Oder mit ggplot2
-library(ggplot2)
-pca_df <- as.data.frame(pca_result_ctrl$x)
-ggplot(pca_df, aes(x = PC1, y = PC2)) +
-  geom_point() +
-  theme_minimal()
+plot(pca_result_rnase$x[,1:2], col = "blue", pch = 16,
+     xlab = "PC1", ylab = "PC2", main = "PCA: PC1 vs PC2 RNASE")
+```
+```{r}
+#chech which PCs have the most variance
+summary(pca_result_ctrl)
+```
+
+```{r}
+#plot PC1 with PC3
+plot(pca_result_ctrl$x[,c(1, 3)], col = "blue", pch = 16,
+     xlab = "PC1", ylab = "PC3", main = "PCA: PC1 vs PC3 CTRL")
+
+plot(pca_result_rnase$x[,c(1, 3)], col = "blue", pch = 16,
+     xlab = "PC1", ylab = "PC3", main = "PCA: PC1 vs PC3 RNASE")
+
+
+#plot PC2 with PC3
+plot(pca_result_ctrl$x[,2:3], col = "blue", pch = 16,
+     xlab = "PC2", ylab = "PC3", main = "PCA: PC2 vs PC3 CTRL")
+
+plot(pca_result_rnase$x[,2:3], col = "blue", pch = 16,
+     xlab = "PC2", ylab = "PC3", main = "PCA: PC2 vs PC3 RNASE")
 ```
 
 
+```{r}
+plot(pca_result_ctrl, type = "l", main = "Elbow-Plot CTRL")
+plot(pca_result_rnase, type = "l", main = "Elbow-Plot RNASE")
+```
 
+```{r}
+pca_ctrl_pc1_pc2 <- as.data.frame(pca_result_ctrl$x[, 1:2])
+pca_ctrl_pc1_pc3 <- as.data.frame(pca_result_ctrl$x[, c(1,3)])
+pca_ctrl_pc2_pc3 <- as.data.frame(pca_result_ctrl$x[, 2:3])
 
+pca_rnase_pc1_pc2 <- as.data.frame(pca_result_rnase$x[, 1:2])
+pca_rnase_pc1_pc3 <- as.data.frame(pca_result_rnase$x[, c(1,3)])
+pca_rnase_pc2_pc3 <- as.data.frame(pca_result_rnase$x[, 2:3])
+```
+
+```{r}
+library(factoextra)
+
+fviz_nbclust(pca_ctrl_pc1_pc2, kmeans, method = "silhouette") +
+  labs(title = "Silhouette-Methode CTRL PC1/PC2") +
+  theme_minimal()
+fviz_nbclust(pca_ctrl_pc1_pc3, kmeans, method = "silhouette") +
+  labs(title = "Silhouette-Methode CTRL PC1/PC2") +
+  theme_minimal()
+fviz_nbclust(pca_ctrl_pc2_pc3, kmeans, method = "silhouette") +
+  labs(title = "Silhouette-Methode CTRL PC2/PC3") +
+  theme_minimal()
+
+fviz_nbclust(pca_rnase_pc1_pc2, kmeans, method = "silhouette") +
+  labs(title = "Silhouette-Methode RNASE PC1/PC2") +
+  theme_minimal()
+fviz_nbclust(pca_rnase_pc1_pc3, kmeans, method = "silhouette") +
+  labs(title = "Silhouette-Methode RNASE PC1/PC3") +
+  theme_minimal()
+fviz_nbclust(pca_rnase_pc2_pc3, kmeans, method = "silhouette") +
+  labs(title = "Silhouette-Methode RNASE PC2/PC3") +
+  theme_minimal()
+```
+
+```{r}
+km_result_ctrl<- kmeans(pca_ctrl_pc1_pc2, centers = 3)
+
+km_result_rnase<- kmeans(pca_rnase_pc1_pc2, centers = 5)
+```
+
+```{r}
+library(factoextra)
+
+# pca_df enthält deine Daten, z. B. PC1 und PC2
+fviz_cluster(km_result_ctrl, data = pca_ctrl_pc1_pc2,
+             geom = "point", ellipse.type = "norm",
+             palette = "jco", ggtheme = theme_minimal(),
+             main = "k-Means Cluster der CTRL")
+fviz_cluster(km_result_ctrl, data = pca_ctrl_pc1_pc3,
+             geom = "point", ellipse.type = "norm",
+             palette = "jco", ggtheme = theme_minimal(),
+             main = "k-Means Cluster der CTRL")
+fviz_cluster(km_result_ctrl, data = pca_ctrl_pc2_pc3,
+             geom = "point", ellipse.type = "norm",
+             palette = "jco", ggtheme = theme_minimal(),
+             main = "k-Means Cluster der CTRL")
+
+fviz_cluster(km_result_rnase, data = pca_rnase_pc1_pc2,
+             geom = "point", ellipse.type = "norm",
+             palette = "jco", ggtheme = theme_minimal(),
+             main = "k-Means Cluster der RNASE")
+
+fviz_cluster(km_result_rnase, data = pca_rnase_pc1_pc3,
+             geom = "point", ellipse.type = "norm",
+             palette = "jco", ggtheme = theme_minimal(),
+             main = "k-Means Cluster der RNASE")
+fviz_cluster(km_result_rnase, data = pca_rnase_pc2_pc3,
+             geom = "point", ellipse.type = "norm",
+             palette = "jco", ggtheme = theme_minimal(),
+             main = "k-Means Cluster der RNASE")
+```
 
 
 
