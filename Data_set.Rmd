@@ -2212,7 +2212,7 @@ rownames(df_numeric_rnase) <- rownames(rnase_mean_filtert_final[1:251])
 
 
 ```{r}
-# T-Test pro Zeilenpaar
+# T-Test pro Zeilenpaar --> gepaarter t-test machen?
 t_test_final <- lapply(seq_len(nrow(df_numeric_ctrl)), function(i) {
   x <- as.numeric(df_numeric_ctrl[i, ])
   y <- as.numeric(df_numeric_rnase[i, ])
