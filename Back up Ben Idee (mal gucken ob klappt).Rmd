@@ -1,31 +1,3 @@
----
-title: "Data set"
-author: "Julia Annika Ferdin"
-date: "2025-05-04"
-output: html_document
----
-**************************************************************************************************************
-Molekulare Biotechnologie SS2025
-Julian Baureis, Julia Ferdin, Benjamin Nicklas, Luisa Wintel
-Mass spectrometry analysis of non-synchronized HeLa cells
-**************************************************************************************************************
-
-The script is sectioned into the followning segments:
-
-1 - Read data, normalization between replicates, sliding window, normalization to 100
-2 - Find local maxima greater than 2 as fit parameters from average curves
-3 - Gaussian fit on each curve (per protein, three control and three Rnase replicates)
-4 - Quality control of fit an if possible adjustment
-5 - Asses p-values and FDR-adjusted p-values for each maximum
-6 - Evaluate shifts by using selection criteria
-7 - Compute final table and export as csv file
-Graphics 1 - Average curves for one protein of interest - function curves_plot
-Graphics 2 - All curves for one protein of interest- function curves_all
-
-
-**************************************************************************************************************
-1 - Read data, normalization between replicates, sliding window, normalization to 100
-**************************************************************************************************************
 
 ```{r}
 #Reads table, by indicating path to directory where the dataset is stored, and stores it to variable NS_Table (NS for Non-synchronizied HeLa-cells)
@@ -96,8 +68,6 @@ colmns_sorted <- data.frame(row.names = colnames(NS_Table), levels_CR = levels_C
 #Check for missing values, there are none 
 anyNA(NS_Table)
 ```
-
-
 **************************************************************************************************************
 Normalization step between the replicates in each fraction and for each treatment using the mean value method
 
@@ -371,18 +341,34 @@ rnase_norm_mean[rowSums(ctrl_norm_mean[1:25])==0,] <- 0
 #View(rnase_norm_mean)
 ```
 
-Weiter hab ich noch nicht den Code bearbeitet 
-LG Ben
+```{r}
+row_data1 <- as.numeric(ctrl_norm_mean["PRKDC_HUMAN", ])
+row_data2 <- as.numeric(rnase_norm_mean["PRKDC_HUMAN", ])
+
+# Plot
+plot(row_data2,
+     type = "l",                # Linienplot
+     main = "Plot for PRKDC_HUMAN",
+     xlab = "Fractions",
+     ylab = "Values",
+     col = "blue",
+     lwd = 2)
+
+lines(row_data1,
+      type = "l",
+      col = "red",
+      lwd = 2)
+```
 
 **************************************************************************************************************
 2 - Find local maxima greater than 2 as fit parameters from average curves
 **************************************************************************************************************
-#### Find local maxima in each protein mean profile (peak calling step - function find_peaks) ####
-# Restriction to values above an absolut threshold of 2 (to get rid of the noise)
-# Identify also shoulders not found by peak calling
+
+Identify local maxima by peak calling for the mean of each protein.
+In order to get rid of the noise, only values above 2 are considered.
+Find shoulders that were not discovered previously
 
 **************************************************************************************************************
-
 ```{r}
 #Function find_peaks
 #Peak is local maximum with smaller "window" points on each side
@@ -406,7 +392,7 @@ find_peaks <- function(x, window = 2) {
   }
 
   
-# part added to deal with plateaux
+# part added to deal with plateau
 # Ergibt diese Operation überhaupt Sinn, Plateaus haben ja auch nur einen Hochpunkt, und alle anderen (ähnlichen) werden doch ohnehin nicht erkannt werden?
      n = length(peaks)
      if (n>1) {
@@ -416,7 +402,6 @@ find_peaks <- function(x, window = 2) {
      			peaks <- peaks[! peaks%in% rem]
      		  }	 
   
-
 # part added to deal with the 1st and 25th values, in case they are max
      if ( sum(x[1]>x[2:(window+1)]) == 2 ) {peaks <- c(peaks, 1)} 
      if ( sum(x[25]>x[24:(25-window)]) == 2 ) {peaks <- c(peaks, 25)}
@@ -433,7 +418,6 @@ find_peaks <- function(x, window = 2) {
 #z = c(30, 2, 2, 2, 2, 2, 5, 4, 3, 2, 2, 2, 2, 2, 31, 30, 31, 32, 2, 2, 2, 2, 2, 2, 30)
 #find_peaks(z)
 ```
-
 
 ***********************************************************************************************************
 ```{r}
@@ -457,8 +441,7 @@ rnase_norm_mean$maxima <- apply(rnase_norm_mean, 1, function(x) {
 ```
 
 ***********************************************************************************************************
-# Identifying shoulders
-# "shoulders" are regions of elevated signal intensity that are not sharp enough to be detected as a "peak" by the peak detection function find_peaks — but still indicate meaningful protein presence.
+Find shoulders, regions that are not recognized as peaks, even though they have a high signal intensity.
 
 ```{r}
 # Identify the RNAse fractions with signal intensity > 2%. 
@@ -597,14 +580,12 @@ ctrl_3$nb_max <- apply(ctrl_3, 1, function(x) {
 ```
 
 ***********************************************************************************************************
-#### Gaussian fit of the mean curves (mean of the three replicates per condition)
+Take the mean curves of the three replicates per condition and perform a gaussian fit on them.
 ***********************************************************************************************************
-# Addition of new columns in the table ctrl_3 and rnase_3
-# Use of the information stored in the table ctrl_norm_mean and rnase_norm_mean
-# Function to fit a gaussian on the raw mean data to obtain: fit_c, fit_mean, fit_sigma
-# Function to get the residue value: fit_res
-# Function to check if the fit was successful: fitted (TRUE/FALSE)
-
+Add new columns to the tables ctrl_3 and rnase_3.
+Fit a gaussian curve on ctrl_norm_mean and rnase_norm_mean to get fit_c, fit_mean and fit_sigma.
+Use fit_res to obtain the residue value.
+Check with fitted (boolean), whether the fit was successfull
 
 ```{r}
 # Number of rows of the table - is the total number of proteins -> 4765
@@ -948,7 +929,7 @@ rnase_3[failed_rnase, ]
 ```
 
 ***********************************************************************************************************
-# Repeat the same with the CTRL condition
+Use the CTRL condition and repeat this process with it
 ***********************************************************************************************************
 ```{r}
 # Fit the CTRL mean curves 
@@ -1173,7 +1154,6 @@ all(c(5, 6, 7) == c(5, 9, 7))
 
 ```
 
-
 ***********************************************************************************************************
 ```{r}
 # Control that the mean values are sorted.
@@ -1219,12 +1199,11 @@ rnase_3$fit_param <- apply(vect, 2, function(z) {
 #rnase_3[c(20:40), "fit_param"]
 
 #list_c1 <- as.numeric(unlist(ctrl_3[3,"fit_c"]))
-												#list_mean1 <- as.numeric(unlist(ctrl_3[3,"fit_mean"]))
-												#list_sigma1 <- as.numeric(unlist(ctrl_3[3,"fit_sigma"]))
-												#n1 <- length(list_c1)
+											#	list_mean1 <- as.numeric(unlist(ctrl_3[3,"fit_mean"]))
+											#	list_sigma1 <- as.numeric(unlist(ctrl_3[3,"fit_sigma"]))
+											#	n1 <- length(list_c1)
 #as.data.frame(matrix( c(list_c1, list_mean1, list_sigma1),n1,3,byrow="FALSE"))
 ```
-
 
 ***********************************************************************************************************
 ```{r}
@@ -1319,42 +1298,50 @@ ctrl_3[263, "fit_c"]
 ctrl_3[263, "fit_mean_fxn"]
 ctrl_3[263, "fit_c_fxn"]
 ```
-
-
 ***********************************************************************************************************
 3 - Gaussian fit on each curve (per protein, three control and three Rnase replicates)
 ***********************************************************************************************************
-# Gaussian fit for 3x CTRL and 3x RNASE
-# parameters to be optimized: C, mean, sigma -> fit_c, fit_mean, fit_sigma (from the fit of the mean curves)
-# Function to get the sum of residual squares -> fit_res
-# Number of peaks -> nb_peaks
+Perform three gaussian fits for CTRL and RNASE, respectively.
+Optimize parameters from the fit of the mean curve: C to fit_c; mean to fit_mean; sigma to fit_sigma
+Add functions to get the sum of residual squares (fit_res) and the number of peaks (nb_peaks)
 
-#raw data:
-#norm_tables.ctrl$ctrl1 
-#norm_tables.ctrl$ctrl2 
-#norm_tables.ctrl$ctrl3 
-#norm_tables.ctrl$rnase1 
-#norm_tables.ctrl$rnase2 
-#norm_tables.ctrl$rnase3
+The raw data is saved in six tables, divided into CTRL and RNASE, and those are separated by their samples:
+  norm_tables.ctrl$ctrl1
+  norm_tables.ctrl$ctrl2
+  norm_tables.ctrl$ctrl3
+  norm_tables.rnase$rnase1
+  norm_tables.rnase$rnase2
+  norm_tables.rnase$rnase3
 
-# reference mean data with additional columns (temporary tables as defined earlier in the script):
-# ctrl_3
-# rnase_3
+Temporary tables that were defined earlier are now stores as additional columns in combination with the reference mean data in:
+  ctrl_3
+  rnase_3
 
-#define a function to calculate the gaussian fit for each curve - get the fit curve
+
+We now get the fit curve by using a function to calculate the gaussian fit for each curve
 ***********************************************************************************************************
 ```{r}
+#Defines funcion gauss_fit with argument pos (row index), table_mean (contains gaussian fit parameters), table_rep (contains replicate data)
 gauss_fit <- function(pos, table_mean, table_rep) {
+  #Extracts first 25 columns
   df.y <- c(as.numeric(table_rep[pos,1:25]))
+  #Creates vector y with numbers 1 to 25
   y <- c(1:25)
+  #New data frame data with columns y and df.y 
   data <- data.frame(y = y, df.y = df.y)
+  #Extract values from columns, converts them to numeric and stores       them under new names
   list_c <- as.numeric(unlist(table_mean[pos,"fit_c"]))
   list_mean <- as.numeric(unlist(table_mean[pos,"fit_mean"]))
   list_sigma <- as.numeric(unlist(table_mean[pos,"fit_sigma"]))
+  #Determines number of gaussian components by checking length of         list_c
   n <- length(list_c)
+  #Initializes empty numeric vector for later optimization
   vector <- numeric(0)
+  #Creates new data frame with column y, containing numbers 1 to 25
   dffit <- data.frame(y=seq(1, 25, 1))
+  #z has values 1 to 25 for use in gaussian evaluation
   z <- seq(1, 25)
+  #Checks if there is only one Gaussian component and its amplitude c    is 100. If both is true, the df.y columns of dffit is set to a vector   of 25 zeros
   if ((n==1) && (list_c == 100)) {dffit$df.y <- rep(0,25)} else {
     if (n==1) {
       vector <- c(list_c[1],list_mean[1],list_sigma[1])
@@ -1461,7 +1448,7 @@ gauss_fit <- function(pos, table_mean, table_rep) {
 
 ***********************************************************************************************************
 ```{r}
-# Make new tables with the fitted values for each curve
+#Use the fitted values of each curve to create new tables
 
 table.ctrl1.fit <- t(apply(vect, 2, function(d) { gauss_fit(d, ctrl_3, norm_tables.ctrl$ctrl1)  }))
 rownames(table.ctrl1.fit) <- rownames(norm_tables.ctrl$ctrl1)
@@ -1496,7 +1483,7 @@ table.rnase3.fit <- as.data.frame(table.rnase3.fit)
 
 ***********************************************************************************************************
 ```{r}
-# Replace NA, NaN with 0 if any
+#If there are NAs/NaNs, replace them with 0
 table.ctrl1.fit <- rapply(table.ctrl1.fit, f=function(x) ifelse(is.na(x),0,x), how="replace") 
 table.ctrl2.fit <- rapply(table.ctrl2.fit, f=function(x) ifelse(is.na(x),0,x), how="replace" )
 table.ctrl3.fit <- rapply(table.ctrl3.fit, f=function(x) ifelse(is.na(x),0,x), how="replace" )
@@ -1512,155 +1499,12 @@ table.rnase2.fit <- rapply(table.rnase2.fit, f=function(x) ifelse(is.nan(x),0,x)
 table.rnase3.fit <- rapply(table.rnase3.fit, f=function(x) ifelse(is.nan(x),0,x), how="replace" )
 ```
 
-
-```{r}
-df1 <- table.ctrl1.fit[1:25] # Gruppe A
-df2 <- table.rnase1.fit[1:25] # Gruppe B
-
-df_numeric1 <- as.data.frame(lapply(df1, function(x) as.numeric(as.character(x))))
-df_numeric2 <- as.data.frame(lapply(df2, function(x) as.numeric(as.character(x))))
-
-colnames(df_numeric1) <- colnames(table.ctrl1.fit[1:25])
-colnames(df_numeric2) <- colnames(table.ctrl1.fit[1:25])
-
-rownames(df_numeric1) <- rownames(table.ctrl1.fit[1:25])
-rownames(df_numeric2) <- rownames(table.ctrl1.fit[1:25])
-
-```
-
-
-```{r}
-# T-Test pro Zeilenpaar
-t_test_ergebnisse <- lapply(seq_len(nrow(df_numeric1)), function(i) {
-  x <- as.numeric(df_numeric1[i, ])
-  y <- as.numeric(df_numeric2[i, ])
-
-  # Nur t-Test, wenn beide Gruppen mindestens 2 gültige Werte haben
-  if (sum(!is.na(x)) >= 2 && sum(!is.na(y)) >= 2) {
-    t_res <- t.test(x, y)
-    data.frame(
-      zeile = rownames(df_numeric1)[i],
-      p_wert = t_res$p.value,
-      mittelwert_df1 = mean(x, na.rm = TRUE),
-      mittelwert_df2 = mean(y, na.rm = TRUE),
-      t_wert = t_res$statistic,
-      df = t_res$parameter
-    )
-  } else {
-    NULL
-  }
-})
-
-# Entferne NULLs (wo T-Test nicht möglich war)
-t_test_ergebnisse <- Filter(Negate(is.null), t_test_ergebnisse)
-
-# Ergebnisse zusammenführen
-t_test_ergebnisse_df <- do.call(rbind, t_test_ergebnisse)
-
-# Optional: Nach p-Wert sortieren
-t_test_ergebnisse_df <- t_test_ergebnisse_df[order(t_test_ergebnisse_df$p_wert), ]
-
-# Ausgabe
-print(t_test_ergebnisse_df)
-
-```
-
-
-
-
-
-
-
-
-
-```{r}
-# Beispiel: Zwei Dataframes mit gleichen Spaltennamen
-set.seed(42)
-df1 <- as.data.frame(matrix(rnorm(1000, mean = 5), nrow = 100))  # z. B. Gruppe A
-df2 <- as.data.frame(matrix(rnorm(1000, mean = 6), nrow = 100))  # z. B. Gruppe B
-
-# Sicherstellen, dass Spalten übereinstimmen
-stopifnot(identical(names(df1), names(df2)))
-
-# T-Test pro Spaltenpaar
-t_test_ergebnisse <- lapply(seq_along(df1), function(i) {
-  t_res <- t.test(df1[[i]], df2[[i]])
-  data.frame(
-    spalte = names(df1)[i],
-    p_wert = t_res$p.value,
-    mittelwert_df1 = mean(df1[[i]], na.rm = TRUE),
-    mittelwert_df2 = mean(df2[[i]], na.rm = TRUE),
-    t_wert = t_res$statistic,
-    df = t_res$parameter
-  )
-})
-
-# Ergebnisse zusammenführen
-t_test_ergebnisse_df <- do.call(rbind, t_test_ergebnisse)
-
-# Optional: Nach p-Wert sortieren
-t_test_ergebnisse_df <- t_test_ergebnisse_df[order(t_test_ergebnisse_df$p_wert), ]
-
-# Ausgabe
-print(t_test_ergebnisse_df)
-
-```
-
-```{r}
-# Beispiel-DataFrames
-df1 <- data.frame(result = c("success", "failure", "success", "success", "failure"))
-df2 <- data.frame(result = c("failure", "failure", "success", "failure", "failure", "success"))
-
-# Zähle die Anzahl der "success" und die Gesamtanzahl
-success1 <- sum(df1$result == "success")
-n1 <- nrow(df1)
-
-success2 <- sum(df2$result == "success")
-n2 <- nrow(df2)
-
-# Proportionstest (zweiseitig)
-prop.test(x = c(success1, success2), n = c(n1, n2), correct = FALSE)
-
-```
-
-************
-
-```{r}
-row_data1 <- as.numeric(table.ctrl1.fit["AHNK_HUMAN", ])
-row_data2 <- as.numeric(table.rnase1.fit["AHNK_HUMAN", ])
-
-# Plot
-plot(row_data1, row_data2,
-     type = "l",                # Linienplot
-     main = "Plot for AHNK_HUMAN",
-     xlab = "Columns",
-     ylab = "Values",
-     col = "blue","red",
-     lwd = 2)
-```
-
-
-
-08.06.25
-
-
-
-
-
-
-
-
-
-
-
-
-
 ```{r}
 row_data1 <- as.numeric(table.ctrl2.fit["PRKDC_HUMAN", ])
 row_data2 <- as.numeric(table.rnase2.fit["PRKDC_HUMAN", ])
 
 # Plot
-plot(row_data1,
+plot(row_data2,
      type = "l",                # Linienplot
      main = "Plot for AHNK_HUMAN",
      xlab = "Fractions",
@@ -1668,19 +1512,167 @@ plot(row_data1,
      col = "blue",
      lwd = 2)
 
-lines(row_data2,
+lines(row_data1,
       type = "l",
       col = "red",
       lwd = 2)
+```
 
+***********************************************************************************************************
+```{r}
+#Figure out sum of fitted curves which should be about 100 percent
 
-row_data3 <- as.numeric(table.ctrl1.fit.fine["PRKDC_HUMAN", ])
-row_data4 <- as.numeric(table.rnase1.fit.fine["PRKDC_HUMAN", ])
+table.ctrl1.fit$check_sum <- apply(vect, 2, function(x) { check <- round(sum(as.numeric(table.ctrl1.fit[x,1:25])), digits=1)
+														check
+														})
+table.ctrl2.fit$check_sum <- apply(vect, 2, function(x) { check <- round(sum(as.numeric(table.ctrl2.fit[x,1:25])), digits=1)
+														check
+														})
+table.ctrl3.fit$check_sum <- apply(vect, 2, function(x) { check <- round(sum(as.numeric(table.ctrl3.fit[x,1:25])), digits=1)
+														check
+														})
+table.rnase1.fit$check_sum <- apply(vect, 2, function(x) { check <- round(sum(as.numeric(table.rnase1.fit[x,1:25])), digits=1)
+														check
+														})
+table.rnase2.fit$check_sum <- apply(vect, 2, function(x) { check <- round(sum(as.numeric(table.rnase2.fit[x,1:25])), digits=1)
+														check
+														})
+table.rnase3.fit$check_sum <- apply(vect, 2, function(x) { check <- round(sum(as.numeric(table.rnase3.fit[x,1:25])), digits=1)
+														check
+														})
+```
+
+***********************************************************************************************************
+```{r}
+#Collect all fit paramenters in one vector (C1, mean1, sigma1, C2, mean2, sigma2, C3, mean3, sigma3)
+
+gauss_fit_param <- function(pos, table_mean, table_rep) {
+  df.y <- as.numeric(table_rep[pos, 1:25])
+  if (length(df.y) == 0) return(rep(0, 3))
+
+  y <- 1:25
+  data <- data.frame(y = y, df.y = df.y)
+
+  list_c <- as.numeric(unlist(table_mean[pos, "fit_c"]))
+  list_mean <- as.numeric(unlist(table_mean[pos, "fit_mean"]))
+  list_sigma <- as.numeric(unlist(table_mean[pos, "fit_sigma"]))
+  n <- length(list_c)
+  #If there is only one component and all its parameters are zero, the   function returns three zeros and exits
+  if (n == 1 && all(c(list_c, list_mean, list_sigma) == c(0, 0, 0))) return(rep(0, 3))
+  #Stacks c, mean, sigma values row-wise and flattens them into a        single vector
+  vector <- as.numeric(rbind(list_c, list_mean, list_sigma))
+  #Dynamic construction for name of fitting function (f1-f6) based on n   and retrieves the function using get()
+  fit_fun <- get(paste0("f", n)) 
+  
+  #Tries to optimize the parameters with BFGS method. If optimization    fails, it catches the error and returns a zero vector  of length 3*n.   If successful, the result is rounded and stored in q.
+  q <- tryCatch(
+    round(optim(vector, fit_fun, data = data, method = "BFGS", control = list(reltol = 1e-9))$par, digits = 1),
+    error = function(e) rep(0, 3 * n)
+  )
+  #Returns the optimized parameters q
+  return(q)
+}
+
+#Applies gauss_fit_param to every row index in vect, using ctrl_3 and ctrl1 to replicate data, and stores the results in a new column fit_param in table.ctrl1.fit
+table.ctrl1.fit$fit_param <- sapply(vect, function(x)
+gauss_fit_param(x, ctrl_3, norm_tables.ctrl$ctrl1), simplify = FALSE)
+table.ctrl2.fit$fit_param <- sapply(vect, function(x) gauss_fit_param(x, ctrl_3, norm_tables.ctrl$ctrl2), simplify = FALSE)
+table.ctrl3.fit$fit_param <- sapply(vect, function(x) gauss_fit_param(x, ctrl_3, norm_tables.ctrl$ctrl3), simplify = FALSE)
+
+#Same for RNAse3 dataset, applying fitting function to each row and saving the results.
+table.rnase1.fit$fit_param <- sapply(vect, function(x)  gauss_fit_param(x, rnase_3, norm_tables.rnase$rnase1), simplify = FALSE) 
+table.rnase2.fit$fit_param <- sapply(vect, function(x)  gauss_fit_param(x, rnase_3, norm_tables.rnase$rnase2), simplify = FALSE)
+table.rnase3.fit$fit_param <- sapply(vect, function(x)  gauss_fit_param(x, rnase_3, norm_tables.rnase$rnase3), simplify = FALSE) 
+
+```
+
+Use a new function to get the residue 
+***********************************************************************************************************
+```{r}
+gauss_fit_res <- function(pos, table_mean, table_rep) {
+  df.y <- c(as.numeric(table_rep[pos,1:25]))
+  y <- c(1:25)
+  data <- data.frame(y = y, df.y = df.y)
+  list_c <- as.numeric(unlist(table_mean[pos,"fit_c"]))
+  list_mean <- as.numeric(unlist(table_mean[pos,"fit_mean"]))
+  list_sigma <- as.numeric(unlist(table_mean[pos,"fit_sigma"]))
+  list <- c(list_c, list_mean, list_sigma)
+  n <- length(list_c)
+  vector <- numeric(0)
+  if ((n==1) && identical(list, c(0,0,0))) {q <- rep(0,3)} else {
+    if (n==1) {
+      vector <- c(list_c[1],list_mean[1],list_sigma[1])
+      q <- tryCatch(round( (fit <- optim(vector, f1, data = data, method="BFGS", control=list(reltol=1e-9)))$value,digits = 1),error=function(e) c(0,0,0)) } 
+    else {
+      if (n==2) {
+        vector <- c(list_c[1],list_mean[1],list_sigma[1],list_c[2],list_mean[2],list_sigma[2])
+        q <- tryCatch(round( (fit <- optim(vector, f2, data = data, method="BFGS", control=list(reltol=1e-9)))$value,digits = 1),error=function(e) c(0,0,0))
+      } else {
+        if (n==3) {
+          vector <- c(list_c[1],list_mean[1],list_sigma[1],list_c[2],list_mean[2],list_sigma[2],list_c[3],list_mean[3],list_sigma[3])
+          q <- tryCatch(round( (fit <- optim(vector, f3, data = data, method="BFGS", control=list(reltol=1e-9)))$value,digits = 1),error=function(e) c(0,0,0))
+        } else {
+          if (n==4) {
+            vector <- c(list_c[1],list_mean[1],list_sigma[1],list_c[2],list_mean[2],list_sigma[2],list_c[3],list_mean[3],list_sigma[3],list_c[4],list_mean[4],list_sigma[4])
+            q <- tryCatch(round( (fit <- optim(vector, f4,data = data,  method="BFGS", control=list(reltol=1e-9)))$value,digits = 1),error=function(e) c(0,0,0))
+          } else {
+            if (n==5) {
+              vector <- c(list_c[1],list_mean[1],list_sigma[1],list_c[2],list_mean[2],list_sigma[2],list_c[3],list_mean[3],list_sigma[3],list_c[4],list_mean[4],list_sigma[4],list_c[5],list_mean[5],list_sigma[5])
+              q <- tryCatch(round( (fit <- optim(vector, f5, data = data, method="BFGS", control=list(reltol=1e-9)))$value,digits = 1),error=function(e) c(0,0,0))
+            } else {
+              vector <- c(list_c[1],list_mean[1],list_sigma[1],list_c[2],list_mean[2],list_sigma[2],list_c[3],list_mean[3],list_sigma[3],list_c[4],list_mean[4],list_sigma[4],list_c[5],list_mean[5],list_sigma[5],list_c[6],list_mean[6],list_sigma[6])
+              q <- tryCatch(round( (fit <- optim(vector, f6, data = data, method="BFGS", control=list(reltol=1e-9)))$value,digits = 1),error=function(e) c(0,0,0))
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+```{r}
+#Flattens q (vector with parameters)into numeric vector, removes list
+q <- unlist(q)
+
+#Checks is q is a single numeric vector (scalar)
+if (length(q) == 1 && is.numeric(q)) {
+  if (q > 1000) {
+    0
+  } else {
+    as.numeric(q)
+  }
+} else {
+  0
+}
+```
+
+```{r}
+#Applies function gauss_fit_res to each element in second dimension (column) of vect, using ctrl_3 and norm_tables.ctrl$ctrl1 as additional arguments. The result of each function is stored as a list in a new column named fit_res in the data frame table.ctrl1.fit
+table.ctrl1.fit$fit_res <- apply(vect, 2, function(x) { gauss_fit_res(x, ctrl_3, norm_tables.ctrl$ctrl1) })
+table.ctrl2.fit$fit_res <- apply(vect, 2, function(x) { gauss_fit_res(x, ctrl_3, norm_tables.ctrl$ctrl2) })
+table.ctrl3.fit$fit_res <- apply(vect, 2, function(x) { gauss_fit_res(x, ctrl_3, norm_tables.ctrl$ctrl3) })
+
+#Same for RNASE												  
+table.rnase1.fit$fit_res <- apply(vect, 2, function(x) { gauss_fit_res(x, rnase_3, norm_tables.rnase$rnase1) })
+table.rnase2.fit$fit_res <- apply(vect, 2, function(x) { gauss_fit_res(x, rnase_3, norm_tables.rnase$rnase2) })
+table.rnase3.fit$fit_res <- apply(vect, 2, function(x) { gauss_fit_res(x, rnase_3, norm_tables.rnase$rnase3) })
+
+```
+
+```{r}
+table.ctrl.fit <- (table.ctrl1.fit[1:25] + table.ctrl2.fit[1:25] + table.ctrl3.fit[1:25]) / 3
+table.rnase.fit <- (table.rnase1.fit[1:25] + table.rnase2.fit[1:25] + table.rnase3.fit[1:25]) / 3
+```
+
+```{r}
+row_data3 <- as.numeric(table.ctrl.fit["PRKDC_HUMAN", 1:25 ])
+row_data4 <- as.numeric(table.rnase.fit["PRKDC_HUMAN",1:25 ])
 
 # Plot
 plot(row_data4,
      type = "l",                # Linienplot
-     main = "Plot for AHNK_HUMAN",
+     main = "Plot for PRKDC_HUMAN",
      xlab = "Fractions",
      ylab = "Values",
      col = "blue",
@@ -1692,22 +1684,20 @@ lines(row_data3,
       lwd = 2)
 ```
 
-
 ```{r}
-df1 <- table.ctrl1.fit[1:25] # Gruppe A
-df2 <- table.rnase1.fit[1:25] # Gruppe B
+df1 <- table.ctrl.fit[1:25] # Gruppe A
+df2 <- table.rnase.fit[1:25] # Gruppe B
 
 df_numeric1 <- as.data.frame(lapply(df1, function(x) as.numeric(as.character(x))))
 df_numeric2 <- as.data.frame(lapply(df2, function(x) as.numeric(as.character(x))))
 
-colnames(df_numeric1) <- colnames(table.ctrl1.fit[1:25])
-colnames(df_numeric2) <- colnames(table.rnase1.fit[1:25])
+colnames(df_numeric1) <- colnames(table.ctrl.fit[1:25])
+colnames(df_numeric2) <- colnames(table.rnase.fit[1:25])
 
-rownames(df_numeric1) <- rownames(table.ctrl1.fit[1:25])
-rownames(df_numeric2) <- rownames(table.rnase1.fit[1:25])
+rownames(df_numeric1) <- rownames(table.ctrl.fit[1:25])
+rownames(df_numeric2) <- rownames(table.rnase.fit[1:25])
 
 ```
-
 
 ```{r}
 # T-Test pro Zeilenpaar
@@ -1717,7 +1707,7 @@ t_test_ergebnisse <- lapply(seq_len(nrow(df_numeric1)), function(i) {
 
   # Nur t-Test, wenn beide Gruppen mindestens 2 gültige Werte haben
   if (sum(!is.na(x)) >= 2 && sum(!is.na(y)) >= 2) {
-    t_res <- t.test(x, y)
+    t_res <- t.test(x, y, paired = TRUE)
     data.frame(
       zeile = rownames(df_numeric1)[i],
       p_wert = t_res$p.value,
@@ -1742,261 +1732,251 @@ t_test_ergebnisse_df <- t_test_ergebnisse_df[order(t_test_ergebnisse_df$p_wert),
 
 # Ausgabe
 print(t_test_ergebnisse_df)
-
-```
-
-`
-```{r}
-df_numeric_ctrl1 <- as.data.frame(lapply(table.ctrl1.fit.fine, function(x) as.numeric(as.character(x))))
-
-anyNA(df_numeric_ctrl1)
-
-df_numeric_rnase1 <- as.data.frame(lapply(table.rnase1.fit.fine, function(x) as.numeric(as.character(x))))
-
-colnames(df_numeric_ctrl1) <- colnames(table.ctrl1.fit.fine)
-colnames(df_numeric_rnase1) <- colnames(table.rnase1.fit.fine)
-```
-
-
-```{r}
-# T-Test pro Zeilenpaar
-t_test_ergebnisse2 <- lapply(seq_len(nrow(df_numeric_ctrl1)), function(i) {
-  x <- as.numeric(df_numeric_ctrl1[i, ])
-  y <- as.numeric(df_numeric_rnase1[i, ])
-
-  # t-Test
-    t_res <- t.test(x, y)
-    data.frame(
-      zeile = rownames(df_numeric_ctrl1)[i],
-      p_wert = t_res$p.value,
-      mittelwert_df_ctrl1 = mean(x, na.rm = TRUE),
-      mittelwert_df_rnase1 = mean(y, na.rm = TRUE),
-      t_wert = t_res$statistic,
-      df = t_res$parameter
-    )
-  })
-
-# Ergebnisse zusammenführen
-t_test_ergebnisse_df2 <- do.call(rbind, t_test_ergebnisse2)
-
-# Optional: Nach p-Wert sortieren
-t_test_ergebnisse_df2 <- t_test_ergebnisse_df2[order(t_test_ergebnisse_df2$p_wert), ]
-
-# Ausgabe
-print(t_test_ergebnisse_df2)
-
 ```
 
 ```{r}
-# Create summary tables
+list_significant_shift <- t_test_ergebnisse_df[t_test_ergebnisse_df$p_wert < 0.05, ]
 
-ctrl_mean <- ctrl_3
-ctrl_mean[1:25] <- ctrl_norm_mean[1:25]
+# Beispiel: p-Wert zwischen 0.05 und 0.5
+list_possible_shift <- t_test_ergebnisse_df[t_test_ergebnisse_df$p_wert > 0.05 & t_test_ergebnisse_df$p_wert < 0.7, ]
 
-rnase_mean <- rnase_3
-rnase_mean[1:25] <- rnase_norm_mean[1:25]
 
-row_data5 <- as.numeric(ctrl_mean["PRKDC_HUMAN", 1:25])
-row_data6 <- as.numeric(rnase_mean["PRKDC_HUMAN", 1:25])
+list_no_shift <- t_test_ergebnisse_df[ t_test_ergebnisse_df$p_wert > 0.7 , ]
 
-# Plot
-plot(row_data6,
-     type = "l",                # Linienplot
-     main = "Plot for AHNK_HUMAN",
-     xlab = "Fractions",
-     ylab = "Values",
-     col = "blue",
-     lwd = 2)
-
-lines(row_data5,
-      type = "l",
-      col = "red",
-      lwd = 2)
-```
-
-***********************************************************************************************************
-
-```{r}
-# Area under the curve: here, area under the respective maxima
-
-fun_gauss_area <- function(x) {
-						 C <- x[1]
-						 Mean <- x[2]
-						 Sigma <- x[3]
-						 y <- round(seq(1,25,0.2), digits=1)
-						 if (Sigma == 0) {res <- 0} else {
-						 								  res <- C * exp(-(y-Mean)**2/(2 * Sigma**2))
-						 								  }
-						 res <- round(sum(res)*0.2, digits=1)
-						 res
-						 }
+# Nur Namen der Proteine
+significant_shift_proteins <- list_significant_shift$zeile
+possible_shift_proteins <- list_possible_shift$zeile
+no_shift_proteins <- list_no_shift$zeile
 ```
 
 ```{r}
-# add a column with areas under each maximum and sum of the areas
-# column "fit_area"
-# column "sum_area" - the sum of the areas is expected to be close to 100 (due to the previous normalization step)
-ctrl_mean$fit_area <- apply(vect, 2, function(z) { 
-												  list_c <- as.numeric(unlist(ctrl_mean[z,"fit_c"]))
-												  list_mean <- as.numeric(unlist(ctrl_mean[z,"fit_mean"]))
-												  list_sigma <- as.numeric(unlist(ctrl_mean[z,"fit_sigma"]))
-												  n <- as.numeric(unlist(ctrl_mean[z,"nb_max"]))
-												  area <- numeric(0)
-												  vector <- numeric(0)
-												  area_list <- numeric(0)
-												  
-												  if (n == 0) {area_list <- 0} else {
-												  						for (i in 1:n) {
-												  										vector <- c(list_c[i],list_mean[i],list_sigma[i])
-												  										area <- fun_gauss_area(vector)
-												  										area_list <- c(area_list, area)
-												  										}
-												  						}
-												  area_list
-												  }
-							)
+# Nur numerische Spalten behalten
+pca_ctrl_numeric <- table.ctrl.fit[1:25, sapply(table.ctrl.fit, is.numeric)]
+pca_rnase_numeric <- table.rnase.fit[1:25, sapply(table.rnase.fit, is.numeric)]
 
-ctrl_mean$sum_area <- apply(vect, 2, function(z) {
-												 list_area <- as.numeric(unlist(ctrl_mean[z,"fit_area"]))
-												 sum_area <- sum(list_area)
-												 sum_area
-												})
+# Zeilen mit NAs entfernen
+pca_ctrl_clean <- pca_ctrl_numeric[complete.cases(pca_ctrl_numeric), ]
+pca_rnase_clean <- pca_rnase_numeric[complete.cases(pca_rnase_numeric), ]
 
-rnase_mean$fit_area <- apply(vect, 2, function(z) { 
-												  list_c <- as.numeric(unlist(rnase_mean[z,"fit_c"]))
-												  list_mean <- as.numeric(unlist(rnase_mean[z,"fit_mean"]))
-												  list_sigma <- as.numeric(unlist(rnase_mean[z,"fit_sigma"]))
-												  n <- as.numeric(unlist(rnase_mean[z,"nb_max"]))
-												  area <- numeric(0)
-												  vector <- numeric(0)
-												  area_list <- numeric(0)
-												  
-												  if (n == 0) {area_list <- 0} else {
-												  						for (i in 1:n) {
-												  										vector <- c(list_c[i],list_mean[i],list_sigma[i])
-												  										area <- fun_gauss_area(vector)
-												  										area_list <- c(area_list, area)
-												  										}
-												  						}
-												  area_list
-												  }
-							)
+pca_result_ctrl <- prcomp(pca_ctrl_clean, center = TRUE, scale. = TRUE, )
+pca_result_rnase <- prcomp(pca_rnase_clean, center = TRUE, scale. = TRUE)
 
-rnase_mean$sum_area <- apply(vect, 2, function(z) {
-												 list_area <- as.numeric(unlist(rnase_mean[z,"fit_area"]))
-												 sum_area <- sum(list_area)
-												 sum_area
-												})
+# Einfaches 2D PCA-Plot
+plot(pca_result_ctrl$x[,1:2], col = "blue", pch = 16,
+     xlab = "PC1", ylab = "PC2", main = "PCA: PC1 vs PC2 CTRL")
+
+plot(pca_result_rnase$x[,1:2], col = "blue", pch = 16,
+     xlab = "PC1", ylab = "PC2", main = "PCA: PC1 vs PC2 RNASE")
 ```
-
-***********************************************************************************************************
 
 ```{r}
-# Label peaks which have either a residual value > 260 (no good fitting) or negative area (area under the curve < 0 after fitting)
-# add column "pb_fit"
-
-ctrl_mean$pb_fit <- apply(vect, 2, function(x) {
-												res <- as.numeric(unlist(ctrl_mean[x,"fit_res"]))
-												sigma <- as.numeric(unlist(ctrl_mean[x,"fit_sigma"]))
-												list_area <- unlist(ctrl_mean[x, "fit_area"])
-												neg <- any(list_area < 0)
-												nl <- any(sigma == 0) && (res != 0)
-												if (res > 260 || neg == "TRUE" || nl == "TRUE") {TRUE} else FALSE
-												})
-												
-rnase_mean$pb_fit <- apply(vect, 2, function(x) {
-												res <- as.numeric(unlist(rnase_mean[x,"fit_res"]))
-												sigma <- as.numeric(unlist(rnase_mean[x,"fit_sigma"]))
-												list_area <- unlist(rnase_mean[x, "fit_area"])
-												neg <- any(list_area < 0)
-												nl <- any(sigma == 0) && (res != 0)
-												if (res > 260 || neg == "TRUE" || nl == "TRUE") {TRUE} else FALSE
-												})
+#chech which PCs have the most variance
+summary(pca_result_ctrl)
+summary(pca_result_rnase)
 ```
-
-***********************************************************************************************************
-#### Make correction for peaks labeled as "problematic" peaks in the column "pb_fit"
 
 ```{r}
-# Create a subtable with the problematic peaks from the control table
-#Subtable of rnase is larger than the Ctrl Subtable
-ctrl_mean_corr <- ctrl_mean[ctrl_mean$pb_fit == "TRUE",]
-ctrl_mean_corr <- ctrl_mean_corr[, c(1:25,28)]
+#plot PC1 with PC3
+plot(pca_result_ctrl$x[,c(1, 3)], col = "blue", pch = 16,
+     xlab = "PC1", ylab = "PC3", main = "PCA: PC1 vs PC3 CTRL")
 
-rnase_mean_corr <- rnase_mean[rnase_mean$pb_fit == "TRUE",]
-rnase_mean_corr <- rnase_mean_corr[, c(1:25,28)]
+plot(pca_result_rnase$x[,c(1, 3)], col = "blue", pch = 16,
+     xlab = "PC1", ylab = "PC3", main = "PCA: PC1 vs PC3 RNASE")
+
+
+#plot PC2 with PC3
+plot(pca_result_ctrl$x[,2:3], col = "blue", pch = 16,
+     xlab = "PC2", ylab = "PC3", main = "PCA: PC2 vs PC3 CTRL")
+
+plot(pca_result_rnase$x[,2:3], col = "blue", pch = 16,
+     xlab = "PC2", ylab = "PC3", main = "PCA: PC2 vs PC3 RNASE")
+```
+```{r}
+# Namen der Zeilen in PCA müssen mit Protein-Namen übereinstimmen
+# Setze z. B. signifikante auf "red"
+highlight_proteine_significant <- list_significant_shift
+highlight_proteine_possible <- possible_shift_proteins
+highlight_proteine_no <- no_shift_proteins
 ```
 
+```{r}
+farben <- rep("grey", nrow(pca_result_ctrl$x))
+farben[rownames(pca_result_ctrl$x[, 1:2]) %in% highlight_proteine_significant] <- "red"
+farben[rownames(pca_result_ctrl$x[, 1:2]) %in% highlight_proteine_possible] <- "blue"
+farben[rownames(pca_result_ctrl$x[, 1:2]) %in% highlight_proteine_no] <- "green"
+
+
+plot(pca_result_ctrl$x[, 1:2], col = farben, pch = 16,
+     xlab = "PC1", ylab = "PC2", main = "PCA: PC1 vs PC3 CTRL")
+legend("topright", legend = c("Significant Shift","Possible Shift","No Shift"), col = c("red", "blue", "green"), pch = 16)
+
+plot(pca_result_ctrl$x[,c(1, 3)], col = farben, pch = 16,
+     xlab = "PC1", ylab = "PC3", main = "PCA: PC1 vs PC3 CTRL")
+legend("topright", legend = c("Significant Shift","Possible Shift","No Shift"), col = c("red", "blue", "green"), pch = 16)
+
+plot(pca_result_ctrl$x[,2:3], col = farben, pch = 16,
+     xlab = "PC2", ylab = "PC3", main = "PCA: PC2 vs PC3 CTRL")
+legend("topright", legend = c("Significant Shift","Possible Shift","No Shift"), col = c("red", "blue", "green"), pch = 16)
+
+
+plot(pca_result_rnase$x[,1:2], col = farben, pch = 16,
+     xlab = "PC2", ylab = "PC3", main = "PCA: PC2 vs PC3 RNASE")
+legend("topright", legend = c("Significant Shift","Possible Shift","No Shift"), col = c("red", "blue", "green"), pch = 16)
+
+plot(pca_result_rnase$x[,c(1, 3)], col = farben, pch = 16,
+     xlab = "PC1", ylab = "PC3", main = "PCA: PC1 vs PC3 RNASE")
+legend("topright", legend = c("Significant Shift","Possible Shift","No Shift"), col = c("red", "blue", "green"), pch = 16)
+
+plot(pca_result_rnase$x[,2:3], col = farben, pch = 16,
+     xlab = "PC2", ylab = "PC3", main = "PCA: PC2 vs PC3 CTRL")
+legend("topright", legend = c("Significant Shift","Possible Shift","No Shift"), col = c("red", "blue", "green"), pch = 16)
+```
 ```{r}
 # Reihennamen beider Tabellen
-rows_rnase1 <- rownames(rnase_mean)
-rows_rnase2 <- rownames(rnase_mean_corr)
+rows_ctrl_pca <- rownames(table.ctrl.fit)
+rows_rnase_pca <- rownames(table.rnase.fit)
+no_shift_proteins <- list_no_shift$zeile
 
 # Reihen, die NICHT in table2 vorkommen (nur die willst du behalten)
-rows_to_keep <- setdiff(rows_rnase1, rows_rnase2)
+rows_to_keep_ctrl_no_shift <- setdiff(rows_ctrl_pca, no_shift_proteins)
+rows_to_keep_rnase_no_shift <- setdiff(rows_rnase_pca, no_shift_proteins)
 
 # table1 ohne die gemeinsamen Reihen
-rnase_mean_filtert <- rnase_mean[rows_to_keep,]
-
-# Reihennamen beider Tabellen
-rows_ctrl1 <- rownames(ctrl_mean)
-rows_ctrl2 <- rownames(ctrl_mean_corr)
-
-# Reihen, die NICHT in table2 vorkommen (nur die willst du behalten)
-rows_to_keep <- setdiff(rows_rnase1, rows_rnase2)
-
-# table1 ohne die gemeinsamen Reihen
-ctrl_mean_filtert <- ctrl_mean[rows_to_keep,]
-```
-
-```{r}
-df_ctrl <- ctrl_mean_filtert[1:25] # Gruppe A
-df_rnase <- rnase_mean_filtert[1:25] # Gruppe B
-
-df_numeric_ctrl <- as.data.frame(lapply(df_ctrl, function(x) as.numeric(as.character(x))))
-df_numeric_rnase <- as.data.frame(lapply(df_rnase, function(x) as.numeric(as.character(x))))
-
-colnames(df_numeric_ctrl) <- colnames(ctrl_mean_filtert[1:25])
-colnames(df_numeric_rnase) <- colnames(rnase_mean_filtert[1:25])
-
-rownames(df_numeric_ctrl) <- rownames(ctrl_mean_filtert[1:25])
-rownames(df_numeric_rnase) <- rownames(rnase_mean_filtert[1:25])
-
+ctrl_mean_filtert_final_pca <- table.ctrl.fit[rows_to_keep_ctrl_no_shift,]
+rnase_mean_filtert_final_pca <- table.rnase.fit[rows_to_keep_rnase_no_shift,]
 ```
 
 
 ```{r}
-# T-Test pro Zeilenpaar
-t_test_ergebnisse1 <- lapply(seq_len(nrow(df_numeric_ctrl)), function(i) {
-  x <- as.numeric(df_numeric_ctrl[i, ])
-  y <- as.numeric(df_numeric_rnase[i, ])
+# Nur numerische Spalten behalten
+pca_ctrl_numeric_sig <- ctrl_mean_filtert_final_pca[1:251, sapply(ctrl_mean_filtert_final_pca, is.numeric)]
+pca_rnase_numeric_sig <- rnase_mean_filtert_final_pca[1:251, sapply(rnase_mean_filtert_final_pca, is.numeric)]
 
-  # t-Test
-    t_res <- t.test(x, y)
-    data.frame(
-      zeile = rownames(df_numeric_ctrl)[i],
-      p_wert = t_res$p.value,
-      mittelwert_df_ctrl = mean(x, na.rm = TRUE),
-      mittelwert_df_rnase = mean(y, na.rm = TRUE),
-      t_wert = t_res$statistic,
-      df = t_res$parameter
-    )
-  })
+# Zeilen mit NAs entfernen
+pca_ctrl_clean_sig <- pca_ctrl_numeric_sig[complete.cases(pca_ctrl_numeric_sig), ]
+pca_rnase_clean_sig <- pca_rnase_numeric_sig[complete.cases(pca_rnase_numeric_sig), ]
 
-# Ergebnisse zusammenführen
-t_test_ergebnisse_df1 <- do.call(rbind, t_test_ergebnisse1)
+# Funktion: Entferne Spalten ohne Varianz
+remove_const_cols <- function(df) {
+  df[, apply(df, 2, function(col) sd(col, na.rm = TRUE) > 0)]
+}
 
-# Optional: Nach p-Wert sortieren
-t_test_ergebnisse_df1 <- t_test_ergebnisse_df1[order(t_test_ergebnisse_df1$p_wert), ]
+# Anwenden
+pca_ctrl_clean_sig <- remove_const_cols(pca_ctrl_clean_sig)
+pca_rnase_clean_sig <- remove_const_cols(pca_rnase_clean_sig)
 
-# Ausgabe
-print(t_test_ergebnisse_df1)
 
+pca_result_ctrl_sig <- prcomp(pca_ctrl_clean_sig, center = TRUE, scale. = TRUE, )
+pca_result_rnase_sig <- prcomp(pca_rnase_clean_sig, center = TRUE, scale. = TRUE)
 ```
 
+```{r}
+farben <- rep("grey", nrow(pca_result_ctrl_sig$x))
+farben[rownames(pca_result_ctrl_sig$x[, 1:2]) %in% highlight_proteine_significant] <- "red"
+farben[rownames(pca_result_ctrl_sig$x[, 1:2]) %in% highlight_proteine_possible] <- "blue"
+farben[rownames(pca_result_ctrl_sig$x[, 1:2]) %in% highlight_proteine_no] <- "green"
 
 
+plot(pca_result_ctrl_sig$x[, 1:2], col = farben, pch = 16,
+     xlab = "PC1", ylab = "PC2", main = "PCA: PC1 vs PC3 CTRL")
+legend("topright", legend = c("Significant Shift","Possible Shift","No Shift"), col = c("red", "blue", "green"), pch = 16)
+
+plot(pca_result_ctrl_sig$x[,c(1, 3)], col = farben, pch = 16,
+     xlab = "PC1", ylab = "PC3", main = "PCA: PC1 vs PC3 CTRL")
+legend("topright", legend = c("Significant Shift","Possible Shift","No Shift"), col = c("red", "blue", "green"), pch = 16)
+
+plot(pca_result_ctrl_sig$x[,2:3], col = farben, pch = 16,
+     xlab = "PC2", ylab = "PC3", main = "PCA: PC2 vs PC3 CTRL")
+legend("topright", legend = c("Significant Shift","Possible Shift","No Shift"), col = c("red", "blue", "green"), pch = 16)
 
 
+plot(pca_result_rnase_sig$x[,1:2], col = farben, pch = 16,
+     xlab = "PC2", ylab = "PC3", main = "PCA: PC2 vs PC3 RNASE")
+legend("topright", legend = c("Significant Shift","Possible Shift","No Shift"), col = c("red", "blue", "green"), pch = 16)
 
+plot(pca_result_rnase_sig$x[,c(1, 3)], col = farben, pch = 16,
+     xlab = "PC1", ylab = "PC3", main = "PCA: PC1 vs PC3 RNASE")
+legend("topright", legend = c("Significant Shift","Possible Shift","No Shift"), col = c("red", "blue", "green"), pch = 16)
+
+plot(pca_result_rnase_sig$x[,2:3], col = farben, pch = 16,
+     xlab = "PC2", ylab = "PC3", main = "PCA: PC2 vs PC3 CTRL")
+legend("topright", legend = c("Significant Shift","Possible Shift","No Shift"), col = c("red", "blue", "green"), pch = 16)
+```
+
+```{r}
+plot(pca_result_ctrl_sig, type = "l", main = "Elbow-Plot CTRL")
+plot(pca_result_rnase_sig, type = "l", main = "Elbow-Plot RNASE")
+```
+
+```{r}
+pca_ctrl_pc1_pc2 <- as.data.frame(pca_result_ctrl_sig$x[, 1:2])
+pca_ctrl_pc1_pc3 <- as.data.frame(pca_result_ctrl_sig$x[, c(1,3)])
+pca_ctrl_pc2_pc3 <- as.data.frame(pca_result_ctrl_sig$x[, 2:3])
+
+pca_rnase_pc1_pc2 <- as.data.frame(pca_result_rnase_sig$x[, 1:2])
+pca_rnase_pc1_pc3 <- as.data.frame(pca_result_rnase_sig$x[, c(1,3)])
+pca_rnase_pc2_pc3 <- as.data.frame(pca_result_rnase_sig$x[, 2:3])
+```
+
+```{r}
+library(factoextra)
+
+fviz_nbclust(pca_ctrl_pc1_pc2, kmeans, method = "silhouette") +
+  labs(title = "Silhouette-Methode CTRL PC1/PC2") +
+  theme_minimal()
+fviz_nbclust(pca_ctrl_pc1_pc3, kmeans, method = "silhouette") +
+  labs(title = "Silhouette-Methode CTRL PC1/PC2") +
+  theme_minimal()
+fviz_nbclust(pca_ctrl_pc2_pc3, kmeans, method = "silhouette") +
+  labs(title = "Silhouette-Methode CTRL PC2/PC3") +
+  theme_minimal()
+
+fviz_nbclust(pca_rnase_pc1_pc2, kmeans, method = "silhouette") +
+  labs(title = "Silhouette-Methode RNASE PC1/PC2") +
+  theme_minimal()
+fviz_nbclust(pca_rnase_pc1_pc3, kmeans, method = "silhouette") +
+  labs(title = "Silhouette-Methode RNASE PC1/PC3") +
+  theme_minimal()
+fviz_nbclust(pca_rnase_pc2_pc3, kmeans, method = "silhouette") +
+  labs(title = "Silhouette-Methode RNASE PC2/PC3") +
+  theme_minimal()
+```
+
+```{r}
+km_result_ctrl<- kmeans(pca_ctrl_pc1_pc2, centers = 2)
+
+km_result_rnase<- kmeans(pca_rnase_pc1_pc2, centers = 2)
+```
+
+```{r}
+library(factoextra)
+
+# pca_df enthält deine Daten, z. B. PC1 und PC2
+fviz_cluster(km_result_ctrl, data = pca_ctrl_pc1_pc2,
+             geom = "point", ellipse.type = "norm",
+             palette = "jco", ggtheme = theme_minimal(),
+             main = "k-Means Cluster der CTRL")
+fviz_cluster(km_result_ctrl, data = pca_ctrl_pc1_pc3,
+             geom = "point", ellipse.type = "norm",
+             palette = "jco", ggtheme = theme_minimal(),
+             main = "k-Means Cluster der CTRL")
+fviz_cluster(km_result_ctrl, data = pca_ctrl_pc2_pc3,
+             geom = "point", ellipse.type = "norm",
+             palette = "jco", ggtheme = theme_minimal(),
+             main = "k-Means Cluster der CTRL")
+
+fviz_cluster(km_result_rnase, data = pca_rnase_pc1_pc2,
+             geom = "point", ellipse.type = "norm",
+             palette = "jco", ggtheme = theme_minimal(),
+             main = "k-Means Cluster der RNASE")
+
+fviz_cluster(km_result_rnase, data = pca_rnase_pc1_pc3,
+             geom = "point", ellipse.type = "norm",
+             palette = "jco", ggtheme = theme_minimal(),
+             main = "k-Means Cluster der RNASE")
+fviz_cluster(km_result_rnase, data = pca_rnase_pc2_pc3,
+             geom = "point", ellipse.type = "norm",
+             palette = "jco", ggtheme = theme_minimal(),
+             main = "k-Means Cluster der RNASE")
+```
 
