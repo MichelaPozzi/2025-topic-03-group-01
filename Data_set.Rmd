@@ -374,7 +374,7 @@ row_dat1 <- as.numeric(ctrl_norm_mean["AHNK_HUMAN", ])
 row_dat2 <- as.numeric(rnase_norm_mean["AHNK_HUMAN", ])
 
 # Plot
-plot(row_dat1,
+plot(row_dat2,
      type = "l",                # Linienplot
      main = "Plot for AHNK_HUMAN",
      xlab = "Fractions",
@@ -382,7 +382,7 @@ plot(row_dat1,
      col = "blue",
      lwd = 2)
 
-lines(row_dat2,
+lines(row_dat1,
       type = "l",
       col = "red",
       lwd = 2)
@@ -1529,11 +1529,11 @@ table.rnase3.fit <- rapply(table.rnase3.fit, f=function(x) ifelse(is.nan(x),0,x)
 ```
 
 ```{r}
-row_data1 <- as.numeric(table.ctrl2.fit["PRKDC_HUMAN", ])
-row_data2 <- as.numeric(table.rnase2.fit["PRKDC_HUMAN", ])
+row_data1 <- as.numeric(table.ctrl2.fit["PRKDC_HUMAN",1:25])
+row_data2 <- as.numeric(table.rnase2.fit["PRKDC_HUMAN",1:25])
 
 # Plot
-plot(row_data1,
+plot(row_data2,
      type = "l",                # Linienplot
      main = "Plot for AHNK_HUMAN",
      xlab = "Fractions",
@@ -1541,7 +1541,7 @@ plot(row_data1,
      col = "blue",
      lwd = 2)
 
-lines(row_data2,
+lines(row_data1,
       type = "l",
       col = "red",
       lwd = 2)
@@ -1691,11 +1691,13 @@ table.rnase3.fit$fit_res <- apply(vect, 2, function(x) { gauss_fit_res(x, rnase_
 ```
 
 ```{r}
+#Combine the tables table.ctrl1.fit, table.ctrl2.fit and table.ctrl3.fit to create the table table.ctrl.fit. Every coordinate is the mean of the coordinates of the 3 tables
 table.ctrl.fit <- (table.ctrl1.fit[1:25] + table.ctrl2.fit[1:25] + table.ctrl3.fit[1:25]) / 3
 table.rnase.fit <- (table.rnase1.fit[1:25] + table.rnase2.fit[1:25] + table.rnase3.fit[1:25]) / 3
 ```
 
 ```{r}
+#Dataframe table.ctrl.fit[1:25] is prepaired for the t-test
 df1 <- table.ctrl.fit[1:25] # Gruppe A
 df2 <- table.rnase.fit[1:25] # Gruppe B
 
@@ -1711,16 +1713,16 @@ rownames(df_numeric2) <- rownames(table.rnase.fit[1:25])
 ```
 
 ```{r}
-# T-Test pro Zeilenpaar
+# T-Test per row-pair
 t_test_ergebnisse <- lapply(seq_len(nrow(df_numeric1)), function(i) {
   x <- as.numeric(df_numeric1[i, ])
   y <- as.numeric(df_numeric2[i, ])
 
-  # Nur t-Test, wenn beide Gruppen mindestens 2 gültige Werte haben
+  #Just doing the t-test if there are atleast 2 valid values
   if (sum(!is.na(x)) >= 2 && sum(!is.na(y)) >= 2) {
     t_res <- t.test(x, y, paired = TRUE)
     data.frame(
-      zeile = rownames(df_numeric1)[i],
+      Proteine = rownames(df_numeric1)[i],
       p_wert = t_res$p.value,
       mittelwert_df1 = mean(x, na.rm = TRUE),
       mittelwert_df2 = mean(y, na.rm = TRUE),
@@ -1732,16 +1734,15 @@ t_test_ergebnisse <- lapply(seq_len(nrow(df_numeric1)), function(i) {
   }
 })
 
-# Entferne NULLs (wo T-Test nicht möglich war)
+# Delet zeros (t-test wasn't possible)
 t_test_ergebnisse <- Filter(Negate(is.null), t_test_ergebnisse)
 
-# Ergebnisse zusammenführen
+# combine resultes
 t_test_ergebnisse_df <- do.call(rbind, t_test_ergebnisse)
 
-# Optional: Nach p-Wert sortieren
+#sort proteins by their p-values
 t_test_ergebnisse_df <- t_test_ergebnisse_df[order(t_test_ergebnisse_df$p_wert), ]
 
-# Ausgabe
 print(t_test_ergebnisse_df)
 ```
 ***********************************************************************************************************
@@ -2003,61 +2004,6 @@ lines(row_data3,
       col = "red",
       lwd = 2)
 ```
-```{r}
-table.ctrl.fit <- (table.ctrl1.fit[1:25] + table.ctrl2.fit[1:25] + table.ctrl3.fit[1:25]) / 3
-table.rnase.fit <- (table.rnase1.fit[1:25] + table.rnase2.fit[1:25] + table.rnase3.fit[1:25]) / 3
-```
-
-```{r}
-df1 <- table.ctrl.fit[1:25] # Gruppe A
-df2 <- table.rnase.fit[1:25] # Gruppe B
-
-df_numeric1 <- as.data.frame(lapply(df1, function(x) as.numeric(as.character(x))))
-df_numeric2 <- as.data.frame(lapply(df2, function(x) as.numeric(as.character(x))))
-
-colnames(df_numeric1) <- colnames(table.ctrl.fit[1:25])
-colnames(df_numeric2) <- colnames(table.rnase.fit[1:25])
-
-rownames(df_numeric1) <- rownames(table.ctrl.fit[1:25])
-rownames(df_numeric2) <- rownames(table.rnase.fit[1:25])
-
-```
-
-```{r}
-# T-Test pro Zeilenpaar
-t_test_ergebnisse <- lapply(seq_len(nrow(df_numeric1)), function(i) {
-  x <- as.numeric(df_numeric1[i, ])
-  y <- as.numeric(df_numeric2[i, ])
-
-  # Nur t-Test, wenn beide Gruppen mindestens 2 gültige Werte haben
-  if (sum(!is.na(x)) >= 2 && sum(!is.na(y)) >= 2) {
-    t_res <- t.test(x, y, paired = TRUE)
-    data.frame(
-      zeile = rownames(df_numeric1)[i],
-      p_wert = t_res$p.value,
-      mittelwert_df1 = mean(x, na.rm = TRUE),
-      mittelwert_df2 = mean(y, na.rm = TRUE),
-      t_wert = t_res$statistic,
-      df = t_res$parameter
-    )
-  } else {
-    NULL
-  }
-})
-
-# Entferne NULLs (wo T-Test nicht möglich war)
-t_test_ergebnisse <- Filter(Negate(is.null), t_test_ergebnisse)
-
-# Ergebnisse zusammenführen
-t_test_ergebnisse_df <- do.call(rbind, t_test_ergebnisse)
-
-# Optional: Nach p-Wert sortieren
-t_test_ergebnisse_df <- t_test_ergebnisse_df[order(t_test_ergebnisse_df$p_wert), ]
-
-# Ausgabe
-print(t_test_ergebnisse_df)
-```
-
 ***********************************************************************************************************
 ```{r}
 #At a peak, the fit value is calculated with 0.1 (not 1 for precision). The created function will be used at each maximum to evaluate the p-value. Amplitude of the fit curve at a given position is returned.
@@ -2108,7 +2054,7 @@ fine_fit_corr <- function(pos,vector,table_rep)	 {
 ***********************************************************************************************************
 
 ```{r}
-# Create summary tables
+# Create the table ctrl_mean throw the combination of the tables table.ctrl.fit.fine and ctrl_3 column 26 to 37 
 ctrl_mean <- cbind(table.ctrl.fit.fine, ctrl_3[, 26:37])
 
 rnase_mean <- cbind(table.rnase.fit.fine, rnase_3[, 26:37])
@@ -2117,6 +2063,8 @@ rnase_mean <- cbind(table.rnase.fit.fine, rnase_3[, 26:37])
 ***********************************************************************************************************
 
 ```{r}
+#Annotiere ich wenn wir das Gausen drinnlassen sollten, weil sonst unnötig (Maiwens Code)
+
 # Area under the curve: here, area under the respective maxima
 
 fun_gauss_area <- function(x) {
@@ -2133,6 +2081,9 @@ fun_gauss_area <- function(x) {
 ```
 
 ```{r}
+#Annotiere ich wenn wir das Gausen drinnlassen sollten, weil sonst unnötig (Maiwens Code)
+
+
 # add a column with areas under each maximum and sum of the areas
 # column "fit_area"
 # column "sum_area" - the sum of the areas is expected to be close to 100 (due to the previous normalization step)
@@ -2192,6 +2143,8 @@ rnase_mean$sum_area <- apply(vect, 2, function(z) {
 ***********************************************************************************************************
 
 ```{r}
+#Annotiere ich wenn wir das Gausen drinnlassen sollten, weil sonst unnötig (Maiwens Code)
+
 # Label peaks which have either a residual value > 260 (no good fitting) or negative area (area under the curve < 0 after fitting)
 # add column "pb_fit"
 
@@ -2215,9 +2168,10 @@ rnase_mean$pb_fit <- apply(vect, 2, function(x) {
 ```
 
 ***********************************************************************************************************
-#### Make correction for peaks labeled as "problematic" peaks in the column "pb_fit"
 
 ```{r}
+#Annotiere ich wenn wir das Gausen drinnlassen sollten, weil sonst unnötig (Maiwens Code)
+
 # Create a subtable with the problematic peaks from the control table
 ctrl_mean_corr <- ctrl_mean[ctrl_mean$pb_fit == "TRUE",]
 ctrl_mean_corr <- ctrl_mean_corr[, c(1:251,254)]
@@ -2228,20 +2182,20 @@ rnase_mean_corr <- rnase_mean_corr[, c(1:251,254)]
 ```
 
 ```{r}
-# Reihennamen beider Tabellen
+#Define the rownames of the tables as a new varible
 rows_rnase1 <- rownames(rnase_mean)
 rows_rnase2 <- rownames(rnase_mean_corr)
 
 rows_ctrl1 <- rownames(ctrl_mean)
 rows_ctrl2 <- rownames(ctrl_mean_corr)
 
-# Reihen, die NICHT in table2 vorkommen (nur die willst du behalten)
+#Search the rows with the same 
 rows_to_keep_rnase_rnase <- setdiff(rows_rnase1, rows_rnase2)
 rows_to_keep_rnase_ctrl <- setdiff(rows_rnase1, rows_ctrl2)
 rows_to_keep_ctrl_rnase <- setdiff(rows_ctrl1, rows_rnase2)
 rows_to_keep_ctrl_ctrl <- setdiff(rows_ctrl1, rows_ctrl2)
 
-# table1 ohne die gemeinsamen Reihen
+# table1 ohne die gemeinsamen Reihen. Damit sind alle Proteine in dieser Tabelle gegaust
 rnase_mean_filtert <- rnase_mean[rows_to_keep_rnase_rnase,]
 rnase_mean_filtert_final <- rnase_mean_filtert[rows_to_keep_rnase_ctrl,]
 
@@ -2250,7 +2204,7 @@ ctrl_mean_filtert_final <- ctrl_mean_filtert[rows_to_keep_ctrl_ctrl,]
 ```
 
 ```{r}
-# eigentlich mit ctrl_mean_filtert_final
+#Prepairing the table ctrl_mean_filtert_final for the t-test
 
 df_ctrl <- ctrl_mean_filtert_final[1:251] # Gruppe A
 df_rnase <- rnase_mean_filtert_final[1:251] # Gruppe B
@@ -2303,9 +2257,11 @@ print(t_test_final_df)
 ```
 
 ```{r}
+#Es werden listen erstellt, die nur die Proteine mit den jeweiligen p-Wert-Bereichen aufweisen (Angabe, ob shift signifikant, möglich oder es kein shift ist)
+
 list_significant_shift <- t_test_final_df[t_test_final_df$p_wert < 0.3, ]
 
-# Beispiel: p-Wert zwischen 0.05 und 0.5
+# Beispiel: p-Wert zwischen 0.05 und 0.7
 list_possible_shift <- t_test_final_df[t_test_final_df$p_wert > 0.3 & t_test_final_df$p_wert < 0.7, ]
 
 
@@ -2318,6 +2274,8 @@ no_shift_proteins <- list_no_shift$zeile
 ```
 
 ```{r}
+#PCA von ctrl_mean_filtert_final
+
 # Nur numerische Spalten behalten
 pca_ctrl_numeric <- ctrl_mean_filtert_final[1:251, sapply(ctrl_mean_filtert_final, is.numeric)]
 pca_rnase_numeric <- rnase_mean_filtert_final[1:251, sapply(rnase_mean_filtert_final, is.numeric)]
@@ -2339,6 +2297,7 @@ plot(pca_result_rnase$x[,1:2], col = "blue", pch = 16,
 
 ```{r}
 #chech which PCs have the most variance
+#--> PC1 to PC3 show 90% of the variance
 #summary(pca_result_ctrl)
 #summary(pca_result_rnase)
 ```
@@ -2360,14 +2319,16 @@ plot(pca_result_rnase$x[,2:3], col = "blue", pch = 16,
      xlab = "PC2", ylab = "PC3", main = "PCA: PC2 vs PC3 RNASE")
 ```
 ```{r}
-# Namen der Zeilen in PCA müssen mit Protein-Namen übereinstimmen
-# Setze z. B. signifikante auf "red"
+#Signifikante proteine etc werden neuen Variablen zugeordnet, um PCA damit durchzuführen
+
 highlight_proteine_significant <- list_significant_shift
 highlight_proteine_possible <- possible_shift_proteins
 highlight_proteine_no <- no_shift_proteins
 ```
 
 ```{r}
+#In der PCA werden die die Proteine je nach signifikantem shift markiert
+#Nur no-shift Proteine werden dargestellt
 farben <- rep("grey", nrow(pca_result_ctrl$x))
 farben[rownames(pca_result_ctrl$x[, 1:2]) %in% highlight_proteine_significant] <- "red"
 farben[rownames(pca_result_ctrl$x[, 1:2]) %in% highlight_proteine_possible] <- "blue"
@@ -2400,6 +2361,7 @@ plot(pca_result_rnase$x[,2:3], col = farben, pch = 16,
 legend("topright", legend = c("Significant Shift","Possible Shift","No Shift"), col = c("red", "blue", "green"), pch = 16)
 ```
 ```{r}
+#No Shift proteine werden aus liste entfernt und PCA wird nochmal durchgeführt
 # Reihennamen beider Tabellen
 rows_ctrl_pca <- rownames(ctrl_mean_filtert_final)
 rows_rnase_pca <- rownames(rnase_mean_filtert_final)
@@ -2468,6 +2430,8 @@ legend("topright", legend = c("Significant Shift","Possible Shift","No Shift"), 
 
 
 ```{r}
+#Centren für kmeans clustering erkennen
+#--> 2 bis 3 Centren
 plot(pca_result_ctrl, type = "l", main = "Elbow-Plot CTRL")
 plot(pca_result_rnase, type = "l", main = "Elbow-Plot RNASE")
 ```
@@ -2483,6 +2447,8 @@ pca_rnase_pc2_pc3 <- as.data.frame(pca_result_rnase$x[, 2:3])
 ```
 
 ```{r}
+#Centren für kmeans clustering erkennen
+#Bei CTRL auch 2 bis 3 Centren. RNASE scheint Methode nicht so gut zu funktionieren, deshalb auch 3 Centren aus Elbowplot
 library(factoextra)
 
 fviz_nbclust(pca_ctrl_pc1_pc2, kmeans, method = "silhouette") +
@@ -2507,38 +2473,43 @@ fviz_nbclust(pca_rnase_pc2_pc3, kmeans, method = "silhouette") +
 ```
 
 ```{r}
-km_result_ctrl<- kmeans(pca_ctrl_pc1_pc2, centers = 3)
+#kmeans wird mit 3 Centren durchgeführt
+km_result_ctrl_pc1_pc2<- kmeans(pca_ctrl_pc1_pc2, centers = 3)
+km_result_ctrl_pc1_pc3<- kmeans(pca_ctrl_pc1_pc3, centers = 3)
+km_result_ctrl_pc2_pc3<- kmeans(pca_ctrl_pc2_pc3, centers = 3)
 
-km_result_rnase<- kmeans(pca_rnase_pc1_pc2, centers = 5)
+km_result_rnase_pc1_pc2<- kmeans(pca_rnase_pc1_pc2, centers = 3)
+km_result_rnase_pc1_pc3<- kmeans(pca_rnase_pc1_pc3, centers = 3)
+km_result_rnase_pc2_pc3<- kmeans(pca_rnase_pc2_pc3, centers = 3)
 ```
 
 ```{r}
 library(factoextra)
 
 # pca_df enthält deine Daten, z. B. PC1 und PC2
-fviz_cluster(km_result_ctrl, data = pca_ctrl_pc1_pc2,
+fviz_cluster(km_result_ctrl_pc1_pc2, data = pca_ctrl_pc1_pc2,
              geom = "point", ellipse.type = "norm",
              palette = "jco", ggtheme = theme_minimal(),
              main = "k-Means Cluster der CTRL")
-fviz_cluster(km_result_ctrl, data = pca_ctrl_pc1_pc3,
+fviz_cluster(km_result_ctrl_pc1_pc3, data = pca_ctrl_pc1_pc3,
              geom = "point", ellipse.type = "norm",
              palette = "jco", ggtheme = theme_minimal(),
              main = "k-Means Cluster der CTRL")
-fviz_cluster(km_result_ctrl, data = pca_ctrl_pc2_pc3,
+fviz_cluster(km_result_ctrl_pc2_pc3, data = pca_ctrl_pc2_pc3,
              geom = "point", ellipse.type = "norm",
              palette = "jco", ggtheme = theme_minimal(),
              main = "k-Means Cluster der CTRL")
 
-fviz_cluster(km_result_rnase, data = pca_rnase_pc1_pc2,
+fviz_cluster(km_result_rnase_pc1_pc2, data = pca_rnase_pc1_pc2,
              geom = "point", ellipse.type = "norm",
              palette = "jco", ggtheme = theme_minimal(),
              main = "k-Means Cluster der RNASE")
 
-fviz_cluster(km_result_rnase, data = pca_rnase_pc1_pc3,
+fviz_cluster(km_result_rnase_pc1_pc3, data = pca_rnase_pc1_pc3,
              geom = "point", ellipse.type = "norm",
              palette = "jco", ggtheme = theme_minimal(),
              main = "k-Means Cluster der RNASE")
-fviz_cluster(km_result_rnase, data = pca_rnase_pc2_pc3,
+fviz_cluster(km_result_rnase_pc2_pc3, data = pca_rnase_pc2_pc3,
              geom = "point", ellipse.type = "norm",
              palette = "jco", ggtheme = theme_minimal(),
              main = "k-Means Cluster der RNASE")
