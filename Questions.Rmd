@@ -9,9 +9,10 @@ Questions:
 
 8. Precipitation Proteine mit Shift, sind die RNA-dependent?
 
-9. Wie machen wir eine PCA bei Verteilungen? Wie eine PCA mit Datanpunkten funktioniert, hab ich verstanden, wie soll das aber mit Datanverteilungen funktionieren?
+1. Würdest du das Gausen dirn lassen, wie in Data_set, oder würdest du es raus lassen, weil der ttest so besser ist und wir Teile des komplizierten Codes von Maiwen loswerden.
 
-10. Mein t-Test gibt immer nur p-Werte von 1 an. Das macht aber egentlich keinen Sinn. Warum macht er das? (2196-2245)
---> t-test in Zeile 1955 bis 2003
+2. Mit dem Gausen funktioniert der ttest immer noch nicht so gut...(2257)
 
-11. Code vom Proportion test --> oder vielleicht Correllation test besser?
+3. ungegauste t-test funktioniert besser. Wir haben knapp 120 Proteine, die nen kleineren p-Wert als 0,05 haben und knapp 170 mit einem p-Wert kleiner als 0,1. Sind das überhaupt die richtigen Werte, die wir auswerten müssen oder müssen wir die Freiheitsgrade noch mit einbeziehen? Weil Maiwen meinte, dass sie knapp 1700 Proteine gefunden hat und das sind dann schon so n paar mehr...
+
+4. Warum werden noch graue Punkte in der PCA (Data_set 2415) angegeben obwohl ich im Code davor alle Proteinen ne Farbe zugeordet habe?
