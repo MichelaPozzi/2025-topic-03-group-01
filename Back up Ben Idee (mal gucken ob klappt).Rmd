@@ -1700,7 +1700,7 @@ rownames(df_numeric2) <- rownames(table.rnase.fit[1:25])
 ```
 
 ```{r}
-# T-Test pro Zeilenpaar
+# T-Test pro Reihenpaar
 t_test_ergebnisse <- lapply(seq_len(nrow(df_numeric1)), function(i) {
   x <- as.numeric(df_numeric1[i, ])
   y <- as.numeric(df_numeric2[i, ])
@@ -1709,7 +1709,7 @@ t_test_ergebnisse <- lapply(seq_len(nrow(df_numeric1)), function(i) {
   if (sum(!is.na(x)) >= 2 && sum(!is.na(y)) >= 2) {
     t_res <- t.test(x, y, paired = TRUE)
     data.frame(
-      zeile = rownames(df_numeric1)[i],
+      proteine = rownames(df_numeric1)[i],
       p_wert = t_res$p.value,
       mittelwert_df1 = mean(x, na.rm = TRUE),
       mittelwert_df2 = mean(y, na.rm = TRUE),
@@ -1737,7 +1737,7 @@ print(t_test_ergebnisse_df)
 ```{r}
 list_significant_shift <- t_test_ergebnisse_df[t_test_ergebnisse_df$p_wert < 0.05, ]
 
-# Beispiel: p-Wert zwischen 0.05 und 0.5
+# Beispiel: p-Wert zwischen 0.05 und 0.7
 list_possible_shift <- t_test_ergebnisse_df[t_test_ergebnisse_df$p_wert > 0.05 & t_test_ergebnisse_df$p_wert < 0.7, ]
 
 
