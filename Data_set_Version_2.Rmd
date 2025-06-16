@@ -616,38 +616,21 @@ ctrl_3$only_max <- apply(ctrl_3, 1, function(x) {
 ctrl_3_selection = ctrl_3
 rnase_3_selection = rnase_3
 
+ctrl_3_same_maxima_amount = ctrl_3
+rnase_3_same_maxima_amount = rnase_3
 
 diff_index = ctrl_3_selection$nb_max != rnase_3_selection$nb_max
 #diff_index_only_maxima = ctrl_3_selection$only_max != rnase_3_selection$only_max
-
+same_index = ctrl_3_selection$nb_max == rnase_3_selection$nb_max
 
 ctrl_3_selection = ctrl_3_selection[diff_index, ]
 rnase_3_selection = rnase_3_selection[diff_index, ]
 
+ctrl_3_same_maxima_amount = ctrl_3_same_maxima_amount[same_index, ]
+rnase_3_same_maxima_amount = rnase_3_same_maxima_amount[same_index, ]
 
 #1333 Proteine zeigen eine unterschiedliche Anzahl an Peaks, hierbei sollte allerdings bedacht werden, dass die Anzahl der Peaks auch von den Schultern abhängt. Wir dachten uns aber, dass das Entstehen einer Schulter auch bedeutet, dass sich zwischen beiden Versuchsansätzen etwas geändert hatte, und somit eventuell eine RNA-abhängigkeit vorliegt. Bei 1253 alleine Unterschied sich die Anzahl der tatsächlichen Maxima unabhängig von den Schultern
-
 ```
-
-
-```{r}
-
-
-
-
-rnase_3$only_max <- apply(rnase_3, 1, function(x) {
-												 ls_max <- as.numeric(unlist(x$maxima))
-												 n = length(ls_max) 
-												 if (sum(ls_max) == 0) {0} else {n}  
-												 })
-												 
-ctrl_3$only_max <- apply(ctrl_3, 1, function(x) {
-												 ls_max <- as.numeric(unlist(x$maxima))
-												 n = length(ls_max)
-												 if (sum(ls_max) == 0) {0} else {n} 
-												 })
-```
-
 
 
 
@@ -657,6 +640,11 @@ Identifizuerung von Proteinen bei denen die Maxima um 2 Fraktionen verschoben si
 Zweite Vorauswahl an Proteinen mit potentieller RNA-Abhängigkeit.
 
 ```{r}
+
+ctrl_max_list <- lapply(ctrl_3_same_maxima_amount$ctrl_max, as.numeric)
+rnase_max_list <- lapply(rnase_3_same_maxima_amount$rnase_max, as.numeric)
+
+
 
 ```
 
