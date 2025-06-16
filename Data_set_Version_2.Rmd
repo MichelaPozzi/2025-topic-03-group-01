@@ -621,7 +621,7 @@ rnase_3_same_maxima_amount = rnase_3
 
 diff_index = ctrl_3_selection$only_max != rnase_3_selection$only_max
 #diff_index_only_maxima = ctrl_3_selection$only_max != rnase_3_selection$only_max
-same_index = ctrl_3_selection$only_max == rnase_3_selection$only_max
+same_index = ctrl_3_same_maxima_amount$only_max == rnase_3_same_maxima_amount$only_max
 
 ctrl_3_selection = ctrl_3_selection[diff_index, ]
 rnase_3_selection = rnase_3_selection[diff_index, ]
@@ -647,7 +647,7 @@ Zweite Vorauswahl an Proteinen mit potentieller RNA-Abhängigkeit.
 ctrl_maxima_list <- ctrl_3_same_maxima_amount$maxima
 rnase_maxima_list <- rnase_3_same_maxima_amount$maxima
 length(ctrl_maxima_list)
-
+length(rnase_maxima_list)
 
 #Liste zum Speichern der Treffer
 verschobene_proteine <- c()
