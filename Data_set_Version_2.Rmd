@@ -417,7 +417,6 @@ find_peaks <- function(x, window = 2) {
     }
   }
 
-  
 # part added to deal with plateau
 # Ergibt diese Operation überhaupt Sinn, Plateaus haben ja auch nur einen Hochpunkt, und alle anderen (ähnlichen) werden doch ohnehin nicht erkannt werden?
      n = length(peaks)
@@ -698,31 +697,53 @@ for (i in seq_along(ctrl_maxima_list)) {
 ctrl_3_same_maxima_amount = ctrl_3_same_maxima_amount[verschobene_proteine, ]
 rnase_3_same_maxima_amount = rnase_3_same_maxima_amount[verschobene_proteine, ]
 
-
-
-
-
 ```
 
-
-
 ***********************************************************************************************************
-Mögliche Anwendung für einen T-Test: Wie ungleich sind die Proteinintensitäten über alle Fraktionen?
+T-Test: Wie ungleich sind die Proteinintensitäten über alle Fraktionen?
 ***********************************************************************************************************
-wie Bens Code
+
 ```{r}
 
+Denkfehler: Die Daten dürfen anscheinend nicht normalisiert, gerundet und brauchen alle 3 Replikate?
+
+#Ergebnistabelle zum Speichern der p-Werte
+t_test_results <- data.frame(protein = character(),
+                             p_value = numeric(),
+                             stringsAsFactors = FALSE)
+
+# Paired t-Test für jedes Protein über 25 Fraktionen hinweg
+for (i in 1:nrow(ctrl_norm_mean)) {
+  ctrl_signal_intensities <- as.numeric(ctrl_norm_mean[i, 1:25])
+  rnase_signal_intensities <- as.numeric(rnase_norm_mean[i, 1:25])
+  
+  # Paired t-test
+  test_result <- t.test(ctrl_signal_intensities, rnase_signal_intensities, paired = TRUE)
+  
+  t_test_results <- rbind(t_test_results,
+                          data.frame(protein = rownames(ctrl_norm_mean)[i],
+                                     p_value = test_result$p.value))
+}
+
+# Füge adjustierte p-Werte (FDR, Benjamini-Hochberg) hinzu
+t_test_results$adj_p_value <- p.adjust(t_test_results$p_value, method = "BH")
+
+significant_proteins <- t_test_results[t_test_results$adj_p_value < 0.05, ]
+```
+
+```{r}
+summary(ctrl_norm_mean[1:5, 1:25])
+summary(rnase_norm_mean[1:5, 1:25])
+
+apply(ctrl_norm_mean[ ,1:25], 1, var)  
+apply(rnase_norm_mean[,1:25], 1, var)
 ```
 
 
-
-
-
-
 ###################################################################################################
 ###################################################################################################
 ###################################################################################################
-* hier ruht unser Gaussian fit
+* hier ruht unser Gaussian fit ˙◠˙
 
 ***********************************************************************************************************
 T-Test (Bens)
