@@ -597,19 +597,55 @@ Identifizuerung von Proteinen mit einer unterschiedlichen Anzahl an Maxima in CT
 ***********************************************************************************************************
 Erste Vorauswahl an Proteinen: Eine unterschiedliche Anzahl an Maxima ist ein erster Hinweis auf mögliche RNA-abhängige Proteine.
 
+```{r}
+rnase_3$only_max <- apply(rnase_3, 1, function(x) {
+												 ls_max <- as.numeric(unlist(x$maxima))
+												 n = length(ls_max) 
+												 if (sum(ls_max) == 0) {0} else {n}  
+												 })
+												 
+ctrl_3$only_max <- apply(ctrl_3, 1, function(x) {
+												 ls_max <- as.numeric(unlist(x$maxima))
+												 n = length(ls_max)
+												 if (sum(ls_max) == 0) {0} else {n} 
+												 })
+
+```
 
 ```{r}
-#Erstellen einer Vergleichstabelle, also eines Datenrahmens zum Vergleich der Peakanzahl
-peak_difference <- data.frame(protein = rownames(table_ctrl_mean),
-  nb_max_ctrl = table_ctrl_mean$nb_max_th,
-  nb_max_rnase = table_rnase_mean$nb_max_th
-)
+ctrl_3_selection = ctrl_3
+rnase_3_selection = rnase_3
 
-#Berechnen der Differenz der Peakmaxima von CTRL gegenüber RNASE
-#Zügt die Differenzen als neue Spalte $difference hinzu.
 
-peak_difference$difference <- peak_difference$nb_max_ctrl != peak_difference$nb_max_rnase  
+diff_index = ctrl_3_selection$nb_max != rnase_3_selection$nb_max
+#diff_index_only_maxima = ctrl_3_selection$only_max != rnase_3_selection$only_max
 
+
+ctrl_3_selection = ctrl_3_selection[diff_index, ]
+rnase_3_selection = rnase_3_selection[diff_index, ]
+
+
+#1333 Proteine zeigen eine unterschiedliche Anzahl an Peaks, hierbei sollte allerdings bedacht werden, dass die Anzahl der Peaks auch von den Schultern abhängt. Wir dachten uns aber, dass das Entstehen einer Schulter auch bedeutet, dass sich zwischen beiden Versuchsansätzen etwas geändert hatte, und somit eventuell eine RNA-abhängigkeit vorliegt. Bei 1253 alleine Unterschied sich die Anzahl der tatsächlichen Maxima unabhängig von den Schultern
+
+```
+
+
+```{r}
+
+
+
+
+rnase_3$only_max <- apply(rnase_3, 1, function(x) {
+												 ls_max <- as.numeric(unlist(x$maxima))
+												 n = length(ls_max) 
+												 if (sum(ls_max) == 0) {0} else {n}  
+												 })
+												 
+ctrl_3$only_max <- apply(ctrl_3, 1, function(x) {
+												 ls_max <- as.numeric(unlist(x$maxima))
+												 n = length(ls_max)
+												 if (sum(ls_max) == 0) {0} else {n} 
+												 })
 ```
 
 
