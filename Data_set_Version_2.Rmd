@@ -660,10 +660,7 @@ rnase_3_same_maxima_amount = rnase_3_same_maxima_amount[same_index, ]
 #1333 Proteine zeigen eine unterschiedliche Anzahl an Peaks, hierbei sollte allerdings bedacht werden, dass die Anzahl der Peaks auch von den Schultern abhängt. Wir dachten uns aber, dass das Entstehen einer Schulter auch bedeutet, dass sich zwischen beiden Versuchsansätzen etwas geändert hatte, und somit eventuell eine RNA-abhängigkeit vorliegt. Bei 1253 alleine Unterschied sich die Anzahl der tatsächlichen Maxima unabhängig von den Schultern
 ```
 
-```{r}
-length(ctrl_maxima_list)
 
-```
 
 ***********************************************************************************************************
 Identifizierung von Proteinen bei denen die Maxima um 2 Fraktionen verschoben sind zwischen CTRL und RNASE
@@ -1013,7 +1010,7 @@ fviz_nbclust(pca_rnase_pc1_pc3, kmeans, method = "silhouette") +
   theme_minimal()
 fviz_nbclust(pca_rnase_pc2_pc3, kmeans, method = "silhouette") +
   labs(title = "Silhouette-Methode RNASE PC2/PC3") +
-  theme_minimal()
+  theme_minimal() 
 ```
 
 ```{r}
