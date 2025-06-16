@@ -579,6 +579,73 @@ ctrl_3$nb_max <- apply(ctrl_3, 1, function(x) {
 												 })
 ```
 
+
+
+###################################################################################################
+###################################################################################################
+###################################################################################################
+###################################################################################################
+###################################################################################################
+
+
+
+
+
+
+***********************************************************************************************************
+Identifizuerung von Proteinen mit einer unterschiedlichen Anzahl an Maxima in CTRL vs. RNASE
+***********************************************************************************************************
+Erste Vorauswahl an Proteinen: Eine unterschiedliche Anzahl an Maxima ist ein erster Hinweis auf mögliche RNA-abhängige Proteine.
+
+
+```{r}
+#Erstellen einer Vergleichstabelle, also eines Datenrahmens zum Vergleich der Peakanzahl
+peak_difference <- data.frame(protein = rownames(table_ctrl_mean),
+  nb_max_ctrl = table_ctrl_mean$nb_max_th,
+  nb_max_rnase = table_rnase_mean$nb_max_th
+)
+
+#Berechnen der Differenz der Peakmaxima von CTRL gegenüber RNASE
+#Zügt die Differenzen als neue Spalte $difference hinzu.
+
+peak_difference$difference <- peak_difference$nb_max_ctrl != peak_difference$nb_max_rnase  
+
+```
+
+
+
+
+***********************************************************************************************************
+Identifizuerung von Proteinen bei denen die Maxima um 2 Fraktionen verschoben sind zwischen CTRL und RNASE
+***********************************************************************************************************
+Zweite Vorauswahl an Proteinen mit potentieller RNA-Abhängigkeit.
+
+```{r}
+
+```
+
+
+
+***********************************************************************************************************
+Mögliche Anwendung für einen T-Test: Wie ungleich sind die Proteinintensitäten über alle Fraktionen?
+***********************************************************************************************************
+wie Bens Code
+```{r}
+
+```
+
+
+
+
+
+
+###################################################################################################
+###################################################################################################
+###################################################################################################
+###################################################################################################
+###################################################################################################
+
+
 ***********************************************************************************************************
 Take the mean curves of the three replicates per condition and perform a gaussian fit on them.
 ***********************************************************************************************************
