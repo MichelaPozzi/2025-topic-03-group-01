@@ -1683,6 +1683,111 @@ lines(row_data3,
       col = "red",
       lwd = 2)
 ```
+__________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+
+
+
+
+
+```{r}
+rnase_3$only_max <- apply(rnase_3, 1, function(x) {
+												 ls_max <- as.numeric(unlist(x$maxima))
+												 n = length(ls_max) 
+												 if (sum(ls_max) == 0) {0} else {n}  
+												 })
+												 
+ctrl_3$only_max <- apply(ctrl_3, 1, function(x) {
+												 ls_max <- as.numeric(unlist(x$maxima))
+												 n = length(ls_max)
+												 if (sum(ls_max) == 0) {0} else {n} 
+												 })
+
+```
+
+```{r}
+ctrl_3_selection = ctrl_3
+rnase_3_selection = rnase_3
+
+ctrl_3_same_maxima_amount = ctrl_3
+rnase_3_same_maxima_amount = rnase_3
+
+diff_index = ctrl_3_selection$only_max != rnase_3_selection$only_max
+#diff_index_only_maxima = ctrl_3_selection$only_max != rnase_3_selection$only_max
+same_index = ctrl_3_same_maxima_amount$only_max == rnase_3_same_maxima_amount$only_max
+
+ctrl_3_selection = ctrl_3_selection[diff_index, ]
+rnase_3_selection = rnase_3_selection[diff_index, ]
+
+ctrl_3_same_maxima_amount = ctrl_3_same_maxima_amount[same_index, ]
+rnase_3_same_maxima_amount = rnase_3_same_maxima_amount[same_index, ]
+
+#1333 Proteine zeigen eine unterschiedliche Anzahl an Peaks, hierbei sollte allerdings bedacht werden, dass die Anzahl der Peaks auch von den Schultern abhängt. Wir dachten uns aber, dass das Entstehen einer Schulter auch bedeutet, dass sich zwischen beiden Versuchsansätzen etwas geändert hatte, und somit eventuell eine RNA-abhängigkeit vorliegt. Bei 1253 alleine Unterschied sich die Anzahl der tatsächlichen Maxima unabhängig von den Schultern
+```
+
+
+
+***********************************************************************************************************
+Identifizierung von Proteinen bei denen die Maxima um 2 Fraktionen verschoben sind zwischen CTRL und RNASE
+***********************************************************************************************************
+Zweite Vorauswahl an Proteinen mit potentieller RNA-Abhängigkeit.
+
+```{r}
+
+ctrl_maxima_list <- ctrl_3_same_maxima_amount$maxima
+rnase_maxima_list <- rnase_3_same_maxima_amount$maxima
+length(ctrl_maxima_list)
+length(rnase_maxima_list)
+
+#Liste zum Speichern der Treffer
+verschobene_proteine <- c()
+
+protein_ids <- rownames(ctrl_3_same_maxima_amount)
+
+#Für jede Zeile (jedes Protein) prüfen
+for (i in seq_along(ctrl_maxima_list)) {
+  ctrl_maxima <- as.numeric(unlist(ctrl_maxima_list[[i]]))
+  rnase_maxima <- as.numeric(unlist(rnase_maxima_list[[i]]))
+
+  if (length(ctrl_maxima) > 0 && length(ctrl_maxima) == length(rnase_maxima)) { #hab hier noch leere Vektoren ausgeschlossen, wegen Fehlermeldung, vorher: if (length(ctrl_maxima) == length(rnase_maxima))
+    max_diff <- max(abs(ctrl_maxima - rnase_maxima))
+    if (max_diff >= 2) {
+      verschobene_proteine <- c(verschobene_proteine, protein_ids[i])
+    }
+  }
+}
+ctrl_3_same_maxima_amount = ctrl_3_same_maxima_amount[verschobene_proteine, ]
+rnase_3_same_maxima_amount = rnase_3_same_maxima_amount[verschobene_proteine, ]
+
+```
+
+```{r}
+#Define the rownames of the tables as a new varible
+rows_rnase1 <- rownames(table.rnase.fit)
+rows_rnase2 <- rownames(ctrl_3_same_maxima_amount)
+
+rows_ctrl1 <- rownames(table.ctrl.fit)
+rows_ctrl2 <- rownames(rnase_3_same_maxima_amount)
+
+#Search the rows with the same 
+rows_to_keep_rnase_rnase <- setdiff(rows_rnase1, rows_rnase2)
+rows_to_keep_rnase_ctrl <- setdiff(rows_rnase1, rows_ctrl2)
+rows_to_keep_ctrl_rnase <- setdiff(rows_ctrl1, rows_rnase2)
+rows_to_keep_ctrl_ctrl <- setdiff(rows_ctrl1, rows_ctrl2)
+
+# table1 ohne die gemeinsamen Reihen. Damit sind alle Proteine in dieser Tabelle gegaust
+table.rnase.fit <- table.rnase.fit[rows_to_keep_rnase_rnase,]
+table.rnase.fit <- table.rnase.fit[rows_to_keep_rnase_ctrl,]
+
+table.ctrl.fit <- table.ctrl.fit[rows_to_keep_ctrl_rnase,]
+table.ctrl.fit <- table.ctrl.fit[rows_to_keep_ctrl_ctrl,]
+```
+
+
+
+
+___________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+
+
 
 ```{r}
 df1 <- table.ctrl.fit[1:25] # Gruppe A
@@ -1732,6 +1837,25 @@ t_test_ergebnisse_df <- t_test_ergebnisse_df[order(t_test_ergebnisse_df$p_wert),
 
 # Ausgabe
 print(t_test_ergebnisse_df)
+```
+
+```{r}
+row_data3 <- as.numeric(table.ctrl.fit["ALG1_HUMAN", 1:25 ])
+row_data4 <- as.numeric(table.rnase.fit["ALG1_HUMAN",1:25 ])
+
+# Plot
+plot(row_data4,
+     type = "l",                # Linienplot
+     main = "Plot for PRKDC_HUMAN",
+     xlab = "Fractions",
+     ylab = "Values",
+     col = "blue",
+     lwd = 2)
+
+lines(row_data3,
+      type = "l",
+      col = "red",
+      lwd = 2)
 ```
 
 ```{r}
