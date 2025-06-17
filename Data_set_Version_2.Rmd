@@ -43,7 +43,6 @@ levels_CR <- factor(rep(c("CTRL", "RNASE"),75))
 #Every sample of every fraction gets its own level to disconnect them from each other -> 6 levels per fraction because we have 3 CTRLs and 3 RNASEs per fraction
 
 levels_fraction <- factor(rep(c("Ctrl_Rep1","RNase_Rep1","Ctrl_Rep2","RNase_Rep2","Ctrl_Rep3","RNase_Rep3"),25))
-#View(levels_fraction)
 ```
 
 ```{r}
@@ -53,8 +52,6 @@ levels_fraction <- factor(rep(c("Ctrl_Rep1","RNase_Rep1","Ctrl_Rep2","RNase_Rep2
 # as.vector changes the created matrix into a vector with 150 elements sorted from 6 times fraction1 to 6 times fraction25
 
 fraction_names <- as.vector(matrix(rep(paste("fraction",1:25,sep=""),6), nrow = 6, ncol=25, byrow = TRUE))
-
-#View(matrix(rep(paste("fraction",1:25,sep=""),6), nrow = 6, ncol=25, byrow = TRUE))
 ```
 
 Create Metadata Data Frame and Check for Missing Values
@@ -72,8 +69,6 @@ row_names <- rownames(NS_Table)
 
 colmns_sorted <- data.frame(row.names = colnames(NS_Table), levels_CR = levels_CR, levels_fraction = levels_fraction, fraction_names = fraction_names)
 
-#View(colmns_sorted)
-
 #Check for missing values, there are none 
 anyNA(NS_Table)
 ```
@@ -84,12 +79,12 @@ anyNA(NS_Table)
 Split Data by Fractions and Treatment (CTRL vs RNASE)
 
 ```{r}
-# lapply executes for every with paste  created string (the fractions) a function fx
+# lapply executes for every with paste created string (the fractions) a function fx
 # colmns_sorted$fraction == fx: checks which columns are part of the fractions fx
 # NS_Table[, ...] filters just these columns and assigns them to the list "fraction.tables"
 # names(fraction.tables): the list "fraction.tables" gets names for its segments and assigns them to the variable selected_proteins 
 
-fraction.tables <- lapply(paste("fraction", 1:25, sep = ""), function(fx) {NS_Table[, colmns_sorted$fraction == fx]})
+fraction.tables <- lapply(paste("fraction", 1:25, sep = ""), function(fx) {NS_Table[, colmns_sorted$fraction_names == fx]})
 
 names(fraction.tables) <- paste("fraction", 1:25, sep = "")
 
@@ -98,9 +93,9 @@ selected_proteins <- names(fraction.tables)
 
 ```{r}
 # List with just CTRL/RNASE columns for each fraction
-# subset filters just the fractions that fulfill the conditions: fraction_names == fx --> fraction name is part of the funtion fx, levels_CR == "CTRL" --> protein was treated as a CTRL
-# rownames() takes the rownames of the filtert fractions and asigns them to the variable col
-# NS_Table[, cols, drop = FALSE] the names that are part of NS_Table are filterd out and drop = FALSE makes sure that fraction.tables.CTRL will be a dataframe
+# subset filters just the fractions that fulfill the conditions: fraction_names == fx --> fraction name is part of the function fx, levels_CR == "CTRL" --> protein was treated as a CTRL
+# rownames() takes the rownames of the filtered fractions and assigns them to the variable col
+# NS_Table[, cols, drop = FALSE] the names that are part of NS_Table are filtered out and drop = FALSE makes sure that fraction.tables.CTRL will be a dataframe
 
 # Liste mit nur CTRL-Spalten für jede Fraktion
 fraction.tables.CTRL <- lapply(selected_proteins, function(fx) {
@@ -115,14 +110,13 @@ fraction.tables.RNASE <- lapply(selected_proteins, function(fx) {
 
 names(fraction.tables.CTRL) <- selected_proteins
 names(fraction.tables.RNASE) <- selected_proteins
-
-#View(fraction.tables.CTRL[["fraction3"]])
 ```
 
 Calculate Mean Protein Intensities per Fraction and Treatment
 
 ```{r}
 # sapply(df, mean) calculates the mean of every column of the dataframe fraction.tables.CTRL
+# Für jede Bedingung (z.B fraction 1, Ctrl, Rep 1) wird der Mittelwert über die Proteine gebildet, dies ist pro Bedingung dann ein einziger Wert
 
 avg.tables.CTRL <- lapply(fraction.tables.CTRL, function(df) {
   sapply(df, mean)
@@ -131,9 +125,6 @@ avg.tables.CTRL <- lapply(fraction.tables.CTRL, function(df) {
 avg.tables.RNASE <- lapply(fraction.tables.RNASE, function(df) {
   sapply(df, mean)
 })
-
-avg.tables.CTRL[["fraction1"]]
-avg.tables.RNASE[["fraction1"]]
 ```
 Calculate Normalization Factors Based on Most Similar Replicates
 
@@ -146,15 +137,15 @@ norm_fact <- function(x) {
 					{mean(c(x[1],x[2]))} else if( (abs(x[1]-x[3])<abs(x[1]-x[2])) && (abs(x[1]-x[3])<abs(x[2]-x[3])) )
 												  {mean(c(x[1],x[3]))} else {mean(c(x[2],x[3]))} 
 }
-
-
-print(norm_fact(avg.tables.CTRL[["fraction1"]]))
 ```
+
+
 Normalize Mean Intensities for Each Fraction and Treatment
 
 ```{r}
-# normalization of the mean value vectors - inversely proportional to the size of the values
-# norm_factor / vec: gives a new vector indicating how strong each element is relative to the norm factor (mean)
+# Normalisierung der Mean value Vektoren
+# norm_factor <- norm_fact(vec): Auf jeden Vektor in der Liste avg.tables.CTRL (dieser ist von der Länge 3) wird die Funktion norm_fact angewendet
+# norm_factor / vec: ergibt einen neuen Vektor der Länge 3, der einen Korrekturfaktor für die einzelnen Replikate darstellt, um die Proteinmengen der Replikate aneinander anzugleichen
 
 norm_mean_frxn_CTRL <- lapply(avg.tables.CTRL, function(vec) {
   norm_factor <- norm_fact(vec)
@@ -165,9 +156,9 @@ norm_mean_frxn_RNASE <- lapply(avg.tables.RNASE, function(vec) {
   norm_factor <- norm_fact(vec)
   norm_factor / vec 
 })
-
-print(norm_mean_frxn_CTRL[[1]])
 ```
+
+
 Extract Normalization Factors for Each Replicate and Treatment
 
 ```{r}
