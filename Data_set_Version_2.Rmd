@@ -144,7 +144,7 @@ Normalize Mean Intensities for Each Fraction and Treatment
 
 ```{r}
 # Normalisierung der Mean value Vektoren
-# norm_factor <- norm_fact(vec): Auf jeden Vektor in der Liste avg.tables.CTRL (dieser ist von der Länge 3) wird die Funktion norm_fact angewendet
+# norm_factor <- norm_fact(vec): Auf jeden Vektor in der Liste avg.tables.CTRL (diese sind von der Länge 3) wird die Funktion norm_fact angewendet
 # norm_factor / vec: ergibt einen neuen Vektor der Länge 3, der einen Korrekturfaktor für die einzelnen Replikate darstellt, um die Proteinmengen der Replikate aneinander anzugleichen
 
 norm_mean_frxn_CTRL <- lapply(avg.tables.CTRL, function(vec) {
