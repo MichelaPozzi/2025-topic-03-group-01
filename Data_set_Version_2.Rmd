@@ -680,15 +680,10 @@ deviating_main_maxima <- which(diff_main_maxima >= 2)
 
 
 # length(deviating_main_maxima)
-
 # 1351 Proteine zeigen einen shift des Hauptmaximums ≥ 2 Fraktionen
-```
 
-
-
-```{r}
 ctrl_main_shift = ctrl_norm_mean[deviating_main_maxima, ]
-rnase_main_shift = ctrl_norm_mean[deviating_main_maxima, ]
+rnase_main_shift = rnase_norm_mean[deviating_main_maxima, ]
 ```
 
 ```{r}
@@ -698,7 +693,44 @@ ctrl_no_main_shift = ctrl_norm_mean[!rownames(ctrl_norm_mean) %in% rownames(ctrl
 rnase_no_main_shift = rnase_norm_mean[!rownames(rnase_norm_mean) %in% rownames(rnase_main_shift), ]
 ```
 
+```{r}
+# Funktion zur Berechnung der zeilenweise Korrelation, Vermutung: cor von ctrl_main_shift ist geringer als von ctrl_no_main_shift
 
+correlations <- function(df1, df2, methode = "pearson") {
+  
+  # Prüfen, ob beide Dataframes gleich dimensioniert sind
+  if (!all(dim(df1) == dim(df2))) {
+    stop("Die beiden Dataframes müssen die gleiche Dimension haben")
+  }
+
+  # Anzahl der Zeilen
+  n <- nrow(df1)
+
+  # Vektor zur Speicherung der Korrelationswerte
+  correlations <- numeric(n)
+
+  # Schleife über alle Zeilen
+  for (i in 1:n) {
+    correlations[i] <- cor(as.numeric(df1[i, 1:25]), as.numeric(df2[i, 1:25]), method = methode, use = "complete.obs")
+  }
+
+  abs_correlations = abs(correlations)
+  
+  mean_abs_correlation = mean(abs_correlations)
+  
+  return(list(
+    correlations = correlations, mean_abs_correlation = mean_abs_correlation
+  ))
+}
+```
+
+```{r}
+testing_correlations = correlations(ctrl_main_shift, rnase_main_shift)
+testing_correlations$mean_abs_correlaion
+
+#compare_correlations = correlations(ctrl_no_main_shift, rnase_no_main_shift)
+#compare_correlations$mean_abs_correlation
+```
 
 
 ```{r}
