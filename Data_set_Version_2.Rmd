@@ -493,10 +493,9 @@ Mask Regions Around Detected Peaks to Exclude Them from Shoulder Search
 
 ```{r}
 # Remove and exclude 3 fractions left and right of each peak (7 in total) from the shoulder search.
-# Wie können überhaupt noch Werte auf "1" bleiben, sie können natürlich mehr als 2% haben, aber einer hätte als Maximum erkannt werden müssen, und somit hätten alle anderen drum herum gestrichen werden müssen?!
 
 th_max_reg_simple <- function(x) {
-  peaks <- as.numeric(unlist(x$maxima)) # Convert the maxima column from *_norm_mean to a numeric vector.
+  peaks <- as.numeric(unlist(x$local_maxima)) # Convert the local_maxima column from ctrl/rnase_norm_mean to a numeric vector.
   mask <- rep(1, 25)
   
   for (peak in peaks) { # peak = current peak value, peaks = detected maxima (column 26)
@@ -559,11 +558,14 @@ peaks_regions = function(x) {
 ```{r}
 # Calculate the positions of the "shoulders" for each protein row, i.e. regions with ≥4 consecutive fractions with signal >2%
 # Save the shoulder positions as a new column called peaks in the respective data frames rnase_3 and ctrl_3.
-# New column: "peaks" (column 27)
+# New column: "shoulders" (column 28)
 
-rnase_3$peaks <- apply(rnase_3, 1, function(x) { peaks_regions(x) } )
-ctrl_3$peaks <- apply(ctrl_3, 1, function(x) { peaks_regions(x) } )
+rnase_3$shoulders <- apply(rnase_3, 1, function(x) { peaks_regions(x) } )
+ctrl_3$shoulders <- apply(ctrl_3, 1, function(x) { peaks_regions(x) } )
 
+
+rnase_norm_mean$shoulders <- apply(rnase_3, 1, function(x) { peaks_regions(x) } )
+ctrl_norm_mean$shoulders <- apply(ctrl_3, 1, function(x) { peaks_regions(x) } )
 ```
 
 Combine Peak and Shoulder Positions for Each Protein
@@ -573,27 +575,33 @@ Combine Peak and Shoulder Positions for Each Protein
 # New column: "ctrl_max" and "rnase_max" (column 28) respectively
 
 						   						
-rnase_3$rnase_max <- apply(rnase_3, 1, function(x) {
-												 ls_max <- as.numeric(unlist(x$maxima)) # ls_max = numerical vector with the peak positions of this protein
-												 ls_peaks <- as.numeric(unlist(x$peaks))
+rnase_3$combined_max_rnase <- apply(rnase_3, 1, function(x) {
+												 ls_max <- as.numeric(unlist(x$local_maxima)) # ls_max = numerical vector with the peak positions of this protein
+												 ls_shoulder <- as.numeric(unlist(x$shoulders))
 												 
-												 rnase_max <- c(ls_max, ls_peaks) # Combine to common vector.
-												 rnase_max <- unlist(rnase_max)
-												 rnase_max <- rnase_max[rnase_max!=0] # Remove all 0 entries from the result vector, as these do not represent real signals.
-												 rnase_max <- sort(rnase_max, decreasing = FALSE) # Sort all peak and shoulder positions in ascending order (1 → 25)
-												 if (length(rnase_max) == 0) {0} else {rnase_max} # If there are no peaks or shoulders, 0 (as a placeholder) is stored.
+												 combined_max_rnase <- c(ls_max, ls_shoulder) # Combine to common vector.
+												 combined_max_rnase <- unlist(combined_max_rnase)
+												 combined_max_rnase <- combined_max_rnase[combined_max_rnase!=0] # Remove all 0 entries from the result vector, as these do not represent real signals.
+												 combined_max_rnase <- sort(combined_max_rnase, decreasing = FALSE) # Sort all peak and shoulder positions in ascending order (1 → 25)
+												 if (length(combined_max_rnase) == 0) {0} else {combined_max_rnase} # If there are no peaks or shoulders, 0 (as a placeholder) is stored.
 												 })
 
-ctrl_3$ctrl_max <- apply(ctrl_3, 1, function(x) {
-												 ls_max <- as.numeric(unlist(x$maxima))
-												 ls_peaks <- as.numeric(unlist(x$peaks))
+ctrl_3$combined_max_ctrl <- apply(ctrl_3, 1, function(x) {
+												 ls_max <- as.numeric(unlist(x$local_maxima))
+												 ls_shoulder <- as.numeric(unlist(x$shoulders))
 												 
-												 ctrl_max <- c(ls_max, ls_peaks)
-												 ctrl_max <- unlist(ctrl_max)
-												 ctrl_max <- ctrl_max[ctrl_max!=0]
-												 ctrl_max <- sort(ctrl_max, decreasing = FALSE)
-												 if (length(ctrl_max) == 0) {0} else {ctrl_max} 
+												 combined_max_ctrl <- c(ls_max, ls_shoulder)
+												 combined_max_ctrl <- unlist(combined_max_ctrl)
+												 combined_max_ctrl <- combined_max_ctrl[combined_max_ctrl!=0]
+												 combined_max_ctrl <- sort(combined_max_ctrl, decreasing = FALSE)
+												 if (length(combined_max_ctrl) == 0) {0} else {combined_max_ctrl} 
 												 })
+
+
+# Füge die neue Spalte der kombinierten Maxima auch noch zu ctrl/rnase_norm_mean, um damit weiter arbeiten zu können
+
+ctrl_norm_mean$combined_max_ctrl = ctrl_3[, "combined_max_ctrl"]
+rnase_norm_mean$combined_max_rnase = rnase_3[, "combined_max_rnase"]
 ```
 
 ***********************************************************************************************************
