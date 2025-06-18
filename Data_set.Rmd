@@ -2572,5 +2572,30 @@ ggplot(df_regression, aes(x = PC1, y = target)) +
        y = "Zielvariable (target)")
 
 ```
+```{r}
+plot(pca_ctrl_pc1_pc2$PC1,pca_ctrl_pc1_pc2$PC2,pch=20,col='blue', xlab='PC1',ylab='PC2');abline(0,1,col='red')
+plot(pca_ctrl_pc1_pc3$PC1,pca_ctrl_pc1_pc3$PC3,pch=20,col='blue', xlab='PC1',ylab='PC2');abline(0,1,col='red')
+plot(pca_ctrl_pc2_pc3$PC2,pca_ctrl_pc2_pc3$PC3,pch=20,col='blue', xlab='PC1',ylab='PC2');abline(0,1,col='red')
+
+target_ctrl_PC2 <- (pca_ctrl_pc1_pc2$PC2)
+target_ctrl_PC3 <- (pca_ctrl_pc1_pc2$PC3)
+
+df_regression_1 <- cbind(target = target_ctrl_PC2,
+                       pca_ctrl_pc1_pc2)
+df_regression_2 <- cbind(target = target_ctrl_PC3,
+                       pca_ctrl_pc1_pc3)
+df_regression_3 <- cbind(target = target_ctrl_PC3,
+                       pca_ctrl_pc2_pc3)
+
+# 4. Lineares Regressionsmodell mit PC1 und PC2
+model_pc1_pc2 <- lm(target ~ PC1 + PC2, data = df_regression_1)
+model_pc1_pc3 <- lm(target ~ PC1 + PC3, data = df_regression_2)
+model_pc2_pc3 <- lm(target ~ PC2 + PC3, data = df_regression_3)
+
+# 5. Ergebnisse anzeigen
+summary(model_pc1_pc2)
+summary(model_pc1_pc3)
+summary(model_pc2_pc3)
+```
 
 
