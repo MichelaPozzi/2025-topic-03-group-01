@@ -572,7 +572,7 @@ Combine Peak and Shoulder Positions for Each Protein
 
 ```{r}
 # Calculate the total of all relevant signal maxima (real peaks and shoulders) for each protein row in the dataframe 
-# New column: "ctrl_max" and "rnase_max" (column 28) respectively
+# New column: "combined_max_ctrl" and "combined_max_rnase" (column 29) respectively
 
 						   						
 rnase_3$combined_max_rnase <- apply(rnase_3, 1, function(x) {
@@ -610,19 +610,23 @@ rnase_norm_mean$combined_max_rnase = rnase_3[, "combined_max_rnase"]
 
 ```{r}
 # Determine the number of maxima per protein row in the rnase_3 and ctrl_3 data tables – but only if there are any.
-# New column: "nb_max" (column 29)
+# New column: "nb_max" (column 30)
 
-rnase_3$nb_max <- apply(rnase_3, 1, function(x) {
-												 ls_max <- as.numeric(unlist(x$rnase_max))
+rnase_3$n_max_comb <- apply(rnase_3, 1, function(x) {
+												 ls_max <- as.numeric(unlist(x$combined_max_rnase))
 												 n = length(ls_max) # => Answers: How many peaks (maxima and shoulders) does this protein have?
 												 if (sum(ls_max) == 0) {0} else {n} # If TRUE, then the result should be 0, instead of length(ls_max), which would then be 1. 
 												 })
 												 
-ctrl_3$nb_max <- apply(ctrl_3, 1, function(x) {
-												 ls_max <- as.numeric(unlist(x$ctrl_max))
+ctrl_3$n_max_comb <- apply(ctrl_3, 1, function(x) {
+												 ls_max <- as.numeric(unlist(x$combined_max_ctrl))
 												 n = length(ls_max)
 												 if (sum(ls_max) == 0) {0} else {n} 
 												 })
+
+ctrl_norm_mean$n_max_comb = ctrl_3["n_max_comb"]
+rnase_norm_mean$n_max_comb = rnase_3["n_max_comb"] 
+
 ```
 
 ###################################################################################################
