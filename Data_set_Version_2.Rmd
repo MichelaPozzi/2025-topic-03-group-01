@@ -371,15 +371,13 @@ Identify local maxima by peak calling for the mean of each protein.
 In order to get rid of the noise, only values above 2 are considered.
 Find shoulders that were not discovered previously.
 
-
 ```{r}
 ctrl_norm_mean_original = ctrl_norm_mean
 rnase_norm_mean_original = rnase_norm_mean
 ```
 
-
-
 Define Peak Finding Function
+
 ```{r}
 # Function find_local_maxima
 # Peak is local maximum with a certain amount (window) of smaller points on each side
@@ -401,7 +399,6 @@ find_local_maxima <- function(x, window = 2) {
       peaks <- c(peaks, i + 1)
     }
   }
-
   
 # part added to deal with the 1st and 25th values, in case they are max
      if ( sum(x[1]>x[2:(window+1)]) == 2 ) {peaks <- c(peaks, 1)} 
@@ -433,7 +430,6 @@ rnase_norm_mean$local_maxima <- apply(rnase_norm_mean, 1, function(x) {
 															   local_maxima
 															   })
 ```
-
 
 ```{r}
 # Out of the local maxima, extract the global (greatest) maximum, and save it in a new column "global_maximum" (column 27)
@@ -663,65 +659,83 @@ ctrl_norm_mean$n_local_maxima = ctrl_3[, "n_local_maxima"]
 rnase_norm_mean$n_local_maxima = rnase_3[, "n_local_maxima"]  
 ```
 
-
-
+***********************************************************************************************************
 1. Kriterium der RNA-Abhängigkeit:
 Das Hauptmaximum des jeweiligen Proteins ist um mindestens 3 Maxima bezüglich seiner Position verschoben
+***********************************************************************************************************
 
 ```{r}
 # Erstelle einen neuen Data.Frame, in welchem das Hauptmaximum der Proteine verschoben ist, Name: ctrl_main_shift, rnase_main_shift
 
-
 # Differenz berechnen (Vektor mit absoluten Abweichungen)
 diff_main_maxima <- abs(ctrl_norm_mean$global_maximum - rnase_norm_mean$global_maximum)
 
-# Proteine mit Abweichung ≥ 3 Fraktionen 
+# Positionen der Proteine mit Abweichung ≥ 3 Fraktionen 
 deviating_main_maxima <- which(diff_main_maxima >= 2)
 
-
 # length(deviating_main_maxima)
-
 # 1351 Proteine zeigen einen shift des Hauptmaximums ≥ 2 Fraktionen
-```
 
-
-
-```{r}
 ctrl_main_shift = ctrl_norm_mean[deviating_main_maxima, ]
 rnase_main_shift = ctrl_norm_mean[deviating_main_maxima, ]
 ```
 
 ```{r}
-# Erstelle den komplementären Data.Framem, der alle diejenigen Proteine beinhaltet, deren Hauptmaximum nicht um mindestens 2 Fraktionen shiftet, ctrl_main_shift "+" ctrl_no_main_shift = ctrl_norm_mean
+# Erstelle den komplementären Data.Frame, der alle die jenigen Proteine beinhaltet, deren Hauptmaximum nicht um mindestens 2 Fraktionen shiftet, ctrl_main_shift "+" ctrl_no_main_shift = ctrl_norm_mean
 
 ctrl_no_main_shift = ctrl_norm_mean[!rownames(ctrl_norm_mean) %in% rownames(ctrl_main_shift), ]
 rnase_no_main_shift = rnase_norm_mean[!rownames(rnase_norm_mean) %in% rownames(rnase_main_shift), ]
 ```
 
-
-
+*******************************************************************************************************************************
+1.1 Identifizierung von Proteinen mit nur einem Maximum und deren Hauptmaxima um 2 Fraktionen abweichen zwischen CTRL und RNASE
+*******************************************************************************************************************************
 
 ```{r}
-ctrl_main_shift = ctrl_norm_mean
-rnase_main_shift = ctrl_norm_mean 
+# Hole die Protein- bzw. Zeilennamen aus ctrl_main_shift (enthält alle Proteine, deren Hauptmaxima um 2 Fraktionen abweicht)
+IDs_main_shift <- rownames(ctrl_main_shift)
 
-#ctrl_same_max_amount = ctrl_3
-#rnase_3_same_maxima_amount = rnase_3
+# Wähle nur die Protein IDs mit genau einem lokalen Maximum, das dem globalen Maximum entspricht
+# id = jedes Protein
+IDs_only1_maximum_shift <- IDs_main_shift[
+  sapply(IDs_main_shift, function(id) {
+    #Fraktion des lokalen Maxima des aktuellen Proteins wird in local_maxima gespeichert.
+    local_maxima <- ctrl_norm_mean$local_maxima[[id]]
+    #Fraktion des Hauotmaximas wird gespeichert.
+    global_maximum <- ctrl_norm_mean$global_maximum[id]
+    #Prüft: Ist nur eine Fraktionsnummer für lokale Maxima vorhanden und enstpricht diese der Fraktion des Hauptmaximums?
+    #Aus ID_main_shift werden nur die IDs entnommen, bei denen hier TRUE ausgegeben wird. 
+    length(local_maxima) == 1 && local_maxima == global_maximum
+  })
+]
 
-#diff_index = ctrl_main_shift$only_max != rnase_3_selection$only_max
-
-#diff_index_only_maxima = ctrl_3_selection$only_max != rnase_3_selection$only_max
-#same_index = ctrl_3_same_maxima_amount$only_max == rnase_3_same_maxima_amount$only_max
-
-#ctrl_3_selection = ctrl_3_selection[diff_index, ]
-#rnase_3_selection = rnase_3_selection[diff_index, ]
-
-#ctrl_3_same_maxima_amount = ctrl_3_same_maxima_amount[same_index, ]
-#rnase_3_same_maxima_amount = rnase_3_same_maxima_amount[same_index, ]
-
-#1333 Proteine zeigen eine unterschiedliche Anzahl an Peaks, hierbei sollte allerdings bedacht werden, dass die Anzahl der Peaks auch von den Schultern abhängt. Wir dachten uns aber, dass das Entstehen einer Schulter auch bedeutet, dass sich zwischen beiden Versuchsansätzen etwas geändert hatte, und somit eventuell eine RNA-abhängigkeit vorliegt. Bei 1253 alleine Unterschied sich die Anzahl der tatsächlichen Maxima unabhängig von den Schultern
+# Filtere den DataFrame ctrl_main_shift auf diese Proteine
+ctrl_only1_maximum_shift <- ctrl_main_shift[IDs_only1_maximum_shift, ]
 ```
 
+```{r}
+#Test, damit ich nicht versehentlich ein Protein verloren habe. Dieser Chunk sollte vor Abgabe gelöscht werden.
+dim(ctrl_only1_maximum_shift)
+
+IDs_main_shift <- rownames(ctrl_main_shift)
+
+num_single_local_maxima <- sum(
+  sapply(IDs_main_shift, function(id) {
+    length(ctrl_norm_mean$local_maxima[[id]]) == 1
+  })
+)
+num_single_local_maxima
+```
+
+*******************************************************************************************************************************
+Identifizierung von Proteinen mit ungleicher Anzahl an Maxima und deren Hauptmaxima weniger als 2 Fraktionen abweichen zwischen CTRL und RNASE
+*******************************************************************************************************************************
+
+```{r}
+#Hier liegt mein Handtuch!
+  #Mein Platz!
+  #D:
+```
 
 
 
@@ -764,9 +778,6 @@ T-Test: Wie ungleich sind die Proteinintensitäten über alle Fraktionen?
 ***********************************************************************************************************
 
 ```{r}
-
-Denkfehler: Die Daten dürfen anscheinend nicht normalisiert, gerundet und brauchen alle 3 Replikate?
-
 #Ergebnistabelle zum Speichern der p-Werte
 t_test_results <- data.frame(protein = character(),
                              p_value = numeric(),
