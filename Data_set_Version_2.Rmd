@@ -711,12 +711,20 @@ correlations <- function(df1, df2, methode = "pearson") {
 
   # Schleife über alle Zeilen
   for (i in 1:n) {
-    correlations[i] <- cor(as.numeric(df1[i, 1:25]), as.numeric(df2[i, 1:25]), method = methode, use = "complete.obs")
+    v1 <- as.numeric(df1[i, 1:25])
+    v2 <- as.numeric(df2[i, 1:25])
+
+    # Korrelation nur berechnen, wenn beide Vektoren Varianz haben
+    if (sd(v1, na.rm = TRUE) != 0 && sd(v2, na.rm = TRUE) != 0) {
+      correlations[i] <- cor(v1, v2, method = methode, use = "complete.obs")
+    } else {
+      correlations[i] <- NA
+    }
   }
 
   abs_correlations = abs(correlations)
   
-  mean_abs_correlation = mean(abs_correlations)
+  mean_abs_correlation = mean(abs_correlations, na.rm = TRUE)
   
   return(list(
     correlations = correlations, mean_abs_correlation = mean_abs_correlation
@@ -726,32 +734,12 @@ correlations <- function(df1, df2, methode = "pearson") {
 
 ```{r}
 testing_correlations = correlations(ctrl_main_shift, rnase_main_shift)
-testing_correlations$mean_abs_correlaion
-
-#compare_correlations = correlations(ctrl_no_main_shift, rnase_no_main_shift)
-#compare_correlations$mean_abs_correlation
+testing_correlations$mean_abs_correlation
 ```
 
-
 ```{r}
-ctrl_main_shift = ctrl_norm_mean
-rnase_main_shift = ctrl_norm_mean 
-
-#ctrl_same_max_amount = ctrl_3
-#rnase_3_same_maxima_amount = rnase_3
-
-#diff_index = ctrl_main_shift$only_max != rnase_3_selection$only_max
-
-#diff_index_only_maxima = ctrl_3_selection$only_max != rnase_3_selection$only_max
-#same_index = ctrl_3_same_maxima_amount$only_max == rnase_3_same_maxima_amount$only_max
-
-#ctrl_3_selection = ctrl_3_selection[diff_index, ]
-#rnase_3_selection = rnase_3_selection[diff_index, ]
-
-#ctrl_3_same_maxima_amount = ctrl_3_same_maxima_amount[same_index, ]
-#rnase_3_same_maxima_amount = rnase_3_same_maxima_amount[same_index, ]
-
-#1333 Proteine zeigen eine unterschiedliche Anzahl an Peaks, hierbei sollte allerdings bedacht werden, dass die Anzahl der Peaks auch von den Schultern abhängt. Wir dachten uns aber, dass das Entstehen einer Schulter auch bedeutet, dass sich zwischen beiden Versuchsansätzen etwas geändert hatte, und somit eventuell eine RNA-abhängigkeit vorliegt. Bei 1253 alleine Unterschied sich die Anzahl der tatsächlichen Maxima unabhängig von den Schultern
+compare_correlations = correlations(ctrl_no_main_shift, rnase_no_main_shift)
+compare_correlations$mean_abs_correlation
 ```
 
 
