@@ -211,7 +211,6 @@ table.ctrl3  <- normalize_group(data.ctrl3,  norm.ctrl3)
 table.rnase1 <- normalize_group(data.rnase1, norm.rnase1)
 table.rnase2 <- normalize_group(data.rnase2, norm.rnase2)
 table.rnase3 <- normalize_group(data.rnase3, norm.rnase3)
-
 ```
 
 ```{r}
@@ -223,8 +222,6 @@ rownames(table.ctrl3) <- row_names
 rownames(table.rnase1) <- row_names
 rownames(table.rnase2) <- row_names
 rownames(table.rnase3) <- row_names
-
-#View(table.ctrl1)
 ```
 
 Smooth Data with Sliding Window (Moving Average of 3 Fractions)
@@ -253,8 +250,6 @@ colnames(table.ctrl3.SW) <- colnames(table.ctrl3)
 colnames(table.rnase1.SW) <- colnames(table.rnase1)
 colnames(table.rnase2.SW) <- colnames(table.rnase2)
 colnames(table.rnase3.SW) <- colnames(table.rnase3)
-
-#View(table.ctrl1.SW)
 ```
 
 Normalize Fraction Intensities to Percentages (Sum to 100%)
@@ -277,12 +272,10 @@ tables.rnase <- list(
   rnase2 = table.rnase2.SW,
   rnase3 = table.rnase3.SW)
 
-# Calculation of the percentages of the fractions in the normalized table (table.ctrl1.SW)
+# Calculation of the percentages of the fractions in the normalized tables (table.ctrl1.SW)
 
 norm_tables.ctrl <- lapply(tables.ctrl, normalize_table)
 norm_tables.rnase <- lapply(tables.rnase, normalize_table)
-
-norm_tables.rnase$rnase1
 ```
 
 Replace NA and NaN Values with 0
@@ -300,9 +293,6 @@ clean_table <- function(tbl) {
 
 tables.norm.ctrl <- lapply(norm_tables.ctrl, clean_table)
 tables.norm.rnase <- lapply(norm_tables.rnase, clean_table)
-
-#View(tables.norm.ctrl$ctrl1)
-
 ```
 
 Calculate Mean Across Replicates
@@ -349,9 +339,6 @@ rnase_norm_mean <- replace_na_nan(rnase_norm_mean)
 
 ctrl_norm_mean[rowSums(rnase_norm_mean[1:25])==0,] <- 0
 rnase_norm_mean[rowSums(ctrl_norm_mean[1:25])==0,] <- 0
-
-#View(ctrl_norm_mean)
-#View(rnase_norm_mean)
 ```
 
 Plot Example Protein Fractionation Profiles
@@ -362,7 +349,7 @@ row_data2 <- as.numeric(rnase_norm_mean["PRKDC_HUMAN", ])
 
 # Plot
 plot(row_data2,
-     type = "l",                # Linienplot
+     type = "l",        
      main = "Plot for PRKDC_HUMAN",
      xlab = "Fractions",
      ylab = "Values",
