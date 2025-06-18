@@ -371,6 +371,14 @@ Identify local maxima by peak calling for the mean of each protein.
 In order to get rid of the noise, only values above 2 are considered.
 Find shoulders that were not discovered previously.
 
+
+```{r}
+ctrl_norm_mean_original = ctrl_norm_mean
+rnase_norm_mean_original = rnase_norm_mean
+```
+
+
+
 Define Peak Finding Function
 ```{r}
 # Function find_local_maxima
@@ -401,7 +409,7 @@ find_local_maxima <- function(x, window = 2) {
      peaks <- unlist(peaks)
      peaks
      
- #return(peaks)
+#return(peaks)
      
 } 
 ```
@@ -409,7 +417,7 @@ find_local_maxima <- function(x, window = 2) {
 ```{r}
 # Apply the function to the data set and retrieve the values
 # restriction to values above an absolut threshold of 2%
-# New column: "maxima" (column 26)
+# New column: "local_maxima" (column 26)
 
 ctrl_norm_mean$local_maxima <- apply(ctrl_norm_mean, 1, function(x) {
 															   peak_indeces <- find_local_maxima(x)
@@ -424,6 +432,38 @@ rnase_norm_mean$local_maxima <- apply(rnase_norm_mean, 1, function(x) {
 															   local_maxima <- unlist(filtered)
 															   local_maxima
 															   })
+```
+
+
+```{r}
+# Out of the local maxima, extract the global (greatest) maximum, and save it in a new column "global_maximum" (column 27)
+
+ctrl_norm_mean$global_maximum <- sapply(1:nrow(ctrl_norm_mean), function(i) {
+  x <- as.numeric(ctrl_norm_mean[i, 1:25])
+  peaks <- ctrl_norm_mean$local_maxima[[i]]
+
+  if (length(peaks) == 0) {
+    return(NA)
+  } else {
+    peak_values <- x[peaks]
+    return(peaks[which.max(peak_values)])
+  }
+})
+
+
+rnase_norm_mean$global_maximum <- sapply(1:nrow(ctrl_norm_mean), function(i) {
+  x <- as.numeric(rnase_norm_mean[i, 1:25])
+  peaks <- rnase_norm_mean$local_maxima[[i]]
+
+  if (length(peaks) == 0) {
+    return(NA)
+  } else {
+    peak_values <- x[peaks]
+    return(peaks[which.max(peak_values)])
+  }
+})
+
+
 ```
 
 
