@@ -372,13 +372,12 @@ In order to get rid of the noise, only values above 2 are considered.
 Find shoulders that were not discovered previously.
 
 Define Peak Finding Function
-
 ```{r}
-#Function find_peaks
-#Peak is local maximum with smaller "window" points on each side
-#Bigger window =>more stringent peak finding procedure 
+# Function find_local_maxima
+# Peak is local maximum with a certain amount (window) of smaller points on each side
+# Bigger window => more stringent peak finding procedure 
 
-find_peaks <- function(x, window = 2) {
+find_local_maxima <- function(x, window = 2) {
   slope_changes <- diff(sign(diff(x)))
   peak_indices <- which(slope_changes < 0)
 
@@ -395,15 +394,6 @@ find_peaks <- function(x, window = 2) {
     }
   }
 
-# part added to deal with plateau
-# Ergibt diese Operation überhaupt Sinn, Plateaus haben ja auch nur einen Hochpunkt, und alle anderen (ähnlichen) werden doch ohnehin nicht erkannt werden?
-     n = length(peaks)
-     if (n>1) {
-     			rem <- numeric(0)
-     			for (i in 1:(n-1)) { if  ((peaks[i]+1) == peaks[(i+1)]) {rem <- c(rem, peaks[i+1]) } }
-     			for (i in 1:(n-1)) { if  ((peaks[i]+2) == peaks[(i+1)]) {rem <- c(rem, peaks[i+1]) } }
-     			peaks <- peaks[! peaks%in% rem]
-     		  }	 
   
 # part added to deal with the 1st and 25th values, in case they are max
      if ( sum(x[1]>x[2:(window+1)]) == 2 ) {peaks <- c(peaks, 1)} 
@@ -414,35 +404,28 @@ find_peaks <- function(x, window = 2) {
  #return(peaks)
      
 } 
-  
-#Test, ob die Peak-Positionen richtig ausgegeben werden
-#test_vec2 = as.numeric(ctrl_norm_mean[4, ])
-#find_peaks(test_vec2)
-#z = c(30, 2, 2, 2, 2, 2, 5, 4, 3, 2, 2, 2, 2, 2, 31, 30, 31, 32, 2, 2, 2, 2, 2, 2, 30)
-#find_peaks(z)
 ```
-
-Apply Peak Finding to Mean Data and Filter Peaks > 2
 
 ```{r}
 # Apply the function to the data set and retrieve the values
 # restriction to values above an absolut threshold of 2%
 # New column: "maxima" (column 26)
 
-ctrl_norm_mean$maxima <- apply(ctrl_norm_mean, 1, function(x) {
-															   list <- find_peaks(x)
-															   list <- list[x[list] > 2] 
-															   list <- unlist(list)
-															   list
+ctrl_norm_mean$local_maxima <- apply(ctrl_norm_mean, 1, function(x) {
+															   peak_indeces <- find_local_maxima(x)
+															   filtered <- peak_indeces[x[peak_indeces] > 2] 
+															   local_maxima <- unlist(filtered)
+															   local_maxima
 															   })
 															   
-rnase_norm_mean$maxima <- apply(rnase_norm_mean, 1, function(x) {
-															   list <- find_peaks(x)
-															   list <- list[x[list] > 2] 
-															   list <- unlist(list)
-															   list
+rnase_norm_mean$local_maxima <- apply(rnase_norm_mean, 1, function(x) {
+															   peak_indeces <- find_local_maxima(x)
+															   filtered <- peak_indeces[x[peak_indeces] > 2] 
+															   local_maxima <- unlist(filtered)
+															   local_maxima
 															   })
 ```
+
 
 ****************************************************************************************************************
 2.2 Identify shoulders, regions that are not recognized as peaks, even though they have a high signal intensity.
