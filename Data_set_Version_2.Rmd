@@ -661,7 +661,7 @@ rnase_norm_mean$n_local_maxima = rnase_3[, "n_local_maxima"]
 
 ***********************************************************************************************************
 1. Kriterium der RNA-Abhängigkeit:
-Das Hauptmaximum des jeweiligen Proteins ist um mindestens 3 Maxima bezüglich seiner Position verschoben
+Das Hauptmaximum des jeweiligen Proteins ist um mindestens 2 Maxima bezüglich seiner Position verschoben
 ***********************************************************************************************************
 
 ```{r}
@@ -677,7 +677,7 @@ deviating_main_maxima <- which(diff_main_maxima >= 2)
 # 1351 Proteine zeigen einen shift des Hauptmaximums ≥ 2 Fraktionen
 
 ctrl_main_shift = ctrl_norm_mean[deviating_main_maxima, ]
-rnase_main_shift = ctrl_norm_mean[deviating_main_maxima, ]
+rnase_main_shift = rnase_norm_mean[deviating_main_maxima, ]
 ```
 
 ```{r}
@@ -686,6 +686,63 @@ rnase_main_shift = ctrl_norm_mean[deviating_main_maxima, ]
 ctrl_no_main_shift = ctrl_norm_mean[!rownames(ctrl_norm_mean) %in% rownames(ctrl_main_shift), ]
 rnase_no_main_shift = rnase_norm_mean[!rownames(rnase_norm_mean) %in% rownames(rnase_main_shift), ]
 ```
+
+**********************
+Hypothese: Korrelation von ctrl_main_shift mit rnase_main_shift ist geringer als von ctrl_no_main_shift mit rnase_no_main_shift
+**********************
+
+
+```{r}
+# Funktion zur Berechnung der zeilenweise Korrelation, Vermutung: cor von ctrl_main_shift ist geringer als von ctrl_no_main_shift
+
+correlations <- function(df1, df2, methode = "pearson") {
+  
+  # Prüfen, ob beide Dataframes gleich dimensioniert sind
+  if (!all(dim(df1) == dim(df2))) {
+    stop("Die beiden Dataframes müssen die gleiche Dimension haben")
+  }
+
+  # Anzahl der Zeilen
+  n <- nrow(df1)
+
+  # Vektor zur Speicherung der Korrelationswerte
+  correlations <- numeric(n)
+
+  # Schleife über alle Zeilen
+  for (i in 1:n) {
+    v1 <- as.numeric(df1[i, 1:25])
+    v2 <- as.numeric(df2[i, 1:25])
+
+    # Korrelation nur berechnen, wenn beide Vektoren Varianz haben
+    if (sd(v1, na.rm = TRUE) != 0 && sd(v2, na.rm = TRUE) != 0) {
+      correlations[i] <- cor(v1, v2, method = methode, use = "complete.obs")
+    } else {
+      correlations[i] <- NA
+    }
+  }
+
+  abs_correlations = abs(correlations)
+  
+  mean_abs_correlation = mean(abs_correlations, na.rm = TRUE)
+  
+  return(list(
+    correlations = correlations, mean_abs_correlation = mean_abs_correlation
+  ))
+}
+```
+
+```{r}
+testing_correlations = correlations(ctrl_main_shift, rnase_main_shift)
+testing_correlations$mean_abs_correlation
+```
+
+```{r}
+compare_correlations = correlations(ctrl_no_main_shift, rnase_no_main_shift)
+compare_correlations$mean_abs_correlation
+```
+
+Hypothese hat sich bestätigt, yay!
+
 
 *******************************************************************************************************************************
 1.1 Identifizierung von Proteinen mit nur einem Maximum und deren Hauptmaxima um 2 Fraktionen abweichen zwischen CTRL und RNASE
