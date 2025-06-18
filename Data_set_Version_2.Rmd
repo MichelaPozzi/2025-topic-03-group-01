@@ -609,8 +609,8 @@ rnase_norm_mean$combined_max_rnase = rnase_3[, "combined_max_rnase"]
 ***********************************************************************************************************
 
 ```{r}
-# Determine the number of maxima per protein row in the rnase_3 and ctrl_3 data tables – but only if there are any.
-# New column: "nb_max" (column 30)
+# Determine the number of combined maxima (peaks + shoulders) per protein
+# New column: "n_max_comb" (column 30)
 
 rnase_3$n_max_comb <- apply(rnase_3, 1, function(x) {
 												 ls_max <- as.numeric(unlist(x$combined_max_rnase))
@@ -624,9 +624,11 @@ ctrl_3$n_max_comb <- apply(ctrl_3, 1, function(x) {
 												 if (sum(ls_max) == 0) {0} else {n} 
 												 })
 
-ctrl_norm_mean$n_max_comb = ctrl_3["n_max_comb"]
-rnase_norm_mean$n_max_comb = rnase_3["n_max_comb"] 
 
+# Selbes für ctrl/rnase_norm_mean
+
+ctrl_norm_mean$n_max_comb = ctrl_3[, "n_max_comb"]
+rnase_norm_mean$n_max_comb = rnase_3[, "n_max_comb"] 
 ```
 
 ###################################################################################################
@@ -639,19 +641,31 @@ Identifizierung von Proteinen mit einer unterschiedlichen Anzahl an Maxima in CT
 Erste Vorauswahl an Proteinen: Eine unterschiedliche Anzahl an Maxima ist ein erster Hinweis auf mögliche RNA-abhängige Proteine.
 
 ```{r}
-rnase_3$only_max <- apply(rnase_3, 1, function(x) {
-												 ls_max <- as.numeric(unlist(x$maxima))
+# Determine the number of only peak maxima ("local_maxima") per protein
+# New column: "n_local_maxima" (column 31)
+
+rnase_3$n_local_maxima <- apply(rnase_3, 1, function(x) {
+												 ls_max <- as.numeric(unlist(x$local_maxima))
 												 n = length(ls_max) 
 												 if (sum(ls_max) == 0) {0} else {n}  
 												 })
 												 
-ctrl_3$only_max <- apply(ctrl_3, 1, function(x) {
-												 ls_max <- as.numeric(unlist(x$maxima))
+ctrl_3$n_local_maxima <- apply(ctrl_3, 1, function(x) {
+												 ls_max <- as.numeric(unlist(x$local_maxima))
 												 n = length(ls_max)
 												 if (sum(ls_max) == 0) {0} else {n} 
 												 })
 
+
+# Selbes für ctrl/rnase_norm_mean
+
+ctrl_norm_mean$n_local_maxima = ctrl_3[, "n_local_maxima"]
+rnase_norm_mean$n_local_maxima = rnase_3[, "n_local_maxima"]  
 ```
+
+
+
+
 
 ```{r}
 ctrl_3_selection = ctrl_3
