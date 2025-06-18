@@ -2514,9 +2514,63 @@ fviz_cluster(km_result_rnase_pc2_pc3, data = pca_rnase_pc2_pc3,
              palette = "jco", ggtheme = theme_minimal(),
              main = "k-Means Cluster der RNASE")
 ```
+**************************************************************************************************************
+Regression analysis
+**************************************************************************************************************
 
+```{r}
+# 1. Clusterlabels aus k-means extrahieren
+cluster_labels <- as.factor(km_result_ctrl_pc1_pc2$cluster)
 
+# 2. Zielvariable definieren (hier Beispiel mit Zufallswerten – ersetzen durch echte!)
+# target_ctrl <- df_ctrl$Zielwert  # falls vorhanden
+set.seed(123)
+target_ctrl <- rnorm(nrow(pca_ctrl_pc1_pc2))  # Dummy-Zielvariable
 
+# 3. Daten kombinieren
+df_regression <- cbind(target = target_ctrl,
+                       pca_ctrl_pc1_pc2,
+                       cluster = cluster_labels)
 
+# 4. Lineares Regressionsmodell mit PC1 und PC2
+model <- lm(target ~ PC1 + PC2, data = df_regression)
+
+# 5. Ergebnisse anzeigen
+summary(model)
+
+# Modell mit Clusterzugehörigkeit als kategorialer Faktor
+model_cluster <- lm(target ~ cluster, data = df_regression)
+summary(model_cluster)
+
+library(ggplot2)
+
+ggplot(df_regression, aes(x = PC1, y = target, color = cluster)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_minimal() +
+  labs(title = "Regression von Zielvariable auf PC1 (farbig nach Cluster)")
+
+```
+```{r}
+library(ggplot2)
+
+# Falls noch nicht geschehen: Zielvariable simulieren (wenn du keine reale hast)
+# target_ctrl <- df_ctrl$Zielwert
+set.seed(123)
+target_ctrl <- rnorm(nrow(pca_ctrl_pc1_pc2))  # Dummy-Zielvariable
+
+# Kombiniere PC1, PC2 und target
+df_regression <- cbind(target = target_ctrl, pca_ctrl_pc1_pc2)
+
+# Visualisierung der Regression mit PC1 (eine Linie über alle Daten)
+ggplot(df_regression, aes(x = PC1, y = target)) +
+  geom_point(color = "steelblue", alpha = 0.7) +
+  geom_smooth(method = "lm", se = TRUE, color = "darkred") +
+  theme_minimal() +
+  labs(title = "Lineare Regression: target ~ PC1 (ohne Clusterfarben)",
+       x = "PC1",
+       y = "Zielvariable (target)")
+
+```
 
 
