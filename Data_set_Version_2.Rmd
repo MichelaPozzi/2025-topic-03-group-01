@@ -912,30 +912,6 @@ print(wilcox_test_result)
 ```
 
 
-```{r}
-library(ggplot2)
-
-# Vektor mit Gruppenzugehörigkeit
-group <- c(rep("selected", length(diff_selected)), rep("not_selected", length(diff_not_selected)))
-diffs <- c(diff_selected, diff_not_selected)
-
-df_plot <- data.frame(Group = group, Difference = diffs)
-
-ggplot(df_plot, aes(x = Group, y = Difference)) +
-  geom_violin(trim = FALSE, fill = "lightblue") +
-  geom_boxplot(width = 0.1, outlier.shape = NA) +
-  theme_minimal() +
-  labs(title = "Verteilung der Differenzen", y = "ctrl - rnase", x = "")
-```
-
-```{r}
-ggplot(df_plot, aes(x = Difference, fill = Group)) +
-  geom_density(alpha = 0.5) +
-  theme_minimal() +
-  labs(title = "Dichteverteilung der Differenzen", x = "Differenz (ctrl - rnase)")
-```
-Interpretation: Es scheint so 
-
 
 
 
