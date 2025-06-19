@@ -828,7 +828,17 @@ length(n_max_rnase)
 
 
 
-*******************************************************************************************************************************
+
+***********************************************************************************************************
+Wilcoxon Test
+***********************************************************************************************************
+1. ctrl_unequal_max und ctrl_main_shift, sowie rnase_unequal_max und rnase_main_shift werden kombiniert
+    --> ctrl_selected und rnase_selected entstehen
+2. Test rownames(ctrl_selected) == rownames(rnase_selected), um sicherzugehen,dass die Proteine in der gleichen Reihenfolge sind, und auch sicher diegleichen Proteine vergleichen werden
+3. ctrl_equal_max und rnase_equal_max
+
+
+
 Kombination der ausgewählten Proteine: unequal max und main shift um mind. 2 Fraktionen
 *******************************************************************************************************************************
 ```{r}
@@ -844,6 +854,8 @@ selected_proteins <- union(proteins_main_shift, proteins_unequal_max)
 #Vereinigung im neuen Data Frame ctrl_selected
 ctrl_selected <- ctrl_selected[rownames(ctrl_selected) %in% selected_proteins, ]
 ```
+
+
 ###################################################################################################
 ###################################################################################################
 ###################################################################################################
