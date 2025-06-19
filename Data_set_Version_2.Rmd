@@ -865,7 +865,6 @@ Statistische Beurteilung, ob die Aufreinigung des Datensatzes dazu geführt hat,
 4.3: Jetzt wird der Wilcoxon-Tets angewendet, um die Differenzen zu untersuchen 
 --> H0: Die Verteilung der Differenzen in beiden Gruppen haben keinen systematischen Unterschied 
 
-5. Alternative: Mittels COM (center of mass) anstatt Differenzen der Mittelwerte arbeiten
 
 
 
@@ -910,8 +909,6 @@ wilcox_test_result <- wilcox.test(diff_selected, diff_not_selected)
 # Ergebnis anzeigen
 print(wilcox_test_result)
 ```
-
-
 
 
 
