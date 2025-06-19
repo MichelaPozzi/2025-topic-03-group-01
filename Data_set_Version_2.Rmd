@@ -666,6 +666,7 @@ rnase_norm_mean$n_local_maxima = rnase_3[, "n_local_maxima"]
 
 
 
+
 ***********************************************************************************************************
 1. Kriterium der RNA-Abhängigkeit:
 Das Hauptmaximum des jeweiligen Proteins ist um mindestens 2 Maxima bezüglich seiner Position verschoben
@@ -831,15 +832,20 @@ rnase_equal_max <- rnase_no_main_shift[equal_max_proteins, ]
 ***********************************************************************************************************
 Wilcoxon Test
 ***********************************************************************************************************
-1. ctrl_unequal_max und ctrl_main_shift, sowie rnase_unequal_max und rnase_main_shift werden kombiniert
-    --> ctrl_selected und rnase_selected entstehen
-2. Test rownames(ctrl_selected) == rownames(rnase_selected), um sicherzugehen,dass die Proteine in der gleichen Reihenfolge sind, und auch sicher diegleichen Proteine vergleichen werden
-3. ctrl_equal_max und rnase_equal_max umbennen zu ctrl_not_selected und rnase_not_selected
-4. 
-- Aus der Spalte "combined_max_ctrl" von ctrl_selected wird pro Zeile der Mittelwert der Peak-Positionen gebildet und dann verglichen mit dem Mittelwert der Peak-Positionen von "combined_max_rnase" von rnase_selected 
-- Aus der Spalte "combined_max_ctrl" von control_not_selected wird pro Zeile der Mittelwert der Peak-Positionen gebildet und dann verglichen mit dem Mittelwert der Peak-Positionen von "combined_max_rnase" von rnase_not_selected
-- Jetzt wird der Wilcoxon-Tets angewendet, um die Differenzen zu untersuchen 
-    H0: Die Verteilung der Differenzen in beiden Gruppen haben keinen systematischen Unterschied 
+
+1: ctrl_unequal_max und ctrl_main_shift, sowie rnase_unequal_max und rnase_main_shift werden kombiniert
+--> ctrl_selected und rnase_selected entstehen
+
+2: Test rownames(ctrl_selected) == rownames(rnase_selected), um sicherzugehen,dass die Proteine in der gleichen Reihenfolge sind, und auch sicher diegleichen Proteine vergleichen werden
+
+3: ctrl_equal_max und rnase_equal_max umbennen zu ctrl_not_selected und rnase_not_selected
+
+4.1: Aus der Spalte "combined_max_ctrl" von ctrl_selected wird pro Zeile der Mittelwert der Peak-Positionen gebildet und dann verglichen mit dem Mittelwert der Peak-Positionen von "combined_max_rnase" von rnase_selected 
+
+4.2: Aus der Spalte "combined_max_ctrl" von control_not_selected wird pro Zeile der Mittelwert der Peak-Positionen gebildet und dann verglichen mit dem Mittelwert der Peak-Positionen von "combined_max_rnase" von rnase_not_selected
+
+4.3: Jetzt wird der Wilcoxon-Tets angewendet, um die Differenzen zu untersuchen 
+--> H0: Die Verteilung der Differenzen in beiden Gruppen haben keinen systematischen Unterschied 
 
 
 1.Schritt 
@@ -883,23 +889,32 @@ wilcox_test_result <- wilcox.test(diff_selected, diff_not_selected)
 # Ergebnis anzeigen
 print(wilcox_test_result)
 ```
-```{r}
-a = correlations(ctrl_selected, rnase_selected)
-a$mean_abs_correlation
 
-b = correlations(ctrl_not_selected, rnase_not_selected)
-b$mean_abs_correlation
+
+
+```{r}
+library(ggplot2)
+
+# Vektor mit Gruppenzugehörigkeit
+group <- c(rep("selected", length(diff_selected)), rep("not_selected", length(diff_not_selected)))
+diffs <- c(diff_selected, diff_not_selected)
+
+df_plot <- data.frame(Group = group, Difference = diffs)
+
+ggplot(df_plot, aes(x = Group, y = Difference)) +
+  geom_violin(trim = FALSE, fill = "lightblue") +
+  geom_boxplot(width = 0.1, outlier.shape = NA) +
+  theme_minimal() +
+  labs(title = "Verteilung der Differenzen", y = "ctrl - rnase", x = "")
 ```
 
 
 
 
-
-
 ###################################################################################################
 ###################################################################################################
 ###################################################################################################
-* hier ruht unser Gaussian fit ˙◠˙ it was a very good boy, but also sometimes complicated! maaaa!
+* hier ruht unser Gaussian fit ˙◠˙ 
 
 ***********************************************************************************************************
 T-Test (Bens)
