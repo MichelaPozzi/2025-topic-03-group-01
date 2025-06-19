@@ -914,16 +914,51 @@ print(wilcox_test_result)
 
 
 
-
-
 ###################################################################################################
 ###################################################################################################
 ###################################################################################################
 * hier ruht unser Gaussian fit ˙◠˙ 
 
+
 ***********************************************************************************************************
-T-Test (Bens)
+
 ***********************************************************************************************************
+
+Variablen, die ihr nach vollständiger Ausführeung bis hierher verwenden könnt
+
+ctrl_selected und rnase_selected
+--> Diejenigen Proteine aus ctrl_norm_mean bzw. rnase_norm_mean, die wir als potenziell RNA-abhängig identifiziert haben
+
+ctrl_not_selected und rnase_not_selected
+--> Diejenigen Proteine aus ctrl_norm_mean bzw. rnase_norm_mean, die wir nicht als RNA-abhängig identifiziert haben, und die daher rausgeflogen sind
+
+Damit solltet ihr weiter arbeiten können, bei Fragen ruft mich (Julian Baureis) gerne an!
+
+```{r}
+View(ctrl_selected)
+View(rnase_selected)
+
+
+View(ctrl_not_selected)
+View(rnase_not_selected)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ```{r}
 df1 <- table.ctrl.fit[1:25] # Gruppe A
