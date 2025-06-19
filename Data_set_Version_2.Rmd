@@ -746,16 +746,16 @@ Evaluierung der Hypothese
 **********************
 
 ```{r}
-# Mittelwert der Korrelationswerte (ctrl vs. rnase) von denjenigen Proteinen, deren Hauptmaximum um mindéstens 2 Fraktionen verschoben ist
+# Mittelwert der Korrelationswerte (ctrl vs. rnase) von denjenigen Proteinen, deren Hauptmaximum um mindestens 2 Fraktionen verschoben ist
 testing_cor_shifter = correlations(ctrl_main_shift, rnase_main_shift)
-testing_correlations$mean_abs_correlation
+testing_cor_shifter$mean_abs_correlation
 
-# Mittelwert der Korrelationswerte (ctrl vs. rnase) von denjenigen Proteinen, deren Hauptmaximum nicht um mindéstens 2 Fraktionen verschoben ist
+# Mittelwert der Korrelationswerte (ctrl vs. rnase) von denjenigen Proteinen, deren Hauptmaximum nicht um mindestens 2 Fraktionen verschoben ist
 testing_cor_no_shifter = correlations(ctrl_no_main_shift, rnase_no_main_shift)
 testing_cor_no_shifter$mean_abs_correlation
 
 # Hat sich die Hypothese bewahrheitet, ist der Mittelwert der Korrelationen der shifter kleiner als die der no_shifter?
-testing_correlations$mean_abs_correlation < testing_cor_no_shifter$mean_abs_correlation 
+testing_cor_shifter$mean_abs_correlation < testing_cor_no_shifter$mean_abs_correlation
 ```
 
 Unsere Hypothese hat sich bestätigt. Der Mittelwert der Korrelationen zwischen ctrl und rnase ist kleiner bei den Proteinen, bei denen das Hauptmaximum um mindestens 2 Fraktionen verschoben war. Hier beträgt er 0,42. Bei den Proteinen ohne große Verschiebung des Hauptmaximums beträgt er 0,94.
@@ -768,58 +768,6 @@ cor_all_proteins$mean_abs_correlation
 
 Der Mittelwert der Korrelationen auf alle Proteine bezogen beträgt 0,79. Dies ist kleiner als 0,94 und größer als 0,42. 
 Dies lässt vorerst den Schluss zu, dass eine Aufreinigung von RNA-abhängigen Proteinen gemäß des Kriteriums einer deutlichen Verschiebung des Hauptmaximums sinnvoll erscheint. Unser Ziel war es, weniger ähnliche Kurven herauszuselektieren, und von ähnlichen Kurven abzutrennen. 
-
-
-
-
-
-
-
-
-
-
-
-
-
-*******************************************************************************************************************************
-1.1 Identifizierung von Proteinen aus ctrl/rnase_main_shift (Hauptmaximum wesentlich verschoben), die insgesamt nur 1 Maximum besitzen
-*******************************************************************************************************************************
-
-```{r}
-# Hole die Protein- bzw. Zeilennamen aus ctrl_main_shift (enthält alle Proteine, deren Hauptmaxima um 2 Fraktionen abweicht)
-IDs_main_shift <- rownames(ctrl_main_shift)
-
-# Wähle nur die Protein IDs mit genau einem lokalen Maximum, das dem globalen Maximum entspricht
-# id = jedes Protein
-IDs_only1_maximum_shift <- IDs_main_shift[
-  sapply(IDs_main_shift, function(id) {
-    #Fraktion des lokalen Maxima des aktuellen Proteins wird in local_maxima gespeichert.
-    local_maxima <- ctrl_norm_mean$local_maxima[[id]]
-    #Fraktion des Hauotmaximas wird gespeichert.
-    global_maximum <- ctrl_norm_mean$global_maximum[id]
-    #Prüft: Ist nur eine Fraktionsnummer für lokale Maxima vorhanden und enstpricht diese der Fraktion des Hauptmaximums?
-    #Aus ID_main_shift werden nur die IDs entnommen, bei denen hier TRUE ausgegeben wird. 
-    length(local_maxima) == 1 && local_maxima == global_maximum
-  })
-]
-
-# Filtere den DataFrame ctrl_main_shift auf diese Proteine
-ctrl_only1_maximum_shift <- ctrl_main_shift[IDs_only1_maximum_shift, ]
-```
-
-```{r}
-#Test, damit ich nicht versehentlich ein Protein verloren habe. Dieser Chunk sollte vor Abgabe gelöscht werden.
-dim(ctrl_only1_maximum_shift)
-
-IDs_main_shift <- rownames(ctrl_main_shift)
-
-num_single_local_maxima <- sum(
-  sapply(IDs_main_shift, function(id) {
-    length(ctrl_norm_mean$local_maxima[[id]]) == 1
-  })
-)
-num_single_local_maxima
-```
 
 
 
@@ -877,12 +825,26 @@ dim(ctrl_main_shift)
 length(n_max_ctrl)
 length(n_max_rnase)
 ```
+
+
+
+
 *******************************************************************************************************************************
 Kombination der ausgewählten Proteine: unequal max und main shift um mind. 2 Fraktionen
 *******************************************************************************************************************************
 ```{r}
 
 ```
+
+
+
+***********************************************************************************************************
+Wilcoxon Test
+***********************************************************************************************************
+1. ctrl_unequal_max und ctrl_main_shift, sowie rnase_unequal_max und rnase_main_shift werden kombiniert
+    --> ctrl_selected und rnase_selected entstehen
+2. Test rownames(ctrl_selected) == rownames(rnase_selected), um sicherzugehen,dass die Proteine in der gleichen Reihenfolge sind, und auch sicher diegleichen Proteine vergleichen werden
+
 
 ###################################################################################################
 ###################################################################################################
