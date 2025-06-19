@@ -829,13 +829,6 @@ length(n_max_rnase)
 
 
 
-*******************************************************************************************************************************
-Kombination der ausgewählten Proteine: unequal max und main shift um mind. 2 Fraktionen
-*******************************************************************************************************************************
-```{r}
-
-```
-
 
 
 ***********************************************************************************************************
@@ -844,7 +837,12 @@ Wilcoxon Test
 1. ctrl_unequal_max und ctrl_main_shift, sowie rnase_unequal_max und rnase_main_shift werden kombiniert
     --> ctrl_selected und rnase_selected entstehen
 2. Test rownames(ctrl_selected) == rownames(rnase_selected), um sicherzugehen,dass die Proteine in der gleichen Reihenfolge sind, und auch sicher diegleichen Proteine vergleichen werden
-3. ctrl_equal_max und rnase_equal_max
+3. ctrl_equal_max und rnase_equal_max umbennen zu ctrl_not_selected und rnase_not_selected
+4. Aus der Spalte "combined_max_ctrl" von ctrl_selected wird pro Zeile der Mittelwert der Peak-Positionen gebildet und dann verglichen mit dem Mittelwert der Peak-Positionen von "combined_max_rnase" von rnase_selected 
+5. Aus der Spalte "combined_max_ctrl" von control_not_selected wird pro Zeile der Mittelwert der Peak-Positionen gebildet und dann verglichen mit dem Mittelwert der Peak-Positionen von "combined_max_rnase" von rnase_not_selected
+6. Jetzt wird der Wilcoxon-Tets angewendet, um die Differenzen zu untersuchen 
+
+
 
 
 ###################################################################################################
