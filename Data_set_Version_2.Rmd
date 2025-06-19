@@ -801,87 +801,30 @@ num_single_local_maxima <- sum(
 num_single_local_maxima
 ```
 
-*******************************************************************************************************************************
+*************************************************************************************************************
 Identifizierung von Proteinen mit ungleicher Anzahl an Maxima und deren Hauptmaxima weniger als 2 Fraktionen abweichen zwischen CTRL und RNASE
-*******************************************************************************************************************************
+*************************************************************************************************************
 
 ```{r}
-#Hier liegt mein Handtuch!
-  #Mein Platz!
-  #D:
-```
+#Vektoren der Maxima-Anzahl extrahieren
+n_max_ctrl  <- ctrl_no_main_shift$n_max_comb
+n_max_rnase <- rnase_no_main_shift$n_max_comb
 
+#Proteine (Zeilennamen) mit gleicher Maxima-Anzahl finden
+equal_max_proteins <- rownames(ctrl_no_main_shift)[n_max_ctrl == n_max_rnase]
 
-
-***********************************************************************************************************
-Identifizierung von Proteinen bei denen die Maxima um 2 Fraktionen verschoben sind zwischen CTRL und RNASE
-***********************************************************************************************************
-Zweite Vorauswahl an Proteinen mit potentieller RNA-Abhängigkeit.
-
-```{r}
-
-ctrl_maxima_list <- ctrl_3_same_maxima_amount$maxima
-rnase_maxima_list <- rnase_3_same_maxima_amount$maxima
-length(ctrl_maxima_list)
-length(rnase_maxima_list)
-
-#Liste zum Speichern der Treffer
-verschobene_proteine <- c()
-
-protein_ids <- rownames(ctrl_3_same_maxima_amount)
-
-#Für jede Zeile (jedes Protein) prüfen
-for (i in seq_along(ctrl_maxima_list)) {
-  ctrl_maxima <- as.numeric(unlist(ctrl_maxima_list[[i]]))
-  rnase_maxima <- as.numeric(unlist(rnase_maxima_list[[i]]))
-
-  if (length(ctrl_maxima) > 0 && length(ctrl_maxima) == length(rnase_maxima)) { #hab hier noch leere Vektoren ausgeschlossen, wegen Fehlermeldung, vorher: if (length(ctrl_maxima) == length(rnase_maxima))
-    max_diff <- max(abs(ctrl_maxima - rnase_maxima))
-    if (max_diff >= 2) {
-      verschobene_proteine <- c(verschobene_proteine, protein_ids[i])
-    }
-  }
-}
-ctrl_3_same_maxima_amount = ctrl_3_same_maxima_amount[verschobene_proteine, ]
-rnase_3_same_maxima_amount = rnase_3_same_maxima_amount[verschobene_proteine, ]
-
-```
-
-***********************************************************************************************************
-T-Test: Wie ungleich sind die Proteinintensitäten über alle Fraktionen?
-***********************************************************************************************************
-
-```{r}
-#Ergebnistabelle zum Speichern der p-Werte
-t_test_results <- data.frame(protein = character(),
-                             p_value = numeric(),
-                             stringsAsFactors = FALSE)
-
-# Paired t-Test für jedes Protein über 25 Fraktionen hinweg
-for (i in 1:nrow(ctrl_norm_mean)) {
-  ctrl_signal_intensities <- as.numeric(ctrl_norm_mean[i, 1:25])
-  rnase_signal_intensities <- as.numeric(rnase_norm_mean[i, 1:25])
-  
-  # Paired t-test
-  test_result <- t.test(ctrl_signal_intensities, rnase_signal_intensities, paired = TRUE)
-  
-  t_test_results <- rbind(t_test_results,
-                          data.frame(protein = rownames(ctrl_norm_mean)[i],
-                                     p_value = test_result$p.value))
-}
-
-# Füge adjustierte p-Werte (FDR, Benjamini-Hochberg) hinzu
-t_test_results$adj_p_value <- p.adjust(t_test_results$p_value, method = "BH")
-
-significant_proteins <- t_test_results[t_test_results$adj_p_value < 0.05, ]
+#Neuen DataFrame ctrl_equal_max mit diesen Proteinen erstellen
+ctrl_equal_max <- ctrl_no_main_shift[equal_max_proteins, ]
+rnase_equal_max <- rnase_no_main_shift[equal_max_proteins, ]
 ```
 
 ```{r}
-summary(ctrl_norm_mean[1:5, 1:25])
-summary(rnase_norm_mean[1:5, 1:25])
-
-apply(ctrl_norm_mean[ ,1:25], 1, var)  
-apply(rnase_norm_mean[,1:25], 1, var)
+#Test: Löschen vor Abgabe
+dim(ctrl_no_main_shift)
+dim(rnase_equal_max)
+dim(ctrl_main_shift)
+length(n_max_ctrl)
+length(n_max_rnase)
 ```
 
 
