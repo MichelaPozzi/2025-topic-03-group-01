@@ -924,7 +924,7 @@ print(wilcox_test_result)
 
 ***********************************************************************************************************
 
-Variablen, die ihr nach vollständiger Ausführeung bis hierher verwenden könnt
+Variablen, die ihr fürs Weitere verwenden könnt
 
 ctrl_selected und rnase_selected
 --> Diejenigen Proteine aus ctrl_norm_mean bzw. rnase_norm_mean, die wir als potenziell RNA-abhängig identifiziert haben
