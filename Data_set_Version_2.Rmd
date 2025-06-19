@@ -659,6 +659,11 @@ ctrl_norm_mean$n_local_maxima = ctrl_3[, "n_local_maxima"]
 rnase_norm_mean$n_local_maxima = rnase_3[, "n_local_maxima"]  
 ```
 
+
+
+
+
+
 ***********************************************************************************************************
 1. Kriterium der RNA-Abhängigkeit:
 Das Hauptmaximum des jeweiligen Proteins ist um mindestens 2 Maxima bezüglich seiner Position verschoben
@@ -732,16 +737,28 @@ correlations <- function(df1, df2, methode = "pearson") {
 ```
 
 ```{r}
-testing_correlations = correlations(ctrl_main_shift, rnase_main_shift)
+# Mittelwert der Korrelationswerte (ctrl vs. rnase) von denjenigen Proteinen, deren Hauptmaximum um mindéstens 2 Fraktionen verschoben ist
+testing_cor_shifter = correlations(ctrl_main_shift, rnase_main_shift)
 testing_correlations$mean_abs_correlation
+
+# Mittelwert der Korrelationswerte (ctrl vs. rnase) von denjenigen Proteinen, deren Hauptmaximum nicht um mindéstens 2 Fraktionen verschoben ist
+testing_cor_no_shifter = correlations(ctrl_no_main_shift, rnase_no_main_shift)
+testing_cor_no_shifter$mean_abs_correlation
+
+# Hat sich die Hypothese bewahrheitet, ist der Mittelwert der Korrelationen der shifter kleiner als die der no_shifter?
+testing_correlations$mean_abs_correlation < testing_cor_no_shifter$mean_abs_correlation 
 ```
+
+Unsere Hypothese hat sich bestätigt. Der Mittelwert der Korrelationen zwischen ctrl und rnase ist kleiner bei den Proteinen, bei denen das Hauptmaximum um mindestens 2 Fraktionen verschoben war. Hier beträgt er 0,42. Bei den Proteinen ohne große Verschiebung des Hauptmaximums beträgt er 0,94.
+
+
 
 ```{r}
-compare_correlations = correlations(ctrl_no_main_shift, rnase_no_main_shift)
-compare_correlations$mean_abs_correlation
+cor_all_proteins = correlations(ctrl_norm_mean, rnase_norm_mean)
+cor_all_proteins$mean_abs_correlation
 ```
-
-Hypothese hat sich bestätigt, yay!
+Der Mittelwert der Korrelationen auf alle Proteine bezogen beträgt 0,79. Dies ist kleiner als 0,94 und größer als 0,42. 
+Dies lässt vorerst den Schluss zu, dass eine Aufreinigung von RNA-abhängigen Proteinen gemäß des Kriteriums einer deutlichen Verschiebung des Hauptmaximums sinnvoll erscheint. Unser Ziel war es, weniger ähnliche Kurven herauszuselektieren, und von ähnlichen Kurven abzutrennen. 
 
 
 *******************************************************************************************************************************
