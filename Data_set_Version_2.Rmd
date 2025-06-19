@@ -838,6 +838,30 @@ n_max_ctrl  <- ctrl_no_main_shift$n_max_comb
 n_max_rnase <- rnase_no_main_shift$n_max_comb
 
 #Proteine (Zeilennamen) mit gleicher Maxima-Anzahl finden
+unequal_max_proteins <- rownames(ctrl_no_main_shift)[n_max_ctrl != n_max_rnase]
+
+#Neuen DataFrame ctrl_equal_max mit diesen Proteinen erstellen
+ctrl_unequal_max <- ctrl_no_main_shift[unequal_max_proteins, ]
+rnase_unequal_max <- rnase_no_main_shift[unequal_max_proteins, ]
+
+```
+
+```{r}
+#Vor Abgabe löschen
+dim(ctrl_unequal_max)
+dim(rnase_unequal_max)
+```
+
+*******************************************************************************************************************************
+Proteine mit gleicher Anzahl an Maxima in ctrl_equal_max speichern
+*******************************************************************************************************************************
+
+```{r}
+#Vektoren der Maxima-Anzahl extrahieren
+n_max_ctrl  <- ctrl_no_main_shift$n_max_comb
+n_max_rnase <- rnase_no_main_shift$n_max_comb
+
+#Proteine (Zeilennamen) mit gleicher Maxima-Anzahl finden
 equal_max_proteins <- rownames(ctrl_no_main_shift)[n_max_ctrl == n_max_rnase]
 
 #Neuen DataFrame ctrl_equal_max mit diesen Proteinen erstellen
@@ -853,42 +877,12 @@ dim(ctrl_main_shift)
 length(n_max_ctrl)
 length(n_max_rnase)
 ```
-
-
-***********************************************************************************************************
-Identifizierung von Proteinen bei denen die Maxima um 2 Fraktionen verschoben sind zwischen CTRL und RNASE
-***********************************************************************************************************
-Zweite Vorauswahl an Proteinen mit potentieller RNA-Abhängigkeit.
-
+*******************************************************************************************************************************
+Kombination der ausgewählten Proteine: unequal max und main shift um mind. 2 Fraktionen
+*******************************************************************************************************************************
 ```{r}
 
-ctrl_maxima_list <- ctrl_3_same_maxima_amount$maxima
-rnase_maxima_list <- rnase_3_same_maxima_amount$maxima
-length(ctrl_maxima_list)
-length(rnase_maxima_list)
-
-#Liste zum Speichern der Treffer
-verschobene_proteine <- c()
-
-protein_ids <- rownames(ctrl_3_same_maxima_amount)
-
-#Für jede Zeile (jedes Protein) prüfen
-for (i in seq_along(ctrl_maxima_list)) {
-  ctrl_maxima <- as.numeric(unlist(ctrl_maxima_list[[i]]))
-  rnase_maxima <- as.numeric(unlist(rnase_maxima_list[[i]]))
-
-  if (length(ctrl_maxima) > 0 && length(ctrl_maxima) == length(rnase_maxima)) { #hab hier noch leere Vektoren ausgeschlossen, wegen Fehlermeldung, vorher: if (length(ctrl_maxima) == length(rnase_maxima))
-    max_diff <- max(abs(ctrl_maxima - rnase_maxima))
-    if (max_diff >= 2) {
-      verschobene_proteine <- c(verschobene_proteine, protein_ids[i])
-    }
-  }
-}
-ctrl_3_same_maxima_amount = ctrl_3_same_maxima_amount[verschobene_proteine, ]
-rnase_3_same_maxima_amount = rnase_3_same_maxima_amount[verschobene_proteine, ]
-
 ```
-
 
 ###################################################################################################
 ###################################################################################################
