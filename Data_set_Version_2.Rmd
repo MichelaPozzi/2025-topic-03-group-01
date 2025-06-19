@@ -659,7 +659,22 @@ ctrl_norm_mean$n_local_maxima = ctrl_3[, "n_local_maxima"]
 rnase_norm_mean$n_local_maxima = rnase_3[, "n_local_maxima"]  
 ```
 
+***********************************************************************************************************
+COM-Werte hinzugügen in ctrl_norm_mean
+***********************************************************************************************************
+```{r}
+#Wählt die ersten Proteinintensitäten in 25 Fraktionen aus.
+#Geht jede Zeile von ctrl_norm_mean durch.
+#x = Vektor mit den Intensitäten eines Proteins über alle 25 Fraktionen, für den gerade der COM berechnet wird
+#* bedeutet elementweise Multiplikation
+ctrl_norm_mean$COM <- apply(ctrl_norm_mean[, 1:25], 1, function(x) {
+  sum((1:25) * x, na.rm = TRUE) / sum(x, na.rm = TRUE)
+})
 
+rnase_norm_mean$COM <- apply(rnase_norm_mean[, 1:25], 1, function(x) {
+  sum((1:25) * x, na.rm = TRUE) / sum(x, na.rm = TRUE)
+})
+```
 
 
 
