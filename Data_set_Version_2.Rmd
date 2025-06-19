@@ -786,6 +786,30 @@ n_max_ctrl  <- ctrl_no_main_shift$n_max_comb
 n_max_rnase <- rnase_no_main_shift$n_max_comb
 
 #Proteine (Zeilennamen) mit gleicher Maxima-Anzahl finden
+unequal_max_proteins <- rownames(ctrl_no_main_shift)[n_max_ctrl != n_max_rnase]
+
+#Neuen DataFrame ctrl_equal_max mit diesen Proteinen erstellen
+ctrl_unequal_max <- ctrl_no_main_shift[unequal_max_proteins, ]
+rnase_unequal_max <- rnase_no_main_shift[unequal_max_proteins, ]
+
+```
+
+```{r}
+#Vor Abgabe löschen
+dim(ctrl_unequal_max)
+dim(rnase_unequal_max)
+```
+
+*******************************************************************************************************************************
+Proteine mit gleicher Anzahl an Maxima in ctrl_equal_max speichern
+*******************************************************************************************************************************
+
+```{r}
+#Vektoren der Maxima-Anzahl extrahieren
+n_max_ctrl  <- ctrl_no_main_shift$n_max_comb
+n_max_rnase <- rnase_no_main_shift$n_max_comb
+
+#Proteine (Zeilennamen) mit gleicher Maxima-Anzahl finden
 equal_max_proteins <- rownames(ctrl_no_main_shift)[n_max_ctrl == n_max_rnase]
 
 #Neuen DataFrame ctrl_equal_max mit diesen Proteinen erstellen
@@ -803,6 +827,17 @@ length(n_max_rnase)
 ```
 
 
+
+
+*******************************************************************************************************************************
+Kombination der ausgewählten Proteine: unequal max und main shift um mind. 2 Fraktionen
+*******************************************************************************************************************************
+```{r}
+
+```
+
+
+
 ***********************************************************************************************************
 Wilcoxon Test
 ***********************************************************************************************************
@@ -810,10 +845,6 @@ Wilcoxon Test
     --> ctrl_selected und rnase_selected entstehen
 2. Test rownames(ctrl_selected) == rownames(rnase_selected), um sicherzugehen,dass die Proteine in der gleichen Reihenfolge sind, und auch sicher diegleichen Proteine vergleichen werden
 3. ctrl_equal_max und rnase_equal_max
-
-
-
-
 
 
 ###################################################################################################
