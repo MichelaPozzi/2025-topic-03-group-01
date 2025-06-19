@@ -664,6 +664,8 @@ rnase_norm_mean$n_local_maxima = rnase_3[, "n_local_maxima"]
 
 
 
+
+
 ***********************************************************************************************************
 1. Kriterium der RNA-Abhängigkeit:
 Das Hauptmaximum des jeweiligen Proteins ist um mindestens 2 Maxima bezüglich seiner Position verschoben
@@ -692,10 +694,11 @@ ctrl_no_main_shift = ctrl_norm_mean[!rownames(ctrl_norm_mean) %in% rownames(ctrl
 rnase_no_main_shift = rnase_norm_mean[!rownames(rnase_norm_mean) %in% rownames(rnase_main_shift), ]
 ```
 
+
+
 **********************
 Hypothese: Korrelation von ctrl_main_shift mit rnase_main_shift ist geringer als von ctrl_no_main_shift mit rnase_no_main_shift
 **********************
-
 
 ```{r}
 # Funktion zur Berechnung der zeilenweise Korrelation, Vermutung: cor von ctrl_main_shift ist geringer als von ctrl_no_main_shift
@@ -736,6 +739,12 @@ correlations <- function(df1, df2, methode = "pearson") {
 }
 ```
 
+
+
+**********************
+Evaluierung der Hypothese 
+**********************
+
 ```{r}
 # Mittelwert der Korrelationswerte (ctrl vs. rnase) von denjenigen Proteinen, deren Hauptmaximum um mindéstens 2 Fraktionen verschoben ist
 testing_cor_shifter = correlations(ctrl_main_shift, rnase_main_shift)
@@ -752,17 +761,28 @@ testing_correlations$mean_abs_correlation < testing_cor_no_shifter$mean_abs_corr
 Unsere Hypothese hat sich bestätigt. Der Mittelwert der Korrelationen zwischen ctrl und rnase ist kleiner bei den Proteinen, bei denen das Hauptmaximum um mindestens 2 Fraktionen verschoben war. Hier beträgt er 0,42. Bei den Proteinen ohne große Verschiebung des Hauptmaximums beträgt er 0,94.
 
 
-
 ```{r}
 cor_all_proteins = correlations(ctrl_norm_mean, rnase_norm_mean)
 cor_all_proteins$mean_abs_correlation
 ```
+
 Der Mittelwert der Korrelationen auf alle Proteine bezogen beträgt 0,79. Dies ist kleiner als 0,94 und größer als 0,42. 
 Dies lässt vorerst den Schluss zu, dass eine Aufreinigung von RNA-abhängigen Proteinen gemäß des Kriteriums einer deutlichen Verschiebung des Hauptmaximums sinnvoll erscheint. Unser Ziel war es, weniger ähnliche Kurven herauszuselektieren, und von ähnlichen Kurven abzutrennen. 
 
 
+
+
+
+
+
+
+
+
+
+
+
 *******************************************************************************************************************************
-1.1 Identifizierung von Proteinen mit nur einem Maximum und deren Hauptmaxima um 2 Fraktionen abweichen zwischen CTRL und RNASE
+1.1 Identifizierung von Proteinen aus ctrl/rnase_main_shift (Hauptmaximum wesentlich verschoben), die insgesamt nur 1 Maximum besitzen
 *******************************************************************************************************************************
 
 ```{r}
@@ -801,8 +821,20 @@ num_single_local_maxima <- sum(
 num_single_local_maxima
 ```
 
+
+
+
+
+
+
+
+
+
+
+
 *******************************************************************************************************************************
-Identifizierung von Proteinen mit ungleicher Anzahl an Maxima und deren Hauptmaxima weniger als 2 Fraktionen abweichen zwischen CTRL und RNASE
+2. Kriterium 
+Identifizierung derjenigen Proteine aus ctrl/rnase_no_main_shift (Hauptmaxima nicht wesentlich verschoben), die eine unterschiedliche Anzahl an Gesamtmaxima (n_max_comb) aufweisen
 *******************************************************************************************************************************
 
 ```{r}
@@ -853,36 +885,10 @@ T-Test: Wie ungleich sind die Proteinintensitäten über alle Fraktionen?
 
 ```{r}
 #Ergebnistabelle zum Speichern der p-Werte
-t_test_results <- data.frame(protein = character(),
-                             p_value = numeric(),
-                             stringsAsFactors = FALSE)
 
-# Paired t-Test für jedes Protein über 25 Fraktionen hinweg
-for (i in 1:nrow(ctrl_norm_mean)) {
-  ctrl_signal_intensities <- as.numeric(ctrl_norm_mean[i, 1:25])
-  rnase_signal_intensities <- as.numeric(rnase_norm_mean[i, 1:25])
-  
-  # Paired t-test
-  test_result <- t.test(ctrl_signal_intensities, rnase_signal_intensities, paired = TRUE)
-  
-  t_test_results <- rbind(t_test_results,
-                          data.frame(protein = rownames(ctrl_norm_mean)[i],
-                                     p_value = test_result$p.value))
-}
 
-# Füge adjustierte p-Werte (FDR, Benjamini-Hochberg) hinzu
-t_test_results$adj_p_value <- p.adjust(t_test_results$p_value, method = "BH")
 
-significant_proteins <- t_test_results[t_test_results$adj_p_value < 0.05, ]
-```
 
-```{r}
-summary(ctrl_norm_mean[1:5, 1:25])
-summary(rnase_norm_mean[1:5, 1:25])
-
-apply(ctrl_norm_mean[ ,1:25], 1, var)  
-apply(rnase_norm_mean[,1:25], 1, var)
-```
 
 
 ###################################################################################################
