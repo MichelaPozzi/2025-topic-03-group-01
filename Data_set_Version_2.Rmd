@@ -809,6 +809,7 @@ Wilcoxon Test
 1. ctrl_unequal_max und ctrl_main_shift, sowie rnase_unequal_max und rnase_main_shift werden kombiniert
     --> ctrl_selected und rnase_selected entstehen
 2. Test rownames(ctrl_selected) == rownames(rnase_selected), um sicherzugehen,dass die Proteine in der gleichen Reihenfolge sind, und auch sicher diegleichen Proteine vergleichen werden
+3. ctrl_equal_max und rnase_equal_max
 
 
 
