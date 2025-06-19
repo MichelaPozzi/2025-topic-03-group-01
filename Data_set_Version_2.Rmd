@@ -913,7 +913,13 @@ ggplot(df_plot, aes(x = Group, y = Difference)) +
   labs(title = "Verteilung der Differenzen", y = "ctrl - rnase", x = "")
 ```
 
-
+```{r}
+ggplot(df_plot, aes(x = Difference, fill = Group)) +
+  geom_density(alpha = 0.5) +
+  theme_minimal() +
+  labs(title = "Dichteverteilung der Differenzen", x = "Differenz (ctrl - rnase)")
+```
+Interpretation: Es scheint so 
 
 
 
