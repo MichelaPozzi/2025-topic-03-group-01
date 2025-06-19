@@ -792,16 +792,16 @@ unequal_max_proteins <- rownames(ctrl_no_main_shift)[n_max_ctrl != n_max_rnase]
 ctrl_unequal_max <- ctrl_no_main_shift[unequal_max_proteins, ]
 rnase_unequal_max <- rnase_no_main_shift[unequal_max_proteins, ]
 
+
+#Vor Abgabe löschen
+#dim(ctrl_unequal_max)
+#dim(rnase_unequal_max)
 ```
 
-```{r}
-#Vor Abgabe löschen
-dim(ctrl_unequal_max)
-dim(rnase_unequal_max)
-```
+
 
 *******************************************************************************************************************************
-Proteine mit gleicher Anzahl an Maxima in ctrl_equal_max speichern
+Proteine mit gleicher Anzahl an Gesamtmaxima (n_max_comb) aus ctrl/rnase_no_main_shift
 *******************************************************************************************************************************
 
 ```{r}
@@ -815,17 +815,14 @@ equal_max_proteins <- rownames(ctrl_no_main_shift)[n_max_ctrl == n_max_rnase]
 #Neuen DataFrame ctrl_equal_max mit diesen Proteinen erstellen
 ctrl_equal_max <- ctrl_no_main_shift[equal_max_proteins, ]
 rnase_equal_max <- rnase_no_main_shift[equal_max_proteins, ]
-```
 
-```{r}
 #Test: Löschen vor Abgabe
-dim(ctrl_no_main_shift)
-dim(rnase_equal_max)
-dim(ctrl_main_shift)
-length(n_max_ctrl)
-length(n_max_rnase)
+#dim(ctrl_no_main_shift)
+#dim(rnase_equal_max)
+#dim(ctrl_main_shift)
+#length(n_max_ctrl)
+#length(n_max_rnase)
 ```
-
 
 
 
@@ -838,35 +835,71 @@ Wilcoxon Test
     --> ctrl_selected und rnase_selected entstehen
 2. Test rownames(ctrl_selected) == rownames(rnase_selected), um sicherzugehen,dass die Proteine in der gleichen Reihenfolge sind, und auch sicher diegleichen Proteine vergleichen werden
 3. ctrl_equal_max und rnase_equal_max umbennen zu ctrl_not_selected und rnase_not_selected
-4. Aus der Spalte "combined_max_ctrl" von ctrl_selected wird pro Zeile der Mittelwert der Peak-Positionen gebildet und dann verglichen mit dem Mittelwert der Peak-Positionen von "combined_max_rnase" von rnase_selected 
-5. Aus der Spalte "combined_max_ctrl" von control_not_selected wird pro Zeile der Mittelwert der Peak-Positionen gebildet und dann verglichen mit dem Mittelwert der Peak-Positionen von "combined_max_rnase" von rnase_not_selected
-6. Jetzt wird der Wilcoxon-Tets angewendet, um die Differenzen zu untersuchen 
+4. 
+- Aus der Spalte "combined_max_ctrl" von ctrl_selected wird pro Zeile der Mittelwert der Peak-Positionen gebildet und dann verglichen mit dem Mittelwert der Peak-Positionen von "combined_max_rnase" von rnase_selected 
+- Aus der Spalte "combined_max_ctrl" von control_not_selected wird pro Zeile der Mittelwert der Peak-Positionen gebildet und dann verglichen mit dem Mittelwert der Peak-Positionen von "combined_max_rnase" von rnase_not_selected
+- Jetzt wird der Wilcoxon-Tets angewendet, um die Differenzen zu untersuchen 
+    H0: Die Verteilung der Differenzen in beiden Gruppen haben keinen systematischen Unterschied 
 
 
-
-
-
-Kombination der ausgewählten Proteine: unequal max und main shift um mind. 2 Fraktionen
-*******************************************************************************************************************************
+1.Schritt 
 ```{r}
-ctrl_selected <- ctrl_norm_mean
-
-proteins_main_shift <- rownames(ctrl_main_shift)
-proteins_unequal_max <- rownames(ctrl_unequal_max)
-
-#Auswahl der Proteine
-#union() kombiniert zwei Vektoren und gibt einen Vektor zurück, der alle Elemente aus beiden Vektoren enthält
-selected_proteins <- union(proteins_main_shift, proteins_unequal_max)
-
-#Vereinigung im neuen Data Frame ctrl_selected
-ctrl_selected <- ctrl_selected[rownames(ctrl_selected) %in% selected_proteins, ]
+ctrl_selected = rbind(ctrl_main_shift, ctrl_unequal_max)
+rnase_selected = rbind(rnase_main_shift, rnase_unequal_max)
 ```
 
 
+2.Schritt
+```{r}
+sum(rownames(ctrl_selected) != rownames(rnase_selected))
+```
+
+
+3.Schritt
+```{r}
+ctrl_not_selected = ctrl_equal_max
+rnase_not_selected = rnase_equal_max
+
+dim(ctrl_not_selected)[1] + dim(ctrl_selected)[1] == 4765
+```
+
+
+4.Schritt
+```{r}
+# Mittelwerte pro Zeile berechnen und Differenz bilden
+get_differences <- function(ctrl_df, rnase_df, ctrl_col, rnase_col) {
+  ctrl_means <- sapply(ctrl_df[[ctrl_col]], mean)
+  rnase_means <- sapply(rnase_df[[rnase_col]], mean)
+  return(ctrl_means - rnase_means)
+}
+
+# Berechne die Differenzvektoren für beide Gruppen
+diff_selected <- get_differences(ctrl_selected, rnase_selected, "combined_max_ctrl", "combined_max_rnase")
+diff_not_selected <- get_differences(ctrl_not_selected, rnase_not_selected, "combined_max_ctrl", "combined_max_rnase")
+
+# Wilcoxon Rank-Sum Test (ungepaart)
+wilcox_test_result <- wilcox.test(diff_selected, diff_not_selected)
+
+# Ergebnis anzeigen
+print(wilcox_test_result)
+```
+```{r}
+a = correlations(ctrl_selected, rnase_selected)
+a$mean_abs_correlation
+
+b = correlations(ctrl_not_selected, rnase_not_selected)
+b$mean_abs_correlation
+```
+
+
+
+
+
+
 ###################################################################################################
 ###################################################################################################
 ###################################################################################################
-* hier ruht unser Gaussian fit ˙◠˙
+* hier ruht unser Gaussian fit ˙◠˙ it was a very good boy, but also sometimes complicated! maaaa!
 
 ***********************************************************************************************************
 T-Test (Bens)
