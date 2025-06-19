@@ -2573,15 +2573,18 @@ ggplot(df_regression, aes(x = PC1, y = target)) +
 
 ```
 ```{r}
+#Für ctrl
+#Generiert einen Plot mit den Datenpunkten der PCA und malt eine Trendlinie dadurch
 plot(pca_ctrl_pc1_pc2$PC1,pca_ctrl_pc1_pc2$PC2,pch=20,col='blue', xlab='PC1',ylab='PC2');abline(0,1,col='red')
-plot(pca_ctrl_pc1_pc3$PC1,pca_ctrl_pc1_pc3$PC3,pch=20,col='blue', xlab='PC1',ylab='PC2');abline(0,1,col='red')
-plot(pca_ctrl_pc2_pc3$PC2,pca_ctrl_pc2_pc3$PC3,pch=20,col='blue', xlab='PC1',ylab='PC2');abline(0,1,col='red')
+plot(pca_ctrl_pc1_pc3$PC1,pca_ctrl_pc1_pc3$PC3,pch=20,col='blue', xlab='PC1',ylab='PC3');abline(0,1,col='red')
+plot(pca_ctrl_pc2_pc3$PC2,pca_ctrl_pc2_pc3$PC3,pch=20,col='blue', xlab='PC2',ylab='PC3');abline(0,1,col='red')
 
+#Je eine PCA Komponente wird als Zielvariable definiert, also als das, was mit der Regressionsanalyse vorhergesagt werden soll
 target_ctrl_pc1pc2 <- pca_ctrl_pc1_pc2$PC2
 target_ctrl_pc1pc3 <- pca_ctrl_pc1_pc3$PC3
 target_ctrl_pc2pc3 <- pca_ctrl_pc2_pc3$PC3
 
-
+#Zusammengesetzten dataframe für Regressionsanalyse aus Zielvariable mit zwei PCA Komponenten aufbauen
 df_regression_ctrl_1 <- cbind(target = target_ctrl_pc1pc2,
                        pca_ctrl_pc1_pc2)
 df_regression_ctrl_2 <- cbind(target = target_ctrl_pc1pc3,
@@ -2589,25 +2592,25 @@ df_regression_ctrl_2 <- cbind(target = target_ctrl_pc1pc3,
 df_regression_ctrl_3 <- cbind(target = target_ctrl_pc2pc3,
                        pca_ctrl_pc2_pc3)
 
-# 4. Lineares Regressionsmodell mit PC1 und PC2
+#Multiple Lineare Regressionsanalyse
 model_ctrl_pc1_pc2 <- lm(target ~ PC1 + PC2, data = df_regression_ctrl_1)
 model_ctrl_pc1_pc3 <- lm(target ~ PC1 + PC3, data = df_regression_ctrl_2)
 model_ctrl_pc2_pc3 <- lm(target ~ PC2 + PC3, data = df_regression_ctrl_3)
 
-# 5. Ergebnisse anzeigen
+#Ergebnisse/Zusammenfassung anzeigen
 summary(model_ctrl_pc1_pc2)
 summary(model_ctrl_pc1_pc3)
 summary(model_ctrl_pc2_pc3)
 ```
 ```{r}
+#Das gleiche für rnase
 plot(pca_rnase_pc1_pc2$PC1,pca_rnase_pc1_pc2$PC2,pch=20,col='blue', xlab='PC1',ylab='PC2');abline(0,1,col='red')
-plot(pca_rnase_pc1_pc3$PC1,pca_rnase_pc1_pc3$PC3,pch=20,col='blue', xlab='PC1',ylab='PC2');abline(0,1,col='red')
-plot(pca_rnase_pc2_pc3$PC2,pca_rnase_pc2_pc3$PC3,pch=20,col='blue', xlab='PC1',ylab='PC2');abline(0,1,col='red')
+plot(pca_rnase_pc1_pc3$PC1,pca_rnase_pc1_pc3$PC3,pch=20,col='blue', xlab='PC1',ylab='PC3');abline(0,1,col='red')
+plot(pca_rnase_pc2_pc3$PC2,pca_rnase_pc2_pc3$PC3,pch=20,col='blue', xlab='PC2',ylab='PC3');abline(0,1,col='red')
 
 target_rnase_pc1pc2 <- pca_rnase_pc1_pc2$PC2
 target_rnase_pc1pc3 <- pca_rnase_pc1_pc3$PC3
 target_rnase_pc2pc3 <- pca_rnase_pc2_pc3$PC3
-
 
 df_regression_rnase_1 <- cbind(target = target_rnase_pc1pc2,
                        pca_rnase_pc1_pc2)
@@ -2616,15 +2619,11 @@ df_regression_rnase_2 <- cbind(target = target_rnase_pc1pc3,
 df_regression_rnase_3 <- cbind(target = target_rnase_pc2pc3,
                        pca_rnase_pc2_pc3)
 
-# 4. Lineares Regressionsmodell mit PC1 und PC2
 model_rnase_pc1_pc2 <- lm(target ~ PC1 + PC2, data = df_regression_rnase_1)
 model_rnase_pc1_pc3 <- lm(target ~ PC1 + PC3, data = df_regression_rnase_2)
 model_rnase_pc2_pc3 <- lm(target ~ PC2 + PC3, data = df_regression_rnase_3)
 
-# 5. Ergebnisse anzeigen
 summary(model_rnase_pc1_pc2)
 summary(model_rnase_pc1_pc3)
 summary(model_rnase_pc2_pc3)
 ```
-
-
