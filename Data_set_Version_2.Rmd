@@ -775,58 +775,6 @@ Dies lässt vorerst den Schluss zu, dass eine Aufreinigung von RNA-abhängigen P
 
 
 
-
-
-
-
-
-
-*******************************************************************************************************************************
-1.1 Identifizierung von Proteinen aus ctrl/rnase_main_shift (Hauptmaximum wesentlich verschoben), die insgesamt nur 1 Maximum besitzen
-*******************************************************************************************************************************
-
-```{r}
-# Hole die Protein- bzw. Zeilennamen aus ctrl_main_shift (enthält alle Proteine, deren Hauptmaxima um 2 Fraktionen abweicht)
-IDs_main_shift <- rownames(ctrl_main_shift)
-
-# Wähle nur die Protein IDs mit genau einem lokalen Maximum, das dem globalen Maximum entspricht
-# id = jedes Protein
-IDs_only1_maximum_shift <- IDs_main_shift[
-  sapply(IDs_main_shift, function(id) {
-    #Fraktion des lokalen Maxima des aktuellen Proteins wird in local_maxima gespeichert.
-    local_maxima <- ctrl_norm_mean$local_maxima[[id]]
-    #Fraktion des Hauotmaximas wird gespeichert.
-    global_maximum <- ctrl_norm_mean$global_maximum[id]
-    #Prüft: Ist nur eine Fraktionsnummer für lokale Maxima vorhanden und enstpricht diese der Fraktion des Hauptmaximums?
-    #Aus ID_main_shift werden nur die IDs entnommen, bei denen hier TRUE ausgegeben wird. 
-    length(local_maxima) == 1 && local_maxima == global_maximum
-  })
-]
-
-# Filtere den DataFrame ctrl_main_shift auf diese Proteine
-ctrl_only1_maximum_shift <- ctrl_main_shift[IDs_only1_maximum_shift, ]
-```
-
-```{r}
-#Test, damit ich nicht versehentlich ein Protein verloren habe. Dieser Chunk sollte vor Abgabe gelöscht werden.
-dim(ctrl_only1_maximum_shift)
-
-IDs_main_shift <- rownames(ctrl_main_shift)
-
-num_single_local_maxima <- sum(
-  sapply(IDs_main_shift, function(id) {
-    length(ctrl_norm_mean$local_maxima[[id]]) == 1
-  })
-)
-num_single_local_maxima
-```
-
-
-
-
-
-
-
 *******************************************************************************************************************************
 2. Kriterium 
 Identifizierung derjenigen Proteine aus ctrl/rnase_no_main_shift (Hauptmaxima nicht wesentlich verschoben), die eine unterschiedliche Anzahl an Gesamtmaxima (n_max_comb) aufweisen
@@ -856,9 +804,11 @@ length(n_max_rnase)
 
 
 ***********************************************************************************************************
-Identifizierung von Proteinen bei denen die Maxima um 2 Fraktionen verschoben sind zwischen CTRL und RNASE
+Wilcoxon Test
 ***********************************************************************************************************
-Zweite Vorauswahl an Proteinen mit potentieller RNA-Abhängigkeit.
+1. ctrl_unequal_max und ctrl_main_shift, sowie rnase_unequal_max und rnase_main_shift werden kombiniert
+    --> ctrl_selected und rnase_selected entstehen
+2. Test rownames(ctrl_selected) == rownames(rnase_selected), um sicherzugehen,dass die Proteine in der gleichen Reihenfolge sind, und auch sicher diegleichen Proteine vergleichen werden
 
 
 
