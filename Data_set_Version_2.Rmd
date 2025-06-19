@@ -668,7 +668,7 @@ rnase_norm_mean$n_local_maxima = rnase_3[, "n_local_maxima"]
 
 
 ***********************************************************************************************************
-1. Kriterium der RNA-Abhängigkeit:
+1. Kriterium der Aufreinigung des Datensatzes
 Das Hauptmaximum des jeweiligen Proteins ist um mindestens 2 Maxima bezüglich seiner Position verschoben
 ***********************************************************************************************************
 
@@ -777,7 +777,7 @@ Dies lässt vorerst den Schluss zu, dass eine Aufreinigung von RNA-abhängigen P
 
 
 *******************************************************************************************************************************
-2. Kriterium 
+2. Kriterium der Aufreinigung
 Identifizierung derjenigen Proteine aus ctrl/rnase_no_main_shift (Hauptmaxima nicht wesentlich verschoben), die eine unterschiedliche Anzahl an Gesamtmaxima (n_max_comb) aufweisen
 *******************************************************************************************************************************
 
@@ -833,6 +833,9 @@ rnase_equal_max <- rnase_no_main_shift[equal_max_proteins, ]
 Wilcoxon Test
 ***********************************************************************************************************
 
+Statistische Beurteilung, ob die Aufreinigung des Datensatzes dazu geführt hat, dass die selektierten Proteine signifikante Unterschiede zwischen ctrl und rnase aufweisen (z.B. bei COM), während die nicht selektierten Proteine diese Unterschiede nicht aufweisen
+
+
 1: ctrl_unequal_max und ctrl_main_shift, sowie rnase_unequal_max und rnase_main_shift werden kombiniert
 --> ctrl_selected und rnase_selected entstehen
 
@@ -840,12 +843,15 @@ Wilcoxon Test
 
 3: ctrl_equal_max und rnase_equal_max umbennen zu ctrl_not_selected und rnase_not_selected
 
-4.1: Aus der Spalte "combined_max_ctrl" von ctrl_selected wird pro Zeile der Mittelwert der Peak-Positionen gebildet und dann verglichen mit dem Mittelwert der Peak-Positionen von "combined_max_rnase" von rnase_selected 
+4.1: Aus der Spalte "combined_max_ctrl" von ctrl_selected wird pro Zeile der Mittelwert der Peak-Positionen  gebildet und dann verglichen mit dem Mittelwert der Peak-Positionen von "combined_max_rnase" von rnase_selected 
 
 4.2: Aus der Spalte "combined_max_ctrl" von control_not_selected wird pro Zeile der Mittelwert der Peak-Positionen gebildet und dann verglichen mit dem Mittelwert der Peak-Positionen von "combined_max_rnase" von rnase_not_selected
 
 4.3: Jetzt wird der Wilcoxon-Tets angewendet, um die Differenzen zu untersuchen 
 --> H0: Die Verteilung der Differenzen in beiden Gruppen haben keinen systematischen Unterschied 
+
+5. Alternative: Mittels COM (center of mass) anstatt Differenzen der Mittelwerte arbeiten
+
 
 
 1.Schritt 
@@ -891,7 +897,6 @@ print(wilcox_test_result)
 ```
 
 
-
 ```{r}
 library(ggplot2)
 
@@ -907,6 +912,12 @@ ggplot(df_plot, aes(x = Group, y = Difference)) +
   theme_minimal() +
   labs(title = "Verteilung der Differenzen", y = "ctrl - rnase", x = "")
 ```
+
+
+
+
+
+
 
 
 
