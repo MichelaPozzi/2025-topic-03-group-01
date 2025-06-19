@@ -664,6 +664,8 @@ rnase_norm_mean$n_local_maxima = rnase_3[, "n_local_maxima"]
 
 
 
+
+
 ***********************************************************************************************************
 1. Kriterium der RNA-Abhängigkeit:
 Das Hauptmaximum des jeweiligen Proteins ist um mindestens 2 Maxima bezüglich seiner Position verschoben
@@ -692,10 +694,11 @@ ctrl_no_main_shift = ctrl_norm_mean[!rownames(ctrl_norm_mean) %in% rownames(ctrl
 rnase_no_main_shift = rnase_norm_mean[!rownames(rnase_norm_mean) %in% rownames(rnase_main_shift), ]
 ```
 
+
+
 **********************
 Hypothese: Korrelation von ctrl_main_shift mit rnase_main_shift ist geringer als von ctrl_no_main_shift mit rnase_no_main_shift
 **********************
-
 
 ```{r}
 # Funktion zur Berechnung der zeilenweise Korrelation, Vermutung: cor von ctrl_main_shift ist geringer als von ctrl_no_main_shift
@@ -736,6 +739,12 @@ correlations <- function(df1, df2, methode = "pearson") {
 }
 ```
 
+
+
+**********************
+Evaluierung der Hypothese 
+**********************
+
 ```{r}
 # Mittelwert der Korrelationswerte (ctrl vs. rnase) von denjenigen Proteinen, deren Hauptmaximum um mindéstens 2 Fraktionen verschoben ist
 testing_cor_shifter = correlations(ctrl_main_shift, rnase_main_shift)
@@ -752,17 +761,28 @@ testing_correlations$mean_abs_correlation < testing_cor_no_shifter$mean_abs_corr
 Unsere Hypothese hat sich bestätigt. Der Mittelwert der Korrelationen zwischen ctrl und rnase ist kleiner bei den Proteinen, bei denen das Hauptmaximum um mindestens 2 Fraktionen verschoben war. Hier beträgt er 0,42. Bei den Proteinen ohne große Verschiebung des Hauptmaximums beträgt er 0,94.
 
 
-
 ```{r}
 cor_all_proteins = correlations(ctrl_norm_mean, rnase_norm_mean)
 cor_all_proteins$mean_abs_correlation
 ```
+
 Der Mittelwert der Korrelationen auf alle Proteine bezogen beträgt 0,79. Dies ist kleiner als 0,94 und größer als 0,42. 
 Dies lässt vorerst den Schluss zu, dass eine Aufreinigung von RNA-abhängigen Proteinen gemäß des Kriteriums einer deutlichen Verschiebung des Hauptmaximums sinnvoll erscheint. Unser Ziel war es, weniger ähnliche Kurven herauszuselektieren, und von ähnlichen Kurven abzutrennen. 
 
 
+
+
+
+
+
+
+
+
+
+
+
 *******************************************************************************************************************************
-1.1 Identifizierung von Proteinen mit nur einem Maximum und deren Hauptmaxima um 2 Fraktionen abweichen zwischen CTRL und RNASE
+1.1 Identifizierung von Proteinen aus ctrl/rnase_main_shift (Hauptmaximum wesentlich verschoben), die insgesamt nur 1 Maximum besitzen
 *******************************************************************************************************************************
 
 ```{r}
@@ -801,9 +821,16 @@ num_single_local_maxima <- sum(
 num_single_local_maxima
 ```
 
-*************************************************************************************************************
-Identifizierung von Proteinen mit ungleicher Anzahl an Maxima und deren Hauptmaxima weniger als 2 Fraktionen abweichen zwischen CTRL und RNASE
-*************************************************************************************************************
+
+
+
+
+
+
+*******************************************************************************************************************************
+2. Kriterium 
+Identifizierung derjenigen Proteine aus ctrl/rnase_no_main_shift (Hauptmaxima nicht wesentlich verschoben), die eine unterschiedliche Anzahl an Gesamtmaxima (n_max_comb) aufweisen
+*******************************************************************************************************************************
 
 ```{r}
 #Vektoren der Maxima-Anzahl extrahieren
@@ -825,6 +852,41 @@ dim(rnase_equal_max)
 dim(ctrl_main_shift)
 length(n_max_ctrl)
 length(n_max_rnase)
+```
+
+
+***********************************************************************************************************
+Identifizierung von Proteinen bei denen die Maxima um 2 Fraktionen verschoben sind zwischen CTRL und RNASE
+***********************************************************************************************************
+Zweite Vorauswahl an Proteinen mit potentieller RNA-Abhängigkeit.
+
+```{r}
+
+ctrl_maxima_list <- ctrl_3_same_maxima_amount$maxima
+rnase_maxima_list <- rnase_3_same_maxima_amount$maxima
+length(ctrl_maxima_list)
+length(rnase_maxima_list)
+
+#Liste zum Speichern der Treffer
+verschobene_proteine <- c()
+
+protein_ids <- rownames(ctrl_3_same_maxima_amount)
+
+#Für jede Zeile (jedes Protein) prüfen
+for (i in seq_along(ctrl_maxima_list)) {
+  ctrl_maxima <- as.numeric(unlist(ctrl_maxima_list[[i]]))
+  rnase_maxima <- as.numeric(unlist(rnase_maxima_list[[i]]))
+
+  if (length(ctrl_maxima) > 0 && length(ctrl_maxima) == length(rnase_maxima)) { #hab hier noch leere Vektoren ausgeschlossen, wegen Fehlermeldung, vorher: if (length(ctrl_maxima) == length(rnase_maxima))
+    max_diff <- max(abs(ctrl_maxima - rnase_maxima))
+    if (max_diff >= 2) {
+      verschobene_proteine <- c(verschobene_proteine, protein_ids[i])
+    }
+  }
+}
+ctrl_3_same_maxima_amount = ctrl_3_same_maxima_amount[verschobene_proteine, ]
+rnase_3_same_maxima_amount = rnase_3_same_maxima_amount[verschobene_proteine, ]
+
 ```
 
 
