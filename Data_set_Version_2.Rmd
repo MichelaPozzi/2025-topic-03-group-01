@@ -746,16 +746,16 @@ Evaluierung der Hypothese
 **********************
 
 ```{r}
-# Mittelwert der Korrelationswerte (ctrl vs. rnase) von denjenigen Proteinen, deren Hauptmaximum um mindéstens 2 Fraktionen verschoben ist
+# Mittelwert der Korrelationswerte (ctrl vs. rnase) von denjenigen Proteinen, deren Hauptmaximum um mindestens 2 Fraktionen verschoben ist
 testing_cor_shifter = correlations(ctrl_main_shift, rnase_main_shift)
-testing_correlations$mean_abs_correlation
+testing_cor_shifter$mean_abs_correlation
 
-# Mittelwert der Korrelationswerte (ctrl vs. rnase) von denjenigen Proteinen, deren Hauptmaximum nicht um mindéstens 2 Fraktionen verschoben ist
+# Mittelwert der Korrelationswerte (ctrl vs. rnase) von denjenigen Proteinen, deren Hauptmaximum nicht um mindestens 2 Fraktionen verschoben ist
 testing_cor_no_shifter = correlations(ctrl_no_main_shift, rnase_no_main_shift)
 testing_cor_no_shifter$mean_abs_correlation
 
 # Hat sich die Hypothese bewahrheitet, ist der Mittelwert der Korrelationen der shifter kleiner als die der no_shifter?
-testing_correlations$mean_abs_correlation < testing_cor_no_shifter$mean_abs_correlation 
+testing_cor_shifter$mean_abs_correlation < testing_cor_no_shifter$mean_abs_correlation
 ```
 
 Unsere Hypothese hat sich bestätigt. Der Mittelwert der Korrelationen zwischen ctrl und rnase ist kleiner bei den Proteinen, bei denen das Hauptmaximum um mindestens 2 Fraktionen verschoben war. Hier beträgt er 0,42. Bei den Proteinen ohne große Verschiebung des Hauptmaximums beträgt er 0,94.
@@ -860,34 +860,9 @@ Identifizierung von Proteinen bei denen die Maxima um 2 Fraktionen verschoben si
 ***********************************************************************************************************
 Zweite Vorauswahl an Proteinen mit potentieller RNA-Abhängigkeit.
 
-```{r}
 
-ctrl_maxima_list <- ctrl_3_same_maxima_amount$maxima
-rnase_maxima_list <- rnase_3_same_maxima_amount$maxima
-length(ctrl_maxima_list)
-length(rnase_maxima_list)
 
-#Liste zum Speichern der Treffer
-verschobene_proteine <- c()
 
-protein_ids <- rownames(ctrl_3_same_maxima_amount)
-
-#Für jede Zeile (jedes Protein) prüfen
-for (i in seq_along(ctrl_maxima_list)) {
-  ctrl_maxima <- as.numeric(unlist(ctrl_maxima_list[[i]]))
-  rnase_maxima <- as.numeric(unlist(rnase_maxima_list[[i]]))
-
-  if (length(ctrl_maxima) > 0 && length(ctrl_maxima) == length(rnase_maxima)) { #hab hier noch leere Vektoren ausgeschlossen, wegen Fehlermeldung, vorher: if (length(ctrl_maxima) == length(rnase_maxima))
-    max_diff <- max(abs(ctrl_maxima - rnase_maxima))
-    if (max_diff >= 2) {
-      verschobene_proteine <- c(verschobene_proteine, protein_ids[i])
-    }
-  }
-}
-ctrl_3_same_maxima_amount = ctrl_3_same_maxima_amount[verschobene_proteine, ]
-rnase_3_same_maxima_amount = rnase_3_same_maxima_amount[verschobene_proteine, ]
-
-```
 
 
 ###################################################################################################
