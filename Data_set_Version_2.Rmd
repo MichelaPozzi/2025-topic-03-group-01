@@ -845,6 +845,24 @@ Wilcoxon Test
 
 
 
+
+Kombination der ausgewählten Proteine: unequal max und main shift um mind. 2 Fraktionen
+*******************************************************************************************************************************
+```{r}
+ctrl_selected <- ctrl_norm_mean
+
+proteins_main_shift <- rownames(ctrl_main_shift)
+proteins_unequal_max <- rownames(ctrl_unequal_max)
+
+#Auswahl der Proteine
+#union() kombiniert zwei Vektoren und gibt einen Vektor zurück, der alle Elemente aus beiden Vektoren enthält
+selected_proteins <- union(proteins_main_shift, proteins_unequal_max)
+
+#Vereinigung im neuen Data Frame ctrl_selected
+ctrl_selected <- ctrl_selected[rownames(ctrl_selected) %in% selected_proteins, ]
+```
+
+
 ###################################################################################################
 ###################################################################################################
 ###################################################################################################
