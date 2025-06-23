@@ -1198,31 +1198,7 @@ fviz_cluster(km_result_rnase_pc2_pc3_not_selected, data = pca_rnase_pc2_pc3_not_
              main = "k-Means Cluster: PC2 vs PC3 RNASE (NO SHIFT)")
 ```
 
-```{r}
 
-# 1. Zwei PCA-Datensätze: z. B. mit PC1 und PC2
-# Achte darauf, dass beide den gleichen Spaltennamen und Anzahl Spalten haben!
-
-pca_ctrl_subset <- pca_rnase_pc2_pc3[, c( "PC2", "PC3")]
-pca_rnase_subset <- pca_rnase_pc2_pc3_not_selected [, c( "PC2", "PC3")]
-
-# 2. Kombiniere sie zu einem DataFrame
-pca_combined <- rbind(pca_ctrl_subset, pca_rnase_subset)
-
-# 3. Erzeuge den Gruppenfaktor
-group <- factor(c(rep("CTRL", nrow(pca_ctrl_subset)),
-                  rep("RNASE", nrow(pca_rnase_subset))))
-
-# 4. MANOVA durchführen
-manova_result <- manova(cbind(PC2, PC3) ~ group, data = data.frame(PC2 = pca_combined$PC2,
-                                                                   PC3 = pca_combined$PC3,
-                                                                   group = group))
-
-# 5. Zusammenfassung anzeigen
-summary(manova_result)
-
-
-```
 **************************************************************************************************************
 Regression analysis
 **************************************************************************************************************
