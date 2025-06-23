@@ -680,8 +680,6 @@ rnase_norm_mean$COM <- apply(rnase_norm_mean[, 1:25], 1, function(x) {
 
 
 
-
-
 ***********************************************************************************************************
 1. Kriterium der Aufreinigung des Datensatzes
 Das Hauptmaximum des jeweiligen Proteins ist um mindestens 2 Maxima bezüglich seiner Position verschoben
@@ -865,7 +863,7 @@ Statistische Beurteilung, ob die Aufreinigung des Datensatzes dazu geführt hat,
 4.3: Jetzt wird der Wilcoxon-Tets angewendet, um die Differenzen zu untersuchen 
 --> H0: Die Verteilung der Differenzen in beiden Gruppen haben keinen systematischen Unterschied 
 
-
+5. Alternative: Mittels COM (center of mass) anstatt Differenzen der Mittelwerte arbeiten
 
 
 1.Schritt 
@@ -908,6 +906,57 @@ wilcox_test_result <- wilcox.test(diff_selected, diff_not_selected)
 
 # Ergebnis anzeigen
 print(wilcox_test_result)
+```
+
+
+
+Plots
+
+```{r}
+library(ggplot2)
+
+# Vektor mit Gruppenzugehörigkeit
+group <- c(rep("selected", length(diff_selected)), rep("not_selected", length(diff_not_selected)))
+diffs <- c(diff_selected, diff_not_selected)
+
+df_plot <- data.frame(Group = group, Difference = diffs)
+
+ggplot(df_plot, aes(x = Group, y = Difference)) +
+  geom_violin(trim = FALSE, fill = "lightblue") +
+  geom_boxplot(width = 0.1, outlier.shape = NA) +
+  theme_minimal() +
+  labs(title = "Verteilung der Differenzen", y = "ctrl - rnase", x = "")
+```
+
+```{r}
+ggplot(df_plot, aes(x = Difference, fill = Group)) +
+  geom_density(alpha = 0.5) +
+  theme_minimal() +
+  labs(title = "Dichteverteilung der Differenzen", x = "Differenz (ctrl - rnase)")
+```
+
+
+
+
+5.Schritt
+
+```{r}
+# Vergleich bezüglich COM
+differences_COM <- function(ctrl_df, rnase_df) {
+  ctrl_COM <- ctrl_df$COM
+  rnase_COM <-rnase_df$COM
+  return(ctrl_COM - rnase_COM)
+}
+
+# Berechne die Differenzvektoren für beide Gruppen
+diff_selected2 <- differences_COM(ctrl_selected, rnase_selected)
+diff_not_selected2 <- differences_COM(ctrl_not_selected, rnase_not_selected)
+
+# Wilcoxon Rank-Sum Test (ungepaart)
+wilcox_test_result2 <- wilcox.test(diff_selected2, diff_not_selected2)
+
+# Ergebnis anzeigen
+print(wilcox_test_result2)
 ```
 
 
