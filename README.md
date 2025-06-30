@@ -20,3 +20,12 @@ For inspiration on writing a comprehensive and engaging README, check out the [A
 - [Rajagopal-Proteome-Wide Identification of RNA-Dependent Proteins in Lung Cancer Cells-2022-Cancers.pdf](https://github.com/user-attachments/files/19981723/Rajagopal-Proteome-Wide.Identification.of.RNA-Dependent.Proteins.in.Lung.Cancer.Cells-2022-Cancers.pdf)
 - [Rajagopal et al., An atlas of RNA-dependent proteins in cell division reveals the riboregulation of mitotic protein-protein interactions. Nat. Commun. 16, 2325 (2025).pdf](https://github.com/user-attachments/files/19981728/Rajagopal.et.al.An.atlas.of.RNA-dependent.proteins.in.cell.division.reveals.the.riboregulation.of.mitotic.protein-protein.interactions.Nat.Commun.16.2325.2025.pdf)
 
+#Molecular biotechnology - Data science project - summer term 2025
+##Proteome-wide Screem for RNA-dependent Protein - Supervisors: Prof. Maiwen Caudron-Heger, Michaela Pozzi
+###Julian Baureis, Julia Ferdin, Benjamin Nicklas, Luisa Wintel
+
+-Reduce Number of Elements in Github, it should only remain: Code, ReadMe, Poster, evtl. Project Proposal, excel table
+-Give general introduction into the topic (see beginning of project proposal)
+-Explanation of the main code concepts as like data cleanup, normalization, linear regression etc.
+-Explain, what can be found in the other documents, aka Poster and Project Proposal, excel table
+-Sources
