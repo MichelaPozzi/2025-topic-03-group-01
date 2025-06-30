@@ -1,10 +1,33 @@
+**************************************************************************************************************
+
+Proteome-wide screen for RNA-dependent proteins in non-synchronized HeLa cells
+Molecular Biotechnology - Data science project summer term 2025
+Julian Baureis, Julia Ferdin, Benjamin Nicklas, Luisa Wintel
+Supervisors: Maïwen Caudron-Herger and Michela Pozzi 
 
 **************************************************************************************************************
-0. Load Dataset and Inspect Row/Column Names
+
+1. Load dataset
+2. Data cleanup
+3. Normalization
+3. Identification of local maxima as fit parameters
+4. Identification of shoulders
+5. Total count of maxima (peaks and shoulders) per protein
+6. Identification of proteins with different maxima amount in ctrl vs rnase
+7. Criteria for selecting RNA-dependent proteins
+8. Wilcoxon rank-sum test
+9. Principle component analysis
+10. k-means clustering
+11. Linear regression analysis
+
+
+**************************************************************************************************************
+1. Load dataset and inspect row/column names 
+  by Julia Ferdin
 **************************************************************************************************************
 
 ```{r}
-#Reads table, by indicating path to directory where the dataset is stored, and stores it to variable NS_Table (NS for Non-synchronizied HeLa-cells)
+#Reads table by indicating path to directory where the dataset is stored, and stores it to variable NS_Table (NS for Non-synchronizied HeLa-cells)
 
 NS_Table <- read.table("Daten/Data, copy but dont open.csv", header=TRUE, row.names=1, sep = ";")
 ```
@@ -15,18 +38,17 @@ NS_Table <- read.table("Daten/Data, copy but dont open.csv", header=TRUE, row.na
 #Row names are protein names
 head(rownames(NS_Table),12)
 
-#Columns indicate the respective fractions from 1 to 25, and their replicated
+#Columns indicate the respective fractions from 1 to 25, and their replicates
 head(colnames(NS_Table),12)
 ```
 
 **************************************************************************************************************
-1. Data Cleanup
-1.1. Rearrange and reorder the columns to their fraction and treatment
+2. Data cleanup - Rearrange and reorder the columns to their treatment, replicate and fraction
+  by Julia Ferdin
 **************************************************************************************************************
 
-Define sample metadata vectors (Treatment, Replicates, Fractions)
-Creates 3 vectors that describe the characteristics of the columns (i.e., samples) in the data set:
-  levels_CR → indicates whether the sample was treated with RNASE or as a CTRL
+Define sample by using vectors for different conditions (treatment, replicates, fractions):
+  levels_CR → was sample treated with CTRL or RNASE
   levels_fraction → labels the column with the replicate number (1–3) for either CTRL or RNASE
   fraction_names → creates the variables fraction1 to fraction25 to assign the replicates to each fraction
 
@@ -54,6 +76,7 @@ levels_fraction <- factor(rep(c("Ctrl_Rep1","RNase_Rep1","Ctrl_Rep2","RNase_Rep2
 fraction_names <- as.vector(matrix(rep(paste("fraction",1:25,sep=""),6), nrow = 6, ncol=25, byrow = TRUE))
 ```
 
+**************************************************************************************************************
 Create Metadata Data Frame and Check for Missing Values
 
 ```{r}
@@ -72,11 +95,12 @@ colmns_sorted <- data.frame(row.names = colnames(NS_Table), levels_CR = levels_C
 #Check for missing values, there are none 
 anyNA(NS_Table)
 ```
-*********************************************************************************************************************************************
-1.2 Normalization step between the replicates in each fraction and for each treatment using the mean value method by Benjamin Nicklas influenced by ChatGPT
-*********************************************************************************************************************************************
+**************************************************************************************************************
+3. Normalization step between the replicates in each fraction and for each treatment using the mean value method
+  by Benjamin Nicklas influenced by ChatGPT
+**************************************************************************************************************
 
-Split Data by Fractions and Treatment (CTRL vs RNASE)
+Split data by fractions and treatment (CTRL vs RNASE)
 
 ```{r}
 # lapply executes for every with paste created string (the fractions) a function fx
@@ -97,13 +121,13 @@ selected_proteins <- names(fraction.tables)
 # rownames() takes the rownames of the filtered fractions and assigns them to the variable col
 # NS_Table[, cols, drop = FALSE] the names that are part of NS_Table are filtered out and drop = FALSE makes sure that fraction.tables.CTRL will be a dataframe
 
-# Liste mit nur CTRL-Spalten für jede Fraktion
+# List with only CTRL columns for each fraction
 fraction.tables.CTRL <- lapply(selected_proteins, function(fx) {
   cols <- rownames(subset(colmns_sorted, fraction_names == fx & levels_CR == "CTRL")) 
   NS_Table[, cols, drop = FALSE]
   })
 
-# Liste mit nur RNASE-Spalten für jede Fraktion
+# List with only CTRL rows for each fraction
 fraction.tables.RNASE <- lapply(selected_proteins, function(fx) {
   cols <- rownames(subset(colmns_sorted, fraction_names == fx & levels_CR == "RNASE"))
   NS_Table[, cols, drop = FALSE]})
@@ -112,11 +136,13 @@ names(fraction.tables.CTRL) <- selected_proteins
 names(fraction.tables.RNASE) <- selected_proteins
 ```
 
+**************************************************************************************************************
+
 Calculate Mean Protein Intensities per Fraction and Treatment
 
 ```{r}
 # sapply(df, mean) calculates the mean of every column of the dataframe fraction.tables.CTRL
-# Für jede Bedingung (z.B fraction 1, Ctrl, Rep 1) wird der Mittelwert über die Proteine gebildet, dies ist pro Bedingung dann ein einziger Wert
+# For every condition (e.g. fraction 1, Ctrl, Rep 1) the mean over the proteins is taken which is a single value per condition
 
 avg.tables.CTRL <- lapply(fraction.tables.CTRL, function(df) {
   sapply(df, mean)
@@ -126,6 +152,7 @@ avg.tables.RNASE <- lapply(fraction.tables.RNASE, function(df) {
   sapply(df, mean)
 })
 ```
+
 Calculate Normalization Factors Based on Most Similar Replicates
 
 ```{r}
@@ -139,13 +166,12 @@ norm_fact <- function(x) {
 }
 ```
 
-
 Normalize Mean Intensities for Each Fraction and Treatment
 
 ```{r}
-# Normalisierung der Mean value Vektoren
-# norm_factor <- norm_fact(vec): Auf jeden Vektor in der Liste avg.tables.CTRL (diese sind von der Länge 3) wird die Funktion norm_fact angewendet
-# norm_factor / vec: ergibt einen neuen Vektor der Länge 3, der einen Korrekturfaktor für die einzelnen Replikate darstellt, um die Proteinmengen der Replikate aneinander anzugleichen
+# Normalization of the mean vectors
+# norm_factor <- norm_fact(vec): The function norm_fact is applied to every vector in the list avg.tables.CTRL (length 3)
+# norm_factor / vec: Results in new vector of length 3 and represents a correcting factor for the single replicates in order to align the amount of protein of the replicates
 
 norm_mean_frxn_CTRL <- lapply(avg.tables.CTRL, function(vec) {
   norm_factor <- norm_fact(vec)
@@ -157,7 +183,6 @@ norm_mean_frxn_RNASE <- lapply(avg.tables.RNASE, function(vec) {
   norm_factor / vec 
 })
 ```
-
 
 Extract Normalization Factors for Each Replicate and Treatment
 
@@ -363,8 +388,7 @@ lines(row_data1,
 ```
 
 **************************************************************************************************************
-2. Find local maxima greater than 2 as fit parameters from average curves
-2.1 Identify local maxima
+4. Find local maxima greater than 2 as fit parameters from average curves
 **************************************************************************************************************
 
 Identify local maxima by peak calling for the mean of each protein.
@@ -464,7 +488,7 @@ rnase_norm_mean$global_maximum <- sapply(1:nrow(ctrl_norm_mean), function(i) {
 
 
 ****************************************************************************************************************
-2.2 Identify shoulders, regions that are not recognized as peaks, even though they have a high signal intensity.
+5. Identify shoulders, regions that are not recognized as peaks, even though they have a high signal intensity.
 ****************************************************************************************************************
 
 Create Binary Data Frames Indicating Signal > 2%
@@ -594,14 +618,14 @@ ctrl_3$combined_max_ctrl <- apply(ctrl_3, 1, function(x) {
 												 })
 
 
-# Füge die neue Spalte der kombinierten Maxima auch noch zu ctrl/rnase_norm_mean, um damit weiter arbeiten zu können
+# Add new column of the combined maxima to ctrl/rnase_nrom_mean, to continue working with it
 
 ctrl_norm_mean$combined_max_ctrl = ctrl_3[, "combined_max_ctrl"]
 rnase_norm_mean$combined_max_rnase = rnase_3[, "combined_max_rnase"]
 ```
 
 ***********************************************************************************************************
-2.3 Count Total Number of Maxima (Peaks + Shoulders) per Protein
+6. Count Total Number of Maxima (Peaks + Shoulders) per Protein
 ***********************************************************************************************************
 
 ```{r}
@@ -621,18 +645,15 @@ ctrl_3$n_max_comb <- apply(ctrl_3, 1, function(x) {
 												 })
 
 
-# Selbes für ctrl/rnase_norm_mean
+# Same for ctrl/rnase_norm_mean
 
 ctrl_norm_mean$n_max_comb = ctrl_3[, "n_max_comb"]
 rnase_norm_mean$n_max_comb = rnase_3[, "n_max_comb"] 
 ```
 
-###################################################################################################
-###################################################################################################
-###################################################################################################
 
 ***********************************************************************************************************
-Identifizierung von Proteinen mit einer unterschiedlichen Anzahl an Maxima in CTRL vs. RNASE
+7. Identifizierung von Proteinen mit einer unterschiedlichen Anzahl an Maxima in CTRL vs. RNASE
 ***********************************************************************************************************
 Erste Vorauswahl an Proteinen: Eine unterschiedliche Anzahl an Maxima ist ein erster Hinweis auf mögliche RNA-abhängige Proteine.
 
@@ -661,7 +682,7 @@ rnase_norm_mean$n_local_maxima = rnase_3[, "n_local_maxima"]
 
 ***********************************************************************************************************
 COM-Werte hinzugügen in ctrl_norm_mean
-***********************************************************************************************************
+
 ```{r}
 #Wählt die ersten Proteinintensitäten in 25 Fraktionen aus.
 #Geht jede Zeile von ctrl_norm_mean durch.
@@ -676,14 +697,9 @@ rnase_norm_mean$COM <- apply(rnase_norm_mean[, 1:25], 1, function(x) {
 })
 ```
 
-
-
-
-
 ***********************************************************************************************************
 1. Kriterium der Aufreinigung des Datensatzes
 Das Hauptmaximum des jeweiligen Proteins ist um mindestens 2 Maxima bezüglich seiner Position verschoben
-***********************************************************************************************************
 
 ```{r}
 # Erstelle einen neuen Data.Frame, in welchem das Hauptmaximum der Proteine verschoben ist, Name: ctrl_main_shift, rnase_main_shift
@@ -708,11 +724,8 @@ ctrl_no_main_shift = ctrl_norm_mean[!rownames(ctrl_norm_mean) %in% rownames(ctrl
 rnase_no_main_shift = rnase_norm_mean[!rownames(rnase_norm_mean) %in% rownames(rnase_main_shift), ]
 ```
 
-
-
-**********************
+**************************************************************************************************************
 Hypothese: Korrelation von ctrl_main_shift mit rnase_main_shift ist geringer als von ctrl_no_main_shift mit rnase_no_main_shift
-**********************
 
 ```{r}
 # Funktion zur Berechnung der zeilenweise Korrelation, Vermutung: cor von ctrl_main_shift ist geringer als von ctrl_no_main_shift
@@ -753,11 +766,8 @@ correlations <- function(df1, df2, methode = "pearson") {
 }
 ```
 
-
-
-**********************
+**************************************************************************************************************
 Evaluierung der Hypothese 
-**********************
 
 ```{r}
 # Mittelwert der Korrelationswerte (ctrl vs. rnase) von denjenigen Proteinen, deren Hauptmaximum um mindestens 2 Fraktionen verschoben ist
@@ -783,16 +793,10 @@ cor_all_proteins$mean_abs_correlation
 Der Mittelwert der Korrelationen auf alle Proteine bezogen beträgt 0,79. Dies ist kleiner als 0,94 und größer als 0,42. 
 Dies lässt vorerst den Schluss zu, dass eine Aufreinigung von RNA-abhängigen Proteinen gemäß des Kriteriums einer deutlichen Verschiebung des Hauptmaximums sinnvoll erscheint. Unser Ziel war es, weniger ähnliche Kurven herauszuselektieren, und von ähnlichen Kurven abzutrennen. 
 
-
-
-
-
-
-
 *******************************************************************************************************************************
 2. Kriterium der Aufreinigung
 Identifizierung derjenigen Proteine aus ctrl/rnase_no_main_shift (Hauptmaxima nicht wesentlich verschoben), die eine unterschiedliche Anzahl an Gesamtmaxima (n_max_comb) aufweisen
-*******************************************************************************************************************************
+
 
 ```{r}
 #Vektoren der Maxima-Anzahl extrahieren
@@ -812,11 +816,9 @@ rnase_unequal_max <- rnase_no_main_shift[unequal_max_proteins, ]
 #dim(rnase_unequal_max)
 ```
 
-
-
 *******************************************************************************************************************************
 Proteine mit gleicher Anzahl an Gesamtmaxima (n_max_comb) aus ctrl/rnase_no_main_shift
-*******************************************************************************************************************************
+
 
 ```{r}
 #Vektoren der Maxima-Anzahl extrahieren
@@ -839,11 +841,8 @@ rnase_equal_max <- rnase_no_main_shift[equal_max_proteins, ]
 ```
 
 
-
-
-
 ***********************************************************************************************************
-Wilcoxon Test
+8. Wilcoxon rank-sum test
 ***********************************************************************************************************
 
 Statistische Beurteilung, ob die Aufreinigung des Datensatzes dazu geführt hat, dass die selektierten Proteine signifikante Unterschiede zwischen ctrl und rnase aufweisen (z.B. bei COM), während die nicht selektierten Proteine diese Unterschiede nicht aufweisen
@@ -908,8 +907,6 @@ wilcox_test_result <- wilcox.test(diff_selected, diff_not_selected)
 print(wilcox_test_result)
 ```
 
-
-
 Plots
 
 ```{r}
@@ -959,51 +956,17 @@ wilcox_test_result2 <- wilcox.test(diff_selected2, diff_not_selected2)
 print(wilcox_test_result2)
 ```
 
-
-
-
-
-###################################################################################################
-###################################################################################################
-###################################################################################################
-* hier ruht unser Gaussian fit ˙◠˙ 
-
-
 ***********************************************************************************************************
-
-***********************************************************************************************************
-
-Variablen, die ihr fürs Weitere verwenden könnt
-
-ctrl_selected und rnase_selected
---> Diejenigen Proteine aus ctrl_norm_mean bzw. rnase_norm_mean, die wir als potenziell RNA-abhängig identifiziert haben
-
-ctrl_not_selected und rnase_not_selected
---> Diejenigen Proteine aus ctrl_norm_mean bzw. rnase_norm_mean, die wir nicht als RNA-abhängig identifiziert haben, und die daher rausgeflogen sind
-
-Damit solltet ihr weiter arbeiten können, bei Fragen ruft mich (Julian Baureis) gerne an!
-
-```{r}
-#View(ctrl_selected)
-#View(rnase_selected)
-
-
-#View(ctrl_not_selected)
-#View(rnase_not_selected)
-```
-
-
-
-***********************************************************************************************************
-PCA by Benjamin Nicklas influenced by ChatGPT
+9. Principle Component Analysis (PCA)
+  by Benjamin Nicklas influenced by ChatGPT
 ***********************************************************************************************************
 
 ```{r}
-# Nur numerische Spalten behalten
+# Keep only numerical columns
 pca_ctrl_numeric <- ctrl_selected[1:25, sapply(ctrl_selected, is.numeric)]
 pca_rnase_numeric <- rnase_selected[1:25, sapply(rnase_selected, is.numeric)]
 
-# Zeilen mit NAs entfernen
+# Remove rows with NAs
 pca_ctrl_clean <- pca_ctrl_numeric[complete.cases(pca_ctrl_numeric), ]
 pca_rnase_clean <- pca_rnase_numeric[complete.cases(pca_rnase_numeric), ]
 
@@ -1012,11 +975,11 @@ pca_result_rnase <- prcomp(pca_rnase_clean, center = TRUE, scale. = TRUE)
 ```
 
 ```{r}
-# Nur numerische Spalten behalten
+# Keep only numerical columns
 pca_ctrl_numeric_not_selected <- ctrl_not_selected[1:25, sapply(ctrl_not_selected, is.numeric)]
 pca_rnase_numeric_not_selected <- rnase_not_selected[1:25, sapply(rnase_not_selected, is.numeric)]
 
-# Zeilen mit NAs entfernen
+# Remove rows with NAs
 pca_ctrl_clean_not_selected <- pca_ctrl_numeric_not_selected[complete.cases(pca_ctrl_numeric_not_selected), ]
 pca_rnase_clean_not_selected <- pca_rnase_numeric_not_selected[complete.cases(pca_rnase_numeric_not_selected), ]
 
@@ -1025,7 +988,7 @@ pca_result_rnase_not_selected <- prcomp(pca_rnase_clean_not_selected, center = T
 ```
 
 ```{r}
-#chech which PCs have the most variance
+# Check which PCs have the most variance
 summary(pca_result_ctrl)
 summary(pca_result_rnase)
 ```
@@ -1055,8 +1018,7 @@ plot(pca_result_rnase$x[,2:3], col = "blue", pch = 16,
 
 
 
-
-# Einfaches 2D PCA-Plot
+# Simple 2D PCA-Plot
 plot(pca_result_ctrl_not_selected$x[,1:2], col = "blue", pch = 16,
      xlab = "PC1", ylab = "PC2", main = "PCA: PC1 vs PC2 CTRL (NO SHIFT)")
 
@@ -1079,13 +1041,11 @@ plot(pca_result_rnase_not_selected$x[,2:3], col = "blue", pch = 16,
      xlab = "PC2", ylab = "PC3", main = "PCA: PC2 vs PC3 RNASE (NO SHIFT)")
 ```
 ```{r}
-#Centren für kmeans clustering erkennen
-#--> 3 Centren
+#Recognize centers for k-means clustering -> 3 centers
 plot(pca_result_ctrl, type = "l", main = "Elbow-Plot CTRL (SHIFT)")
 plot(pca_result_rnase, type = "l", main = "Elbow-Plot RNASE (SHIFT)")
 
-#Centren für kmeans clustering erkennen
-#--> 2 Centren
+#Recognize centers for k-means clustering -> 2 centers
 plot(pca_result_ctrl_not_selected, type = "l", main = "Elbow-Plot CTRL (NO SHIFT)")
 plot(pca_result_rnase_not_selected, type = "l", main = "Elbow-Plot RNASE (NO SHIFT)")
 ```
@@ -1111,13 +1071,13 @@ pca_rnase_pc2_pc3_not_selected <- as.data.frame(pca_result_rnase_not_selected$x[
 ```
 
 
-
 ***********************************************************************************************************
-kmeans Clustering by Benjamin Nicklas influenced by ChatGPT
+10. K-means clustering 
+  by Benjamin Nicklas influenced by ChatGPT
 ***********************************************************************************************************
 
 ```{r}
-#kmeans wird mit 3 Centren durchgeführt
+#kmeans is executed with 3 centers
 km_result_ctrl_pc1_pc2<- kmeans(pca_ctrl_pc1_pc2, centers = 3)
 km_result_ctrl_pc1_pc3<- kmeans(pca_ctrl_pc1_pc3, centers = 3)
 km_result_ctrl_pc2_pc3<- kmeans(pca_ctrl_pc2_pc3, centers = 3)
@@ -1128,7 +1088,7 @@ km_result_rnase_pc2_pc3<- kmeans(pca_rnase_pc2_pc3, centers = 3)
 ```
 
 ```{r}
-#kmeans wird mit 3 Centren durchgeführt
+#kmeans is executed with 2 centers
 km_result_ctrl_pc1_pc2_not_selected<- kmeans(pca_ctrl_pc1_pc2_not_selected, centers = 2)
 km_result_ctrl_pc1_pc3_not_selected<- kmeans(pca_ctrl_pc1_pc3_not_selected, centers = 2)
 km_result_ctrl_pc2_pc3_not_selected<- kmeans(pca_ctrl_pc2_pc3_not_selected, centers = 2)
@@ -1141,7 +1101,7 @@ km_result_rnase_pc2_pc3_not_selected<- kmeans(pca_rnase_pc2_pc3_not_selected, ce
 ```{r}
 library(factoextra)
 
-# pca_df enthält deine Daten, z. B. PC1 und PC2
+# pca_df contains the data, e.g. PC1 and PC2
 fviz_cluster(km_result_ctrl_pc1_pc2, data = pca_ctrl_pc1_pc2,
              geom = "point", ellipse.type = "norm",
              palette = "jco", ggtheme = theme_minimal(),
@@ -1170,7 +1130,7 @@ fviz_cluster(km_result_rnase_pc2_pc3, data = pca_rnase_pc2_pc3,
 
 
 
-# pca_df enthält deine Daten, z. B. PC1 und PC2
+# pca_df contains the data, e.g. PC1 and PC2
 fviz_cluster(km_result_ctrl_pc1_pc2_not_selected, data = pca_ctrl_pc1_pc2_not_selected,
              geom = "point", ellipse.type = "norm",
              palette = "jco", ggtheme = theme_minimal(),
@@ -1198,24 +1158,24 @@ fviz_cluster(km_result_rnase_pc2_pc3_not_selected, data = pca_rnase_pc2_pc3_not_
              main = "k-Means Cluster: PC2 vs PC3 RNASE (NO SHIFT)")
 ```
 
-
 **************************************************************************************************************
-Regression analysis
+11. Linear regression analysis
+  by Julia Ferdin influenced by ChatGPT
 **************************************************************************************************************
 
 ```{r}
-#Für ctrl
-#Generiert einen Plot mit den Datenpunkten der PCA und malt eine Trendlinie dadurch
+#For ctrl and selected
+#Generates plot with PCA datapoints and draws a trendline through it
 plot(pca_ctrl_pc1_pc2$PC1,pca_ctrl_pc1_pc2$PC2,pch=20,col='blue', xlab='PC1',ylab='PC2');abline(0,1,col='red')
 plot(pca_ctrl_pc1_pc3$PC1,pca_ctrl_pc1_pc3$PC3,pch=20,col='blue', xlab='PC1',ylab='PC3');abline(0,1,col='red')
 plot(pca_ctrl_pc2_pc3$PC2,pca_ctrl_pc2_pc3$PC3,pch=20,col='blue', xlab='PC2',ylab='PC3');abline(0,1,col='red')
 
-#Je eine PCA Komponente wird als Zielvariable definiert, also als das, was mit der Regressionsanalyse vorhergesagt werden soll
+#Per PCA component a target variable is defined, so what should be predicted by the regression analysis
 target_ctrl_pc1pc2 <- pca_ctrl_pc1_pc2$PC2
 target_ctrl_pc1pc3 <- pca_ctrl_pc1_pc3$PC3
 target_ctrl_pc2pc3 <- pca_ctrl_pc2_pc3$PC3
 
-#Zusammengesetzten dataframe für Regressionsanalyse aus Zielvariable mit zwei PCA Komponenten aufbauen
+#Build combined data frame for regression analysis from target variable with two PCA components
 df_regression_ctrl_1 <- cbind(target = target_ctrl_pc1pc2,
                        pca_ctrl_pc1_pc2)
 df_regression_ctrl_2 <- cbind(target = target_ctrl_pc1pc3,
@@ -1223,16 +1183,29 @@ df_regression_ctrl_2 <- cbind(target = target_ctrl_pc1pc3,
 df_regression_ctrl_3 <- cbind(target = target_ctrl_pc2pc3,
                        pca_ctrl_pc2_pc3)
 
-#Multiple Lineare Regressionsanalyse
+#Multiple linear regression analysis
 model_ctrl_pc1_pc2 <- lm(target ~ PC1 + PC2, data = df_regression_ctrl_1)
 model_ctrl_pc1_pc3 <- lm(target ~ PC1 + PC3, data = df_regression_ctrl_2)
 model_ctrl_pc2_pc3 <- lm(target ~ PC2 + PC3, data = df_regression_ctrl_3)
 
-#Ergebnisse/Zusammenfassung anzeigen
+#Show results/summary
 summary(model_ctrl_pc1_pc2)
 summary(model_ctrl_pc1_pc3)
 summary(model_ctrl_pc2_pc3)
 ```
+**************************************************************************************************************
+Explanation of regression analysis results:
+
+[Pefet fit - perfect multicollinearity with same variable used as predictor and target]
+  Residuals: Almost zero, model's prediction matches taget values almost perfectly
+  Intercept: Essentially zero
+  PC1: Essentially zero
+  PC2: Exactly one
+    --> PC2 is identical to target, PC1 and intercept contribute nothing
+  R-squared: Model explains 100% of the variance in the target (too perfect, because target is PC2)
+
+--> A target variable needs to be chosen that is none of the predictors. The PCS are used as predictors of that target, not vice versa.
+**************************************************************************************************************
 ```{r}
 #Das gleiche für rnase
 plot(pca_rnase_pc1_pc2$PC1,pca_rnase_pc1_pc2$PC2,pch=20,col='blue', xlab='PC1',ylab='PC2');abline(0,1,col='red')
@@ -1259,18 +1232,18 @@ summary(model_rnase_pc1_pc3)
 summary(model_rnase_pc2_pc3)
 ```
 ```{r}
-#Für ctrl
-#Generiert einen Plot mit den Datenpunkten der PCA und malt eine Trendlinie dadurch
+#For ctrl and not selected
+#Generates plot with PCA datapoints and draws a trendline through it
 plot(pca_ctrl_pc1_pc2_not_selected$PC1,pca_ctrl_pc1_pc2_not_selected$PC2,pch=20,col='blue', xlab='PC1',ylab='PC2');abline(0,1,col='red')
 plot(pca_ctrl_pc1_pc3_not_selected$PC1,pca_ctrl_pc1_pc3_not_selected$PC3,pch=20,col='blue', xlab='PC1',ylab='PC3');abline(0,1,col='red')
 plot(pca_ctrl_pc2_pc3_not_selected$PC2,pca_ctrl_pc2_pc3_not_selected$PC3,pch=20,col='blue', xlab='PC2',ylab='PC3');abline(0,1,col='red')
 
-#Je eine PCA Komponente wird als Zielvariable definiert, also als das, was mit der Regressionsanalyse vorhergesagt werden soll
+#Per PCA component a target variable is defined, so what should be predicted by the regression analysis
 target_ctrl_pc1pc2_not_selected <- pca_ctrl_pc1_pc2_not_selected$PC2
 target_ctrl_pc1pc3_not_selected <- pca_ctrl_pc1_pc3_not_selected$PC3
 target_ctrl_pc2pc3_not_selected <- pca_ctrl_pc2_pc3_not_selected$PC3
 
-#Zusammengesetzten dataframe für Regressionsanalyse aus Zielvariable mit zwei PCA Komponenten aufbauen
+#Build combined data frame for regression analysis from target variable with two PCA components
 df_regression_ctrl_1_not_selected <- cbind(target = target_ctrl_pc1pc2_not_selected,
                        pca_ctrl_pc1_pc2_not_selected)
 df_regression_ctrl_2_not_selected <- cbind(target = target_ctrl_pc1pc3_not_selected,
@@ -1278,19 +1251,49 @@ df_regression_ctrl_2_not_selected <- cbind(target = target_ctrl_pc1pc3_not_selec
 df_regression_ctrl_3_not_selected <- cbind(target = target_ctrl_pc2pc3_not_selected,
                        pca_ctrl_pc2_pc3_not_selected)
 
-#Multiple Lineare Regressionsanalyse
+#Multiple linear regression analysis
 model_ctrl_pc1_pc2_not_selected <- lm(target ~ PC1 + PC2, data = df_regression_ctrl_1_not_selected)
 model_ctrl_pc1_pc3_not_selected <- lm(target ~ PC1 + PC3, data = df_regression_ctrl_2_not_selected)
 model_ctrl_pc2_pc3_not_selected <- lm(target ~ PC2 + PC3, data = df_regression_ctrl_3_not_selected)
 
-#Ergebnisse/Zusammenfassung anzeigen
+#Show results/summary
 summary(model_ctrl_pc1_pc2_not_selected)
 summary(model_ctrl_pc1_pc3_not_selected)
 summary(model_ctrl_pc2_pc3_not_selected)
 ```
+```{r}
+#Same for rnase and selected
+plot(pca_rnase_pc1_pc2$PC1,pca_rnase_pc1_pc2$PC2,pch=20,col='blue', xlab='PC1',ylab='PC2');abline(0,1,col='red')
+plot(pca_rnase_pc1_pc3$PC1,pca_rnase_pc1_pc3$PC3,pch=20,col='blue', xlab='PC1',ylab='PC3');abline(0,1,col='red')
+plot(pca_rnase_pc2_pc3$PC2,pca_rnase_pc2_pc3$PC3,pch=20,col='blue', xlab='PC2',ylab='PC3');abline(0,1,col='red')
+
+#Per PCA component a target variable is defined, so what should be predicted by the regression analysis
+target_rnase_pc1pc2 <- pca_rnase_pc1_pc2$PC2
+target_rnase_pc1pc3 <- pca_rnase_pc1_pc3$PC3
+target_rnase_pc2pc3 <- pca_rnase_pc2_pc3$PC3
+
+#Build combined data frame for regression analysis from target variable with two PCA components
+df_regression_rnase_1 <- cbind(target = target_rnase_pc1pc2,
+                       pca_ctrl_pc1_pc2)
+df_regression_rnase_2 <- cbind(target = target_rnase_pc1pc3,
+                       pca_ctrl_pc1_pc3)
+df_regression_rnase_3 <- cbind(target = target_rnase_pc2pc3,
+                       pca_ctrl_pc2_pc3)
+
+#Multiple linear regression analysis
+model_rnase_pc1_pc2 <- lm(target ~ PC1 + PC2, data = df_regression_ctrl_1)
+model_rnase_pc1_pc3 <- lm(target ~ PC1 + PC3, data = df_regression_ctrl_2)
+model_rnase_pc2_pc3 <- lm(target ~ PC2 + PC3, data = df_regression_ctrl_3)
+
+#Show results/summary
+summary(model_rnase_pc1_pc2)
+summary(model_rnase_pc1_pc3)
+summary(model_rnase_pc2_pc3)
+```
+
 
 ```{r}
-#Das gleiche für rnase
+#Same for rnase and not selected
 plot(pca_rnase_pc1_pc2_not_selected$PC1,pca_rnase_pc1_pc2_not_selected$PC2,pch=20,col='blue', xlab='PC1',ylab='PC2');abline(0,1,col='red')
 plot(pca_rnase_pc1_pc3_not_selected$PC1,pca_rnase_pc1_pc3_not_selected$PC3,pch=20,col='blue', xlab='PC1',ylab='PC3');abline(0,1,col='red')
 plot(pca_rnase_pc2_pc3_not_selected$PC2,pca_rnase_pc2_pc3_not_selected$PC3,pch=20,col='blue', xlab='PC2',ylab='PC3');abline(0,1,col='red')
@@ -1315,7 +1318,8 @@ summary(model_rnase_pc1_pc3_not_selected)
 summary(model_rnase_pc2_pc3_not_selected)
 ```
 
-
+**************************************************************************************************************
+**************************************************************************************************************
 
 
 
