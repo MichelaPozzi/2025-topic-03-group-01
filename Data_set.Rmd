@@ -1030,19 +1030,17 @@ lines(rs,
 ```
 
 
-
-
-Visualization of the distribution of those proteins from ctrl/rnase_main_shift, that still show a high correlation value
+It is interesting, that there seems to be a few proteins, that exhibited a global maximum shift, but no COM shift, and still got a corrleation value aroung 0. How do they look?
 ```{r}
 # Vector with indices of proteins, that show a near one correlation between ctrl and rnase
-near_one_cors_question = which(abs(testing_cor_shifter$correlations) >0.95) 
+cors = which(abs(COM_no_shifter$correlations) <= 0.1) 
 
-indices = near_one_cors_question[1:5]
+indices = cors[1:5]
                          
 # Plotting a respective curves
 for(i in indices) {
-  cs <- as.numeric(ctrl_main_shift[i, 1:25])
-  rs <- as.numeric(rnase_main_shift[i, 1:25])
+  cs <- as.numeric(ctrl_no_COM_shift[i, 1:25])
+  rs <- as.numeric(rnase_no_COM_shift[i, 1:25])
 
 # Plot
 plot(cs,
@@ -1060,7 +1058,7 @@ lines(rs,
       lwd = 2)
 }
 ```
-
+Interesting trend: In order to show global maximum shift, but no center of mass shift, the overall distribution needs to balance out. However, if there is a shift of the global maximum to the one side, and most of the intensity is located there, there needs to be another shift of the remaining intensity to the other side to balance out this effect. This seems to often occur for partially precipitated proteins, that show a left shift due to RNA-degradation and losing its natural cellular complex. On the other hand they precipitate through new interactions, leading to the overall correlation value of 0. These proteins are still considered RNA-dependent. 
 
 
 
