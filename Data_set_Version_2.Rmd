@@ -388,15 +388,20 @@ lines(row_data1,
       lwd = 2)
 ```
 
+
+
+
+
 **************************************************************************************************************
-4. Find local maxima greater than 2 as fit parameters from average curves
+4. Find local maxima
 **************************************************************************************************************
 
-Identify local maxima by peak calling for the mean of each protein.
-In order to get rid of the noise, only values above 2 are considered.
-Find shoulders that were not discovered previously.
+- Local maxima are peaks, that are higher than the two surrounding values 
+- In order to get rid of the noise, only values above 2 are considered.
+- Find shoulders that were not discovered previously.
 
 ```{r}
+# In case the original data is advantageous for later analysis
 ctrl_norm_mean_original = ctrl_norm_mean
 rnase_norm_mean_original = rnase_norm_mean
 ```
@@ -405,51 +410,42 @@ Define Peak Finding Function
 
 ```{r}
 # Function find_local_maxima
-# Peak is local maximum with a certain amount (window) of smaller points on each side
+# Peak is local maximum with a certain amount (=window) of smaller points on each side
 # Bigger window => more stringent peak finding procedure 
 
 find_local_maxima <- function(x, window = 2) {
-  slope_changes <- diff(sign(diff(x)))
-  peak_indices <- which(slope_changes < 0)
-
+  n <- length(x)
   peaks <- c()
 
-  for (i in peak_indices) {
-    left <- max(1, i - window + 1)
-    right <- min(length(x), i + window + 1)
+  for (i in 1:n) {
+    left <- max(1, i - window)
+    right <- min(n, i + window)
+    neighbors <- x[left:right][-which((left:right) == i)]
 
-    neighbors <- c(x[left:i], x[(i + 2):right])
-
-    if (all(neighbors <= x[i + 1])) {
-      peaks <- c(peaks, i + 1)
+    if (all(neighbors <= x[i])) {
+      peaks <- c(peaks, i)
     }
   }
-  
-# part added to deal with the 1st and 25th values, in case they are max
-     if ( sum(x[1]>x[2:(window+1)]) == 2 ) {peaks <- c(peaks, 1)} 
-     if ( sum(x[25]>x[24:(25-window)]) == 2 ) {peaks <- c(peaks, 25)}
-     peaks <- unlist(peaks)
-     peaks
-     
-#return(peaks)
-} 
+
+  return(peaks)
+}
 ```
 
 ```{r}
-# Apply the function to the data set and retrieve the values
-# restriction to values above an absolut threshold of 2%
+# Apply the function to the data set 
+# Restriction to values above an absolute threshold of 2%
 # New column: "local_maxima" (column 26)
 
 ctrl_norm_mean$local_maxima <- apply(ctrl_norm_mean, 1, function(x) {
-															   peak_indeces <- find_local_maxima(x)
-															   filtered <- peak_indeces[x[peak_indeces] > 2] 
+															   peak_indices <- find_local_maxima(x)
+															   filtered <- peak_indices[x[peak_indices] > 2] 
 															   local_maxima <- unlist(filtered)
 															   local_maxima
 															   })
 															   
 rnase_norm_mean$local_maxima <- apply(rnase_norm_mean, 1, function(x) {
-															   peak_indeces <- find_local_maxima(x)
-															   filtered <- peak_indeces[x[peak_indeces] > 2] 
+															   peak_indices <- find_local_maxima(x)
+															   filtered <- peak_indices[x[peak_indices] > 2] 
 															   local_maxima <- unlist(filtered)
 															   local_maxima
 															   })
@@ -486,10 +482,11 @@ rnase_norm_mean$global_maximum <- sapply(1:nrow(ctrl_norm_mean), function(i) {
 
 
 ****************************************************************************************************************
-5. Identify shoulders, regions that are not recognized as peaks, even though they have a high signal intensity.
+5. Identify shoulders
 ****************************************************************************************************************
 
-Create Binary Data Frames Indicating Signal > 2%
+- Shoulders are regions that are not recognized as peaks, even though they have a high signal intensity.
+- Create Binary Data Frames Indicating Signal > 2%
 
 ```{r}
 # Identify the RNAse fractions with signal intensity > 2%. 
@@ -513,18 +510,19 @@ Mask Regions Around Detected Peaks to Exclude Them from Shoulder Search
 # Remove and exclude 3 fractions left and right of each peak (7 in total) from the shoulder search.
 
 th_max_reg_simple <- function(x) {
-  peaks <- as.numeric(unlist(x$local_maxima)) # Convert the local_maxima column from ctrl/rnase_norm_mean to a numeric vector.
+  peaks <- as.numeric(unlist(x$local_maxima)) 
   mask <- rep(1, 25)
   
   for (peak in peaks) { # peak = current peak value, peaks = detected maxima (column 26)
     if (peak > 0) { 
       left <- max(1, peak - 3)
-      right <- min(25, peak + 3) # For each peak, the range from peak–3 to peak+3 is calculated.
-      mask[left:right] <- 0 # These 7 fractions (the peak itself and 3 before & after it) are masked out by setting their positions in the mask to 0.
+      right <- min(25, peak + 3) 
+      mask[left:right] <- 0 # For each peak, the range from peak–3 to peak+3 is calculated and set to 0 in the mask
+      
     }
   }
 
-  x_values <- as.numeric(x[1:25]) # because $maxima contained characters. 
+  x_values <- as.numeric(x[1:25])  
   x_values <- x_values * mask # Fractions with mask = 1 are retained. Fractions with mask = 0 are set to 0.
   return(x_values)
 }
@@ -539,14 +537,12 @@ Identify Shoulder Regions: Consecutive Fractions > 2% Without Peaks
 ```{r}
 # Detect "shoulder regions"
 # Define a function that identifies signal regions where there are at least 4 consecutive fractions with an intensity above 2% using the data frames rnase_3 and ctrl_3.
-
-# select the middle of it
-# Apply on the whole dataframe
+# select the middle of this region as shoulder
 
 peaks_regions = function(x) {
   rle_result = rle(as.numeric(x[1:25])) # rle() finds all consecutive equal values -> $lengths and $values
   
-  #Find positions of all blocks of ones with length ≥4. These blocks are considered “shoulder regions”.
+  #Find positions of all blocks consisting of 1s with length ≥4. These blocks are considered “shoulder regions”.
   peak_blocks = which(rle_result$values == 1 & rle_result$lengths >= 4)
   
   #If there are no such blocks of length >4, return an empty vector
@@ -562,7 +558,7 @@ peaks_regions = function(x) {
     #Position of the end of the respective block 
     end_of_block = sum(rle_result$lengths[1:peak_blocks[i]])
     
-    #Calculate half length (middle) of the block
+    #Calculate half length of the block
     half_length = floor(rle_result$lengths[peak_blocks[i]] /2)
     
     #Middle position of the shoulder 
@@ -574,8 +570,7 @@ peaks_regions = function(x) {
 ```
 
 ```{r}
-# Calculate the positions of the "shoulders" for each protein row, i.e. regions with ≥4 consecutive fractions with signal >2%
-# Save the shoulder positions as a new column called peaks in the respective data frames rnase_3 and ctrl_3.
+# Calculate the positions of the "shoulders" for each row for the data.frames ctrl/rnase_3 and ctrl/rnase_norm_mean
 # New column: "shoulders" (column 28)
 
 rnase_3$shoulders <- apply(rnase_3, 1, function(x) { peaks_regions(x) } )
@@ -589,7 +584,7 @@ ctrl_norm_mean$shoulders <- apply(ctrl_3, 1, function(x) { peaks_regions(x) } )
 Combine Peak and Shoulder Positions for Each Protein
 
 ```{r}
-# Calculate the total of all relevant signal maxima (real peaks and shoulders) for each protein row in the dataframe 
+# Calculate the total of all relevant signal maxima (real peaks and shoulders) for each protein row in the data.frames
 # New column: "combined_max_ctrl" and "combined_max_rnase" (column 29) respectively
 
 						   						
@@ -632,8 +627,8 @@ rnase_norm_mean$combined_max_rnase = rnase_3[, "combined_max_rnase"]
 
 rnase_3$n_max_comb <- apply(rnase_3, 1, function(x) {
 												 ls_max <- as.numeric(unlist(x$combined_max_rnase))
-												 n = length(ls_max) # => Answers: How many peaks (maxima and shoulders) does this protein have?
-												 if (sum(ls_max) == 0) {0} else {n} # If TRUE, then the result should be 0, instead of length(ls_max), which would then be 1. 
+												 n = length(ls_max) # determines how many peaks (maxima and shoulders) the protein has
+												 if (sum(ls_max) == 0) {0} else {n}  
 												 })
 												 
 ctrl_3$n_max_comb <- apply(ctrl_3, 1, function(x) {
@@ -641,6 +636,7 @@ ctrl_3$n_max_comb <- apply(ctrl_3, 1, function(x) {
 												 n = length(ls_max)
 												 if (sum(ls_max) == 0) {0} else {n} 
 												 })
+
 
 # Same for ctrl/rnase_norm_mean
 
@@ -652,8 +648,6 @@ rnase_norm_mean$n_max_comb = rnase_3[, "n_max_comb"]
 ***********************************************************************************************************
 7. Identification of proteins with a different number of peaks in CTRL vs. RNASE
 ***********************************************************************************************************
-
-Initial pre-selection of proteins: A different number of peaks is a first indication of possible RNA-dependent proteins.
 
 ```{r}
 # Determine the number of only peak maxima ("local_maxima") per protein
@@ -671,20 +665,22 @@ ctrl_3$n_local_maxima <- apply(ctrl_3, 1, function(x) {
 												 if (sum(ls_max) == 0) {0} else {n} 
 												 })
 
-# Selbes für ctrl/rnase_norm_mean
+# Same for ctrl/rnase_norm_mean
 
 ctrl_norm_mean$n_local_maxima = ctrl_3[, "n_local_maxima"]
 rnase_norm_mean$n_local_maxima = rnase_3[, "n_local_maxima"]  
 ```
 
+
 ***********************************************************************************************************
-Add COM values to ctrl_norm_mean
+Add COM (center of mass) values 
+***********************************************************************************************************
 
 ```{r}
-#Selects the first protein intensities in 25 fractions.
-#Goes through each row of ctrl_norm_mean.
-#x = vector with the intensities of a protein across all 25 fractions for which the COM is currently being calculated
-#* means element-wise multiplication
+# Calculate the center of mass for each row 
+# x is the vector with the intensities of a protein across all 25 fractions for which the COM is currently being calculated
+# * means element-wise multiplication
+
 ctrl_norm_mean$COM <- apply(ctrl_norm_mean[, 1:25], 1, function(x) {
   sum((1:25) * x, na.rm = TRUE) / sum(x, na.rm = TRUE)
 })
@@ -693,6 +689,12 @@ rnase_norm_mean$COM <- apply(rnase_norm_mean[, 1:25], 1, function(x) {
   sum((1:25) * x, na.rm = TRUE) / sum(x, na.rm = TRUE)
 })
 ```
+
+
+
+
+
+
 
 ***********************************************************************************************************
 1. Criterion for data set purification
