@@ -694,9 +694,9 @@ rnase_norm_mean$COM <- apply(rnase_norm_mean[, 1:25], 1, function(x) {
 
 
 
-
-
-
+###########################################################################
+Teil von Julian Baureis (Zeile 701 - 1218), Codewriting assisted by ChatGPT
+###########################################################################
 
 ***********************************************************************************************************
 1. Criterion for data set purification:
@@ -1205,14 +1205,16 @@ ggplot(df_plot, aes(x = Group, y = Difference)) +
   geom_violin(trim = FALSE, fill = "lightblue") +
   geom_boxplot(width = 0.1, outlier.shape = NA) +
   theme_minimal() +
-  labs(title = "Verteilung der Differenzen", y = "ctrl - rnase", x = "")
+  labs(title = "distribution of the differences", y = "ctrl - rnase", x = "")
 ```
+Interpretation: The widest point of the differences of "selected" is at positive values. Therefore, the following largely seems to hold: The mean values of the control maxima are larger than the mean values of the RNase maxima, which may indicate an increased left shift of the RNase fractions.
+
 
 ```{r}
 ggplot(df_plot, aes(x = Difference, fill = Group)) +
   geom_density(alpha = 0.5) +
   theme_minimal() +
-  labs(title = "Dichteverteilung der Differenzen", x = "Differenz (ctrl - rnase)")
+  labs(title = "density distribution of the differnces", x = "difference (ctrl - rnase)")
 ```
 
 
@@ -1223,31 +1225,6 @@ ggplot(df_plot, aes(x = Difference, fill = Group)) +
 
 
 
-
-
-
-
-
-5.Step
-
-```{r}
-# Comparison regarding COM
-differences_COM <- function(ctrl_df, rnase_df) {
-  ctrl_COM <- ctrl_df$COM
-  rnase_COM <-rnase_df$COM
-  return(ctrl_COM - rnase_COM)
-}
-
-# Calculate the difference vectors for both groups
-diff_selected2 <- differences_COM(ctrl_selected, rnase_selected)
-diff_not_selected2 <- differences_COM(ctrl_not_selected, rnase_not_selected)
-
-# Wilcoxon Rank-Sum Test (unpaired)
-wilcox_test_result2 <- wilcox.test(diff_selected2, diff_not_selected2)
-
-# Show results
-print(wilcox_test_result2)
-```
 
 
 
