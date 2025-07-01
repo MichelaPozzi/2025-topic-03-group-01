@@ -673,7 +673,7 @@ rnase_norm_mean$n_local_maxima = rnase_3[, "n_local_maxima"]
 
 
 ***********************************************************************************************************
-Add COM (center of mass) values 
+8. Add COM (center of mass) values 
 ***********************************************************************************************************
 
 ```{r}
@@ -697,33 +697,38 @@ rnase_norm_mean$COM <- apply(rnase_norm_mean[, 1:25], 1, function(x) {
 
 
 ***********************************************************************************************************
-1. Criterion for data set purification
+1. Criterion for data set purification:
 The main peak of the respective protein is shifted by at least two peaks in its position
+***********************************************************************************************************
 
 ```{r}
-# Create a new Data.Frame in which the main peak of the proteins is shifted, name: ctrl_main_shift, rnase_main_shift
+# Create new data.frames, in which the main peak (=global maximum) of the proteins is shifted, names: ctrl_main_shift, rnase_main_shift
 
-# Calculate the difference (vector with absolute deviations)
+# Calculate the absolute difference of the position of the global maximum between ctrl and rnase 
 diff_main_maxima <- abs(ctrl_norm_mean$global_maximum - rnase_norm_mean$global_maximum)
 
-# Positions of proteins with deviation ≥ 3 fractions
+# Indices of proteins with deviation ≥ 2 fractions
 deviating_main_maxima <- which(diff_main_maxima >= 2)
 
-# length(deviating_main_maxima)
-# 1351 proteins show a shift of the main maximum ≥ 2 fractions
-
+# Apply on the data.frames
 ctrl_main_shift = ctrl_norm_mean[deviating_main_maxima, ]
 rnase_main_shift = rnase_norm_mean[deviating_main_maxima, ]
+
+# ctrl/rnase_main_shift contain 1351 proteins 
 ```
 
 ```{r}
-# Create the complementary Data.Frame that contains all proteins whose main maximum does not shift by at least 2 fractions, ctrl_main_shift "+" ctrl_no_main_shift = ctrl_norm_mean
+# Create the complementary data.frame that contains all proteins whose main maximum does not shift by at least 2 fractions
+
 ctrl_no_main_shift = ctrl_norm_mean[!rownames(ctrl_norm_mean) %in% rownames(ctrl_main_shift), ]
 rnase_no_main_shift = rnase_norm_mean[!rownames(rnase_norm_mean) %in% rownames(rnase_main_shift), ]
 ```
 
-**************************************************************************************************************
+
+
+***********************************************************************************************************
 Hypothesis: Correlation of ctrl_main_shift with rnase_main_shift is lower than that of ctrl_no_main_shift with rnase_no_main_shift
+***********************************************************************************************************
 
 ```{r}
 # Function to calculate the row-wise correlation, assumption: cor of ctrl_main_shift is lower than of ctrl_no_main_shift
@@ -764,15 +769,18 @@ correlations <- function(df1, df2, methode = "pearson") {
 }
 ```
 
-**************************************************************************************************************
+
+
+***********************************************************************************************************
 Evaluation of the hypothesis
+***********************************************************************************************************
 
 ```{r}
-# Mean of the correlation values (ctrl vs. rnase) of those proteins whose main maximum is shifted by at least 2 fractions
+# Mean of the correlation values (ctrl vs. rnase) for those proteins whose main maximum is shifted by at least 2 fractions
 testing_cor_shifter = correlations(ctrl_main_shift, rnase_main_shift)
 testing_cor_shifter$mean_abs_correlation
 
-# Mean of the correlation values (ctrl vs. rnase) of those proteins whose main maximum is not shifted by at least 2 fractions
+# Mean of the correlation values (ctrl vs. rnase) for those proteins whose main maximum is not shifted by at least 2 fractions
 testing_cor_no_shifter = correlations(ctrl_no_main_shift, rnase_no_main_shift)
 testing_cor_no_shifter$mean_abs_correlation
 
@@ -782,21 +790,78 @@ testing_cor_shifter$mean_abs_correlation < testing_cor_no_shifter$mean_abs_corre
 
 Our hypothesis was confirmed. The mean correlation between ctrl and rnase is smaller for proteins whose main peak was shifted by at least two fractions. Here, it is 0.42. For proteins without a large shift of the main peak, it is 0.94.
 
+
 ```{r}
 cor_all_proteins = correlations(ctrl_norm_mean, rnase_norm_mean)
 cor_all_proteins$mean_abs_correlation
 ```
 
-Der Mittelwert der Korrelationen auf alle Proteine bezogen beträgt 0,79. Dies ist kleiner als 0,94 und größer als 0,42. 
-Dies lässt vorerst den Schluss zu, dass eine Aufreinigung von RNA-abhängigen Proteinen gemäß des Kriteriums einer deutlichen Verschiebung des Hauptmaximums sinnvoll erscheint. Unser Ziel war es, weniger ähnliche Kurven herauszuselektieren, und von ähnlichen Kurven abzutrennen. 
-=
 The mean correlation for all proteins is 0.79. This is less than 0.94 and greater than 0.42.
 This initially suggests that purification of RNA-dependent proteins based on the criterion of a significant shift in the main peak appears to be reasonable. Our goal was to select less similar curves and separate them from similar ones.
 
-*******************************************************************************************************************************
+
+Plotting the correlations as a histogram
+```{r}
+par(mfrow = c(1, 2)) 
+
+hist(
+  testing_cor_shifter$correlations,
+  main = "Correlation values shifter",
+  xlab = "Correlation value",
+  ylab = "Frequency",
+  col = "skyblue",
+  border = "white",
+  xlim = c(-1, 1) 
+)
+
+# Zweiter Plot: testing_cor_no_shifter
+hist(
+  testing_cor_no_shifter$correlations,
+  main = "Correlation values no_shifter",
+  xlab = "Correlation value",
+  ylab = "Frequency",
+  col = "salmon",
+  border = "white",
+  xlim = c(-1, 1)
+)
+
+par(mfrow = c(1, 1))
+```
+It is shown, that by just selecting proteins that exhibit a shift in their main/global maximum, the correlation values are distributed more in the direction of 0, which implies less similar curves between ctrl and rnase for the respective proteins.
+
+
+Visualization of the distribution of 
+```{r}
+# Vector with indices of proteins, that show a near zero correlation between ctrl and rnase
+near_zero_cors = which(abs(testing_cor_shifter$correlations) <= 0.01) 
+
+# In case you want to know the actual protein names of those with very low correlation
+# rownames(ctrl_main_shift[near_zero_cors[1], ])
+                         
+# Plotting a respective curve
+cs <- as.numeric(ctrl_main_shift[near_zero_cors[1], 1:25])
+rs <- as.numeric(rnase_main_shift[near_zero_cors[1], 1:25])
+
+# Plot
+plot(cs,
+     type = "l",        
+     main = "Plot for the protein",
+     xlab = "Fractions",
+     ylab = "Values",
+     col = "blue",
+     lwd = 2)
+
+lines(row_data1,
+      type = "l",
+      col = "red",
+      lwd = 2)
+```
+
+
+***********************************************************************************************************
 1. Criterion for data set purification
 Identification of proteins from ctrl/rnase_no_main_shift (main peaks not significantly shifted) that exhibit a different number of total peaks (n_max_comb)
-
+***********************************************************************************************************
 
 ```{r}
 # Extract vectors of the maximum number
