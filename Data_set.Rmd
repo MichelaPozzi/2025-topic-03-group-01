@@ -1162,39 +1162,13 @@ dim(ctrl_not_selected)[1] + dim(ctrl_selected)[1] == dim(ctrl_norm_mean)[1]
 ```
 
 
-4.1: Aus der Spalte "combined_max_ctrl" von ctrl_selected wird pro Zeile der Mittelwert der Peak-Positionen  gebildet und dann verglichen mit dem Mittelwert der Peak-Positionen von "combined_max_rnase" von rnase_selected 
+6.1: The mean value of the peak positions per row is calculated from the column "combined_max_ctrl" of ctrl_selected, and then compared with the mean value of the peak positions of "combined_max_rnase" of rnase_selected
 
-4.2: Aus der Spalte "combined_max_ctrl" von control_not_selected wird pro Zeile der Mittelwert der Peak-Positionen gebildet und dann verglichen mit dem Mittelwert der Peak-Positionen von "combined_max_rnase" von rnase_not_selected
+6.2: The mean value of the peak positions per row is calculated from the column "combined_max_ctrl" of control_not_selected  and then compared with the mean value of the peak positions of "combined_max_rnase" of rnase_not_selected
 
-4.3: Jetzt wird der Wilcoxon-Tets angewendet, um die Differenzen zu untersuchen 
---> H0: Die Verteilung der Differenzen in beiden Gruppen haben keinen systematischen Unterschied 
+6.3: Wilcoxon Rank Sum Test is performed, to compare the differences of the mean values of the peak positions
+--> H0: There is no systematic difference in the distribution of these differences
 
-5. Alternative: Mittels COM (center of mass) anstatt Differenzen der Mittelwerte arbeiten
-
-
-1.Step
-```{r}
-ctrl_selected = rbind(ctrl_main_shift, ctrl_unequal_max)
-rnase_selected = rbind(rnase_main_shift, rnase_unequal_max)
-```
-
-
-2.Step
-```{r}
-sum(rownames(ctrl_selected) != rownames(rnase_selected))
-```
-
-
-3.Step
-```{r}
-ctrl_not_selected = ctrl_equal_max
-rnase_not_selected = rnase_equal_max
-
-dim(ctrl_not_selected)[1] + dim(ctrl_selected)[1] == 4765
-```
-
-
-4.Step
 ```{r}
 # Calculate mean values per row and form the difference
 get_differences <- function(ctrl_df, rnase_df, ctrl_col, rnase_col) {
@@ -1213,6 +1187,8 @@ wilcox_test_result <- wilcox.test(diff_selected, diff_not_selected)
 # Show result
 print(wilcox_test_result)
 ```
+
+
 
 Plots
 
@@ -1241,6 +1217,17 @@ ggplot(df_plot, aes(x = Difference, fill = Group)) +
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 5.Step
 
 ```{r}
@@ -1261,6 +1248,10 @@ wilcox_test_result2 <- wilcox.test(diff_selected2, diff_not_selected2)
 # Show results
 print(wilcox_test_result2)
 ```
+
+
+
+
 
 ***********************************************************************************************************
 9. Principle Component Analysis (PCA)
