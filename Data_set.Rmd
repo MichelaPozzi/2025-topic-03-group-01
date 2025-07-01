@@ -1005,8 +1005,7 @@ The proteins that additionally showed a change in their center of mass (data.fra
 
 
 It is interesting, that there seems to be a few proteins, that exhibited a global maximum shift, but no COM shift, and still got a corrleation value around 0. How do they look?
-
-Visualization of the distribution of some proteins from ctrl/rnase_no_COM_shift
+Visualization of the proteins from ctrl_no_CoM_shift and rnase_no_COM_shift (shift in global maximum, no shift in the COM), that show a low correlation value
 ```{r}
 # Vector with indices of proteins, that show a near zero correlation between ctrl and rnase
 near_zero_cors = which(abs(COM_no_shifter$correlations) <= 0.1) 
@@ -1040,12 +1039,12 @@ Interesting trend: In order to show global maximum shift, but no center of mass 
 
 
 
-
+Visualization of the proteins from ctrl_no_CoM_shift and rnase_no_COM_shift (shift in global maximum, no shift in the COM), that show a high correlation value
 ```{r}
 # Vector with indices of proteins, that show a near one correlation between ctrl and rnase
-cors = which(abs(COM_no_shifter$correlations) <= 0.1) 
+near_one_cors = which(abs(COM_no_shifter$correlations) >= 0.95) 
 
-indices = cors[1:5]
+indices = near_one_cors[1:5]
                          
 # Plotting a respective curves
 for(i in indices) {
@@ -1069,11 +1068,20 @@ lines(rs,
 }
 ```
 
+The plotted protein curves show the same property as discussed earlier. On paper, their global maximum shiftet, but their center of mass didnt. In comparison to those proteins plotted before from the same histogram, that had low correlation values and did not look similar, these proteins with high correlation values look very similar. Their peak regions look very similar over all. They are not classified as RNA-dependent in this analysis.
 
 
-As a last purification criterium, we analyze the proteins previously mentioned. Starting point is the data.frame ctrl_no_COM_shift and rnase_no_COM_shift. They contain proteins, that exhibit a shift ind the global maximum, but no shift in the overall COM. We already visualized some of the proteins, and noticed, that there are two possibilities. 
-1. Global maximum shift + no COM shift + high correlation --> similar shape --> we classify as not RNA-dependent 
-2. Global maximum shift + no COM shift + low correlation --> different shape (e.g precipated proteins) --> RNA-dependent 
+
+
+
+
+
+
+
+
+
+
+
 
 
 
