@@ -787,7 +787,7 @@ testing_cor_no_shifter = correlations(ctrl_no_main_shift, rnase_no_main_shift)
 testing_cor_no_shifter$mean_abs_correlation
 
 # If the hypothesis is correct, is the mean of the correlations of the shifters smaller than that of the no_shifters?
-testing_cor_shifter$mean_abs_correlation < testing_cor_no_shifter$mean_abs_correlation
+# testing_cor_shifter$mean_abs_correlation < testing_cor_no_shifter$mean_abs_correlation
 ```
 
 Our hypothesis was confirmed. The mean correlation between ctrl and rnase is smaller for proteins whose main peak was shifted by at least two fractions. Here, it is 0.34. For proteins without a large shift of the main peak, it is 0.92.
@@ -816,7 +816,6 @@ hist(
   xlim = c(-1, 1) 
 )
 
-# Zweiter Plot: testing_cor_no_shifter
 hist(
   testing_cor_no_shifter$correlations,
   main = "Correlation values no main shifter",
@@ -831,7 +830,7 @@ par(mfrow = c(1, 1))
 ```
 
 It is shown, that by just selecting proteins that exhibit a shift in their main/global maximum, the correlation values are distributed more in the direction of 0, which implies less similar curves between ctrl and rnase for the respective proteins. It should be noted, that the sole criterium of shifting global maximum is not enough, because there are still high correlation proteins existent, even though there is a global maximum shift. 
-
+Additionally, most of the proteins, that do not show an global maximum shift have very high correlation values.
 
 Visualization of the distribution of some proteins from ctrl/rnase_main_shift
 ```{r}
@@ -840,7 +839,7 @@ near_zero_cors = which(abs(testing_cor_shifter$correlations) <= 0.01)
 
 indices = near_zero_cors[1:5]
                          
-# Plotting a respective curves
+# Plotting some respective curves
 for(i in indices) {
   cs <- as.numeric(ctrl_main_shift[i, 1:25])
   rs <- as.numeric(rnase_main_shift[i, 1:25])
@@ -861,6 +860,8 @@ lines(rs,
       lwd = 2)
 }
 ```
+These plotted proteins seem RNA-dependent. 
+
 
 
 Visualization of the distribution of some proteins from ctrl/rnase_no_main_shift
@@ -870,7 +871,7 @@ near_one_cors = which(abs(testing_cor_no_shifter$correlations) >0.99)
 
 indices = near_one_cors[1:5]
                          
-# Plotting a respective curves
+# Plotting some respective curves
 for(i in indices) {
   cs <- as.numeric(ctrl_no_main_shift[i, 1:25])
   rs <- as.numeric(rnase_no_main_shift[i, 1:25])
@@ -891,6 +892,8 @@ lines(rs,
       lwd = 2)
 }
 ```
+The curves seem very similar/almost identical. Therefore, the plotted proteins do not seem RNA-dependent.
+
 
 This is as expected so far. Now the question rises, how the plots would look for those proteins, that exhibit a global maximum shift, but still show a high correlation value. Are they really candidates for RNA-dependent proteins?
 
@@ -925,27 +928,27 @@ lines(rs,
 }
 ```
 
-By looking at these curves, it becomes obvious, that these proteins do not seem RNA-dependent. Despite their on-paper shift of the global maximum, their appearance is still very similar.  
+The curves seem very similar. On paper, there is a shift in the global maximum, still the general appearance is very similar. Therefore, these proteins do not seem RNA-dependent.
 
 
-We need an additional purification criteria for those proteins. Here, we use the center of mass. Even when there is a shift in the global maximum, it might be a microscopic shift regarding the actual intensity at the given fraction. Furthermore, the area around the shifted global maximum can still look very similar. Using the center of mass is suitable to identify these proteins, because those with similar areas around the peak, won´t show a great difference in their center of mass. 
+We need an additional purification criteria for those proteins. Here, we use the center of mass. When a protein shifts regarding its global maximum, but retains a very similar curve like discussed, then the overall center of mass is not changed. Picture 5 (Index 818 for ctrl/rnase_main_shift) is a great example. It shows two very similar peak areas at the same locations. However, ctrl shows its global maximum at one of them, rnase shows its global maximum at the other one. Despite this on-paper shift, its center of mass is noch changed, which makes the center of mass a suitable criterion to filter for those proteins.  
 
 
 
 
-Create new data.frames to select those proteins, that exhibit a shift in the global maximum AND a shift regarding their overall center of mass
+Create new data.frames out of ctrl/rnase_main_shift to select those proteins, that exhibit a shift in the global maximum AND a shift regarding their overall center of mass
 ```{r}
-# Calculate the absolute difference of the position of the COM values between ctrl and rnase 
+# Calculate the absolute difference of the positions of the COM values between ctrl and rnase 
 diff_COM <- abs(ctrl_main_shift$COM - rnase_main_shift$COM)
 
 # Indices of proteins with deviation ≥ 3 fractions
-deviating_COM <- which(diff_COM >= 2)
+deviating_COM <- which(diff_COM >= 3)
 
 # Apply on the data.frames
 ctrl_COM_shift = ctrl_main_shift[deviating_COM, ]
 rnase_COM_shift = rnase_main_shift[deviating_COM, ]
 
-# ctrl/rnase_COM_shift contain 806 proteins 
+# ctrl/rnase_COM_shift contain 650 proteins 
 ```
 
 
@@ -997,7 +1000,7 @@ hist(
 
 par(mfrow = c(1, 1))
 ```
-
+Both histograms contain a part of the proteins, that exhibited a shift in their global maximum. The proteins that additionally showed a change in their center of mass (ctrl/rnase_COM_shift) tend to have a lower correlation value. The highest frequency is around the correlation value 0. This is expected, because a protein with global maximum shift and a change in its center of mass and hence distribution is expected to look less similar when comparing ctrl and rnase. 
 
 
 Visualization of the distribution of some proteins from ctrl/rnase_COM_shift
