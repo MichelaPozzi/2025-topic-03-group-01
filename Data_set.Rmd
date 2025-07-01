@@ -1068,7 +1068,7 @@ lines(rs,
 }
 ```
 
-The plotted protein curves show the same property as discussed earlier. On paper, their global maximum shiftet, but their center of mass didnt. In comparison to those proteins plotted before from the same histogram, that had low correlation values and did not look similar, these proteins with high correlation values look very similar. Their peak regions look very similar over all. They are not classified as RNA-dependent in this analysis.
+The plotted protein curves show the same problem as discussed earlier. On paper, their global maximum shifted, but their center of mass didnt. In comparison to those proteins plotted before from the same histogram, that had low correlation values and did not look similar, these proteins with high correlation values look very similar. Their peak regions look very similar over all. They are not classified as RNA-dependent in this analysis.
 
 
 
