@@ -939,7 +939,7 @@ Create new data.frames to select those proteins, that exhibit a shift in the glo
 diff_COM <- abs(ctrl_main_shift$COM - rnase_main_shift$COM)
 
 # Indices of proteins with deviation ≥ 3 fractions
-deviating_COM <- which(diff_COM >= 3)
+deviating_COM <- which(diff_COM >= 2)
 
 # Apply on the data.frames
 ctrl_COM_shift = ctrl_main_shift[deviating_COM, ]
@@ -1069,31 +1069,6 @@ As a last purification criterium, we analyze the proteins previously mentioned. 
 
 
 
-
-In order to isolate them, we look at ctrl_no_COM_shift and rnase_no_COM_shift and seperate thoe proteins, that show a different amount of total maxima (n_max_comb) between ctrl and rnase 
-
-```{r}
-#ctrl_no_COM_shift
-#rnase_no_COM_shift
-
-# Extract vectors with the maximum numbers
-n_max_ctrl = ctrl_no_COM_shift$n_max_comb
-n_max_rnase = rnase_no_COM_shift$n_max_comb
-
-# Find proteins (row names) with the same number of maxima 
-equal_max_proteins = rownames(ctrl_no_COM_shift[n_max_ctrl == n_max_rnase])
-
-# Find proteins (row names) with a different number of maxima
-unequal_max_proteins = rownames(ctrl_no_COM_shift[n_max_ctrl != n_max_rnase])
-
-# New data.frames for the proteins with same numer of maxima 
-ctrl_no_diff_max <- ctrl_no_COM_shift[equal_max_proteins, ]
-rnase_no_diff_max <- rnase_no_COM_shift[equal_max_proteins, ]
-
-# New data.frames for the proteins with different number of maxima 
-ctrl_diff_max <- ctrl_no_COM_shift[unequal_max_proteins, ]
-rnase_diff_max <- rnase_no_COM_shift[unequal_max_proteins, ]
-```
 
 
 
