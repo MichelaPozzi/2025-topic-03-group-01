@@ -1160,7 +1160,7 @@ sum(rownames(ctrl_not_selected) != rownames(rnase_not_selected))
 ```{r}
 dim(ctrl_not_selected)[1] + dim(ctrl_selected)[1] == dim(ctrl_norm_mean)[1]
 ```
-
+(maybe Com differences, or even something completely different for the statistical test?!)
 
 6.1: The mean value of the peak positions per row is calculated from the column "combined_max_ctrl" of ctrl_selected, and then compared with the mean value of the peak positions of "combined_max_rnase" of rnase_selected
 
