@@ -1030,37 +1030,6 @@ lines(rs,
 ```
 
 
-Visualization of the distribution of some proteins from ctrl/rnase_no_COM_shift
-```{r}
-# Vector with indices of proteins, that show a near one correlation between ctrl and rnase
-near_one_cors = which(abs(COM_no_shifter$correlations) >0.99) 
-
-indices = near_one_cors[1:5]
-                         
-# Plotting a respective curves
-for(i in indices) {
-  cs <- as.numeric(ctrl_no_main_shift[i, 1:25])
-  rs <- as.numeric(rnase_no_main_shift[i, 1:25])
-
-# Plot
-plot(cs,
-     type = "l",        
-     main = paste("Protein at index", i), 
-     xlab = "Fractions",
-     ylab = "Values",
-     col = "blue",
-     lwd = 2,
-     ylim = range(c(cs, rs)))
-  
-lines(rs,
-      type = "l",
-      col = "red",
-      lwd = 2)
-}
-```
-
-This is as expected so far. Now the question rises, how the plots would look for those proteins, that exhibit a global maximum shift, but still show a high correlation value. Are they really candidates for RNA-dependent proteins?
-
 
 
 Visualization of the distribution of those proteins from ctrl/rnase_main_shift, that still show a high correlation value
