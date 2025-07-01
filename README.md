@@ -6,7 +6,9 @@
 
 Welcome to our project in which we used mass-spectrometry data of non-synchronized HeLa cells in order to perform a proteome-wide screen to identify RNA-dependent proteins. XXXGive general introduction into the topic, what our dataset is etc. just like at the beginning of the project proposalXXX
 
-![***Image 1:** Plot of the NUCL_HUMAN protein showing a significant shift of the RNASE compared to the control.*](images/NUCL_HUMAN_plot.jpg){width="620"}
+![***Fig. 1:** Plot of the NUCL_HUMAN protein showing a significant shift of the RNASE compared to the control.*](images/NUCL_HUMAN_plot.jpg){width="620"}
+
+------------------------------------------------------------------------
 
 ### Content of github repository
 
@@ -29,11 +31,17 @@ This document contains our project code. It is divided into the following sectio
 
 ***Poster:***
 
-This power point contains the poster for our final presentation.
+This PowerPoint contains the poster for our final presentation.
 
 ***Excel table of original data:***
 
 This table shows the original mass spectroscopy data we were given with adjusted delimiter.
+
+***Images:***
+
+This folder contains the plots we used in the poster and the README.
+
+------------------------------------------------------------------------
 
 ### Sources
 
