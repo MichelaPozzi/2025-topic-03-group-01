@@ -695,7 +695,7 @@ rnase_norm_mean$COM <- apply(rnase_norm_mean[, 1:25], 1, function(x) {
 
 
 ###########################################################################
-Teil von Julian Baureis (Zeile 701 - 1218), Codewriting assisted by ChatGPT
+Teil von Julian Baureis (Zeile 701 - 1218), Codewriting assisted by ChatGPT 
 ###########################################################################
 
 ***********************************************************************************************************
