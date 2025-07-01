@@ -708,13 +708,13 @@ The main peak of the respective protein is shifted by at least two peaks in its 
 diff_main_maxima <- abs(ctrl_norm_mean$global_maximum - rnase_norm_mean$global_maximum)
 
 # Indices of proteins with deviation ≥ 2 fractions
-deviating_main_maxima <- which(diff_main_maxima >= 2)
+deviating_main_maxima <- which(diff_main_maxima >= 3)
 
 # Apply on the data.frames
 ctrl_main_shift = ctrl_norm_mean[deviating_main_maxima, ]
 rnase_main_shift = rnase_norm_mean[deviating_main_maxima, ]
 
-# ctrl/rnase_main_shift contain 1351 proteins 
+# ctrl/rnase_main_shift contain 1075 proteins 
 ```
 
 ```{r}
@@ -788,7 +788,7 @@ testing_cor_no_shifter$mean_abs_correlation
 testing_cor_shifter$mean_abs_correlation < testing_cor_no_shifter$mean_abs_correlation
 ```
 
-Our hypothesis was confirmed. The mean correlation between ctrl and rnase is smaller for proteins whose main peak was shifted by at least two fractions. Here, it is 0.42. For proteins without a large shift of the main peak, it is 0.94.
+Our hypothesis was confirmed. The mean correlation between ctrl and rnase is smaller for proteins whose main peak was shifted by at least two fractions. Here, it is 0.34. For proteins without a large shift of the main peak, it is 0.92.
 
 
 ```{r}
@@ -796,7 +796,7 @@ cor_all_proteins = correlations(ctrl_norm_mean, rnase_norm_mean)
 cor_all_proteins$mean_abs_correlation
 ```
 
-The mean correlation for all proteins is 0.79. This is less than 0.94 and greater than 0.42.
+The mean correlation for all proteins is 0.79. This is less than 0.92 and greater than 0.34.
 This initially suggests that purification of RNA-dependent proteins based on the criterion of a significant shift in the main peak appears to be reasonable. Our goal was to select less similar curves and separate them from similar ones.
 
 
@@ -924,6 +924,8 @@ lines(rs,
 ```
 
 By looking at these curves, it becomes obvious, that these proteins do not seem RNA-dependent. Despite their on-paper shift of the global maximum, their appearance is still very similar.  
+
+
 
 
 
