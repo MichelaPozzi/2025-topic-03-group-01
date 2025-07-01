@@ -95,6 +95,7 @@ colmns_sorted <- data.frame(row.names = colnames(NS_Table), levels_CR = levels_C
 #Check for missing values, there are none 
 anyNA(NS_Table)
 ```
+
 **************************************************************************************************************
 3. Normalization step between the replicates in each fraction and for each treatment using the mean value method
   by Benjamin Nicklas influenced by ChatGPT
@@ -387,15 +388,20 @@ lines(row_data1,
       lwd = 2)
 ```
 
+
+
+
+
 **************************************************************************************************************
-4. Find local maxima greater than 2 as fit parameters from average curves
+4. Find local maxima
 **************************************************************************************************************
 
-Identify local maxima by peak calling for the mean of each protein.
-In order to get rid of the noise, only values above 2 are considered.
-Find shoulders that were not discovered previously.
+- Local maxima are peaks, that are higher than the two surrounding values 
+- In order to get rid of the noise, only values above 2 are considered.
+- Find shoulders that were not discovered previously.
 
 ```{r}
+# In case the original data is advantageous for later analysis
 ctrl_norm_mean_original = ctrl_norm_mean
 rnase_norm_mean_original = rnase_norm_mean
 ```
@@ -404,52 +410,42 @@ Define Peak Finding Function
 
 ```{r}
 # Function find_local_maxima
-# Peak is local maximum with a certain amount (window) of smaller points on each side
+# Peak is local maximum with a certain amount (=window) of smaller points on each side
 # Bigger window => more stringent peak finding procedure 
 
 find_local_maxima <- function(x, window = 2) {
-  slope_changes <- diff(sign(diff(x)))
-  peak_indices <- which(slope_changes < 0)
-
+  n <- length(x)
   peaks <- c()
 
-  for (i in peak_indices) {
-    left <- max(1, i - window + 1)
-    right <- min(length(x), i + window + 1)
+  for (i in 1:n) {
+    left <- max(1, i - window)
+    right <- min(n, i + window)
+    neighbors <- x[left:right][-which((left:right) == i)]
 
-    neighbors <- c(x[left:i], x[(i + 2):right])
-
-    if (all(neighbors <= x[i + 1])) {
-      peaks <- c(peaks, i + 1)
+    if (all(neighbors <= x[i])) {
+      peaks <- c(peaks, i)
     }
   }
-  
-# part added to deal with the 1st and 25th values, in case they are max
-     if ( sum(x[1]>x[2:(window+1)]) == 2 ) {peaks <- c(peaks, 1)} 
-     if ( sum(x[25]>x[24:(25-window)]) == 2 ) {peaks <- c(peaks, 25)}
-     peaks <- unlist(peaks)
-     peaks
-     
-#return(peaks)
-     
-} 
+
+  return(peaks)
+}
 ```
 
 ```{r}
-# Apply the function to the data set and retrieve the values
-# restriction to values above an absolut threshold of 2%
+# Apply the function to the data set 
+# Restriction to values above an absolute threshold of 2%
 # New column: "local_maxima" (column 26)
 
 ctrl_norm_mean$local_maxima <- apply(ctrl_norm_mean, 1, function(x) {
-															   peak_indeces <- find_local_maxima(x)
-															   filtered <- peak_indeces[x[peak_indeces] > 2] 
+															   peak_indices <- find_local_maxima(x)
+															   filtered <- peak_indices[x[peak_indices] > 2] 
 															   local_maxima <- unlist(filtered)
 															   local_maxima
 															   })
 															   
 rnase_norm_mean$local_maxima <- apply(rnase_norm_mean, 1, function(x) {
-															   peak_indeces <- find_local_maxima(x)
-															   filtered <- peak_indeces[x[peak_indeces] > 2] 
+															   peak_indices <- find_local_maxima(x)
+															   filtered <- peak_indices[x[peak_indices] > 2] 
 															   local_maxima <- unlist(filtered)
 															   local_maxima
 															   })
@@ -482,16 +478,15 @@ rnase_norm_mean$global_maximum <- sapply(1:nrow(ctrl_norm_mean), function(i) {
     return(peaks[which.max(peak_values)])
   }
 })
-
-
 ```
 
 
 ****************************************************************************************************************
-5. Identify shoulders, regions that are not recognized as peaks, even though they have a high signal intensity.
+5. Identify shoulders
 ****************************************************************************************************************
 
-Create Binary Data Frames Indicating Signal > 2%
+- Shoulders are regions that are not recognized as peaks, even though they have a high signal intensity.
+- Create Binary Data Frames Indicating Signal > 2%
 
 ```{r}
 # Identify the RNAse fractions with signal intensity > 2%. 
@@ -515,18 +510,19 @@ Mask Regions Around Detected Peaks to Exclude Them from Shoulder Search
 # Remove and exclude 3 fractions left and right of each peak (7 in total) from the shoulder search.
 
 th_max_reg_simple <- function(x) {
-  peaks <- as.numeric(unlist(x$local_maxima)) # Convert the local_maxima column from ctrl/rnase_norm_mean to a numeric vector.
+  peaks <- as.numeric(unlist(x$local_maxima)) 
   mask <- rep(1, 25)
   
   for (peak in peaks) { # peak = current peak value, peaks = detected maxima (column 26)
     if (peak > 0) { 
       left <- max(1, peak - 3)
-      right <- min(25, peak + 3) # For each peak, the range from peak–3 to peak+3 is calculated.
-      mask[left:right] <- 0 # These 7 fractions (the peak itself and 3 before & after it) are masked out by setting their positions in the mask to 0.
+      right <- min(25, peak + 3) 
+      mask[left:right] <- 0 # For each peak, the range from peak–3 to peak+3 is calculated and set to 0 in the mask
+      
     }
   }
 
-  x_values <- as.numeric(x[1:25]) # because $maxima contained characters. 
+  x_values <- as.numeric(x[1:25])  
   x_values <- x_values * mask # Fractions with mask = 1 are retained. Fractions with mask = 0 are set to 0.
   return(x_values)
 }
@@ -541,14 +537,12 @@ Identify Shoulder Regions: Consecutive Fractions > 2% Without Peaks
 ```{r}
 # Detect "shoulder regions"
 # Define a function that identifies signal regions where there are at least 4 consecutive fractions with an intensity above 2% using the data frames rnase_3 and ctrl_3.
-
-# select the middle of it
-# Apply on the whole dataframe
+# select the middle of this region as shoulder
 
 peaks_regions = function(x) {
   rle_result = rle(as.numeric(x[1:25])) # rle() finds all consecutive equal values -> $lengths and $values
   
-  #Find positions of all blocks of ones with length ≥4. These blocks are considered “shoulder regions”.
+  #Find positions of all blocks consisting of 1s with length ≥4. These blocks are considered “shoulder regions”.
   peak_blocks = which(rle_result$values == 1 & rle_result$lengths >= 4)
   
   #If there are no such blocks of length >4, return an empty vector
@@ -564,7 +558,7 @@ peaks_regions = function(x) {
     #Position of the end of the respective block 
     end_of_block = sum(rle_result$lengths[1:peak_blocks[i]])
     
-    #Calculate half length (middle) of the block
+    #Calculate half length of the block
     half_length = floor(rle_result$lengths[peak_blocks[i]] /2)
     
     #Middle position of the shoulder 
@@ -576,8 +570,7 @@ peaks_regions = function(x) {
 ```
 
 ```{r}
-# Calculate the positions of the "shoulders" for each protein row, i.e. regions with ≥4 consecutive fractions with signal >2%
-# Save the shoulder positions as a new column called peaks in the respective data frames rnase_3 and ctrl_3.
+# Calculate the positions of the "shoulders" for each row for the data.frames ctrl/rnase_3 and ctrl/rnase_norm_mean
 # New column: "shoulders" (column 28)
 
 rnase_3$shoulders <- apply(rnase_3, 1, function(x) { peaks_regions(x) } )
@@ -591,7 +584,7 @@ ctrl_norm_mean$shoulders <- apply(ctrl_3, 1, function(x) { peaks_regions(x) } )
 Combine Peak and Shoulder Positions for Each Protein
 
 ```{r}
-# Calculate the total of all relevant signal maxima (real peaks and shoulders) for each protein row in the dataframe 
+# Calculate the total of all relevant signal maxima (real peaks and shoulders) for each protein row in the data.frames
 # New column: "combined_max_ctrl" and "combined_max_rnase" (column 29) respectively
 
 						   						
@@ -634,8 +627,8 @@ rnase_norm_mean$combined_max_rnase = rnase_3[, "combined_max_rnase"]
 
 rnase_3$n_max_comb <- apply(rnase_3, 1, function(x) {
 												 ls_max <- as.numeric(unlist(x$combined_max_rnase))
-												 n = length(ls_max) # => Answers: How many peaks (maxima and shoulders) does this protein have?
-												 if (sum(ls_max) == 0) {0} else {n} # If TRUE, then the result should be 0, instead of length(ls_max), which would then be 1. 
+												 n = length(ls_max) # determines how many peaks (maxima and shoulders) the protein has
+												 if (sum(ls_max) == 0) {0} else {n}  
 												 })
 												 
 ctrl_3$n_max_comb <- apply(ctrl_3, 1, function(x) {
@@ -653,9 +646,8 @@ rnase_norm_mean$n_max_comb = rnase_3[, "n_max_comb"]
 
 
 ***********************************************************************************************************
-7. Identifizierung von Proteinen mit einer unterschiedlichen Anzahl an Maxima in CTRL vs. RNASE
+7. Identification of proteins with a different number of peaks in CTRL vs. RNASE
 ***********************************************************************************************************
-Erste Vorauswahl an Proteinen: Eine unterschiedliche Anzahl an Maxima ist ein erster Hinweis auf mögliche RNA-abhängige Proteine.
 
 ```{r}
 # Determine the number of only peak maxima ("local_maxima") per protein
@@ -673,21 +665,22 @@ ctrl_3$n_local_maxima <- apply(ctrl_3, 1, function(x) {
 												 if (sum(ls_max) == 0) {0} else {n} 
 												 })
 
-
-# Selbes für ctrl/rnase_norm_mean
+# Same for ctrl/rnase_norm_mean
 
 ctrl_norm_mean$n_local_maxima = ctrl_3[, "n_local_maxima"]
 rnase_norm_mean$n_local_maxima = rnase_3[, "n_local_maxima"]  
 ```
 
+
 ***********************************************************************************************************
-COM-Werte hinzugügen in ctrl_norm_mean
+8. Add COM (center of mass) values 
+***********************************************************************************************************
 
 ```{r}
-#Wählt die ersten Proteinintensitäten in 25 Fraktionen aus.
-#Geht jede Zeile von ctrl_norm_mean durch.
-#x = Vektor mit den Intensitäten eines Proteins über alle 25 Fraktionen, für den gerade der COM berechnet wird
-#* bedeutet elementweise Multiplikation
+# Calculate the center of mass for each row 
+# x is the vector with the intensities of a protein across all 25 fractions for which the COM is currently being calculated
+# * means element-wise multiplication
+
 ctrl_norm_mean$COM <- apply(ctrl_norm_mean[, 1:25], 1, function(x) {
   sum((1:25) * x, na.rm = TRUE) / sum(x, na.rm = TRUE)
 })
@@ -697,58 +690,68 @@ rnase_norm_mean$COM <- apply(rnase_norm_mean[, 1:25], 1, function(x) {
 })
 ```
 
+
+
+
+
+
+
 ***********************************************************************************************************
-1. Kriterium der Aufreinigung des Datensatzes
-Das Hauptmaximum des jeweiligen Proteins ist um mindestens 2 Maxima bezüglich seiner Position verschoben
+1. Criterion for data set purification:
+The main peak of the respective protein is shifted by at least two peaks in its position
+***********************************************************************************************************
 
 ```{r}
-# Erstelle einen neuen Data.Frame, in welchem das Hauptmaximum der Proteine verschoben ist, Name: ctrl_main_shift, rnase_main_shift
+# Create new data.frames, in which the main peak (=global maximum) of the proteins is shifted, names: ctrl_main_shift, rnase_main_shift
 
-# Differenz berechnen (Vektor mit absoluten Abweichungen)
+# Calculate the absolute difference of the position of the global maximum between ctrl and rnase 
 diff_main_maxima <- abs(ctrl_norm_mean$global_maximum - rnase_norm_mean$global_maximum)
 
-# Positionen der Proteine mit Abweichung ≥ 3 Fraktionen 
+# Indices of proteins with deviation ≥ 2 fractions
 deviating_main_maxima <- which(diff_main_maxima >= 2)
 
-# length(deviating_main_maxima)
-# 1351 Proteine zeigen einen shift des Hauptmaximums ≥ 2 Fraktionen
-
+# Apply on the data.frames
 ctrl_main_shift = ctrl_norm_mean[deviating_main_maxima, ]
 rnase_main_shift = rnase_norm_mean[deviating_main_maxima, ]
+
+# ctrl/rnase_main_shift contain 1351 proteins 
 ```
 
 ```{r}
-# Erstelle den komplementären Data.Frame, der alle die jenigen Proteine beinhaltet, deren Hauptmaximum nicht um mindestens 2 Fraktionen shiftet, ctrl_main_shift "+" ctrl_no_main_shift = ctrl_norm_mean
+# Create the complementary data.frame that contains all proteins whose main maximum does not shift by at least 2 fractions
 
 ctrl_no_main_shift = ctrl_norm_mean[!rownames(ctrl_norm_mean) %in% rownames(ctrl_main_shift), ]
 rnase_no_main_shift = rnase_norm_mean[!rownames(rnase_norm_mean) %in% rownames(rnase_main_shift), ]
 ```
 
-**************************************************************************************************************
-Hypothese: Korrelation von ctrl_main_shift mit rnase_main_shift ist geringer als von ctrl_no_main_shift mit rnase_no_main_shift
+
+
+***********************************************************************************************************
+Hypothesis: Correlation of ctrl_main_shift with rnase_main_shift is lower than that of ctrl_no_main_shift with rnase_no_main_shift
+***********************************************************************************************************
 
 ```{r}
-# Funktion zur Berechnung der zeilenweise Korrelation, Vermutung: cor von ctrl_main_shift ist geringer als von ctrl_no_main_shift
+# Function to calculate the row-wise correlation, assumption: cor of ctrl_main_shift is lower than of ctrl_no_main_shift
 
 correlations <- function(df1, df2, methode = "pearson") {
   
-  # Prüfen, ob beide Dataframes gleich dimensioniert sind
+  # Check whether both data frames have the same dimensions
   if (!all(dim(df1) == dim(df2))) {
     stop("Die beiden Dataframes müssen die gleiche Dimension haben")
   }
 
-  # Anzahl der Zeilen
+  # Number of rows
   n <- nrow(df1)
 
-  # Vektor zur Speicherung der Korrelationswerte
+  # Vector for storing the correlation values
   correlations <- numeric(n)
 
-  # Schleife über alle Zeilen
+  # Loop over all rows
   for (i in 1:n) {
     v1 <- as.numeric(df1[i, 1:25])
     v2 <- as.numeric(df2[i, 1:25])
 
-    # Korrelation nur berechnen, wenn beide Vektoren Varianz haben
+    # Calculate correlation only if both vectors have variance
     if (sd(v1, na.rm = TRUE) != 0 && sd(v2, na.rm = TRUE) != 0) {
       correlations[i] <- cor(v1, v2, method = methode, use = "complete.obs")
     } else {
@@ -766,23 +769,26 @@ correlations <- function(df1, df2, methode = "pearson") {
 }
 ```
 
-**************************************************************************************************************
-Evaluierung der Hypothese 
+
+
+***********************************************************************************************************
+Evaluation of the hypothesis
+***********************************************************************************************************
 
 ```{r}
-# Mittelwert der Korrelationswerte (ctrl vs. rnase) von denjenigen Proteinen, deren Hauptmaximum um mindestens 2 Fraktionen verschoben ist
+# Mean of the correlation values (ctrl vs. rnase) for those proteins whose main maximum is shifted by at least 2 fractions
 testing_cor_shifter = correlations(ctrl_main_shift, rnase_main_shift)
 testing_cor_shifter$mean_abs_correlation
 
-# Mittelwert der Korrelationswerte (ctrl vs. rnase) von denjenigen Proteinen, deren Hauptmaximum nicht um mindestens 2 Fraktionen verschoben ist
+# Mean of the correlation values (ctrl vs. rnase) for those proteins whose main maximum is not shifted by at least 2 fractions
 testing_cor_no_shifter = correlations(ctrl_no_main_shift, rnase_no_main_shift)
 testing_cor_no_shifter$mean_abs_correlation
 
-# Hat sich die Hypothese bewahrheitet, ist der Mittelwert der Korrelationen der shifter kleiner als die der no_shifter?
+# If the hypothesis is correct, is the mean of the correlations of the shifters smaller than that of the no_shifters?
 testing_cor_shifter$mean_abs_correlation < testing_cor_no_shifter$mean_abs_correlation
 ```
 
-Unsere Hypothese hat sich bestätigt. Der Mittelwert der Korrelationen zwischen ctrl und rnase ist kleiner bei den Proteinen, bei denen das Hauptmaximum um mindestens 2 Fraktionen verschoben war. Hier beträgt er 0,42. Bei den Proteinen ohne große Verschiebung des Hauptmaximums beträgt er 0,94.
+Our hypothesis was confirmed. The mean correlation between ctrl and rnase is smaller for proteins whose main peak was shifted by at least two fractions. Here, it is 0.42. For proteins without a large shift of the main peak, it is 0.94.
 
 
 ```{r}
@@ -790,54 +796,173 @@ cor_all_proteins = correlations(ctrl_norm_mean, rnase_norm_mean)
 cor_all_proteins$mean_abs_correlation
 ```
 
-Der Mittelwert der Korrelationen auf alle Proteine bezogen beträgt 0,79. Dies ist kleiner als 0,94 und größer als 0,42. 
-Dies lässt vorerst den Schluss zu, dass eine Aufreinigung von RNA-abhängigen Proteinen gemäß des Kriteriums einer deutlichen Verschiebung des Hauptmaximums sinnvoll erscheint. Unser Ziel war es, weniger ähnliche Kurven herauszuselektieren, und von ähnlichen Kurven abzutrennen. 
+The mean correlation for all proteins is 0.79. This is less than 0.94 and greater than 0.42.
+This initially suggests that purification of RNA-dependent proteins based on the criterion of a significant shift in the main peak appears to be reasonable. Our goal was to select less similar curves and separate them from similar ones.
 
-*******************************************************************************************************************************
-2. Kriterium der Aufreinigung
-Identifizierung derjenigen Proteine aus ctrl/rnase_no_main_shift (Hauptmaxima nicht wesentlich verschoben), die eine unterschiedliche Anzahl an Gesamtmaxima (n_max_comb) aufweisen
 
+Plotting the correlations as a histogram
+```{r}
+par(mfrow = c(1, 2)) 
+
+hist(
+  testing_cor_shifter$correlations,
+  main = "Correlation values shifter",
+  xlab = "Correlation value",
+  ylab = "Frequency",
+  col = "skyblue",
+  border = "white",
+  xlim = c(-1, 1) 
+)
+
+# Zweiter Plot: testing_cor_no_shifter
+hist(
+  testing_cor_no_shifter$correlations,
+  main = "Correlation values no_shifter",
+  xlab = "Correlation value",
+  ylab = "Frequency",
+  col = "salmon",
+  border = "white",
+  xlim = c(-1, 1)
+)
+
+par(mfrow = c(1, 1))
+```
+
+It is shown, that by just selecting proteins that exhibit a shift in their main/global maximum, the correlation values are distributed more in the direction of 0, which implies less similar curves between ctrl and rnase for the respective proteins. It should be noted, that the sole criterium of shifting global maximum is not enough, because there are still high correlation proteins existent, even though there is a global maximum shift. 
+
+
+Visualization of the distribution of some proteins from ctrl/rnase_main_shift
+```{r}
+# Vector with indices of proteins, that show a near zero correlation between ctrl and rnase
+near_zero_cors = which(abs(testing_cor_shifter$correlations) <= 0.01) 
+
+indices = near_zero_cors[1:5]
+                         
+# Plotting a respective curves
+for(i in indices) {
+  cs <- as.numeric(ctrl_main_shift[i, 1:25])
+  rs <- as.numeric(rnase_main_shift[i, 1:25])
+
+# Plot
+plot(cs,
+     type = "l",        
+     main = paste("Protein at index", i), 
+     xlab = "Fractions",
+     ylab = "Values",
+     col = "blue",
+     lwd = 2,
+     ylim = range(c(cs, rs)))
+  
+lines(rs,
+      type = "l",
+      col = "red",
+      lwd = 2)
+}
+```
+
+
+Visualization of the distribution of some proteins from ctrl/rnase_no_main_shift
+```{r}
+# Vector with indices of proteins, that show a near one correlation between ctrl and rnase
+near_one_cors = which(abs(testing_cor_no_shifter$correlations) >0.99) 
+
+indices = near_one_cors[1:5]
+                         
+# Plotting a respective curves
+for(i in indices) {
+  cs <- as.numeric(ctrl_no_main_shift[i, 1:25])
+  rs <- as.numeric(rnase_no_main_shift[i, 1:25])
+
+# Plot
+plot(cs,
+     type = "l",        
+     main = paste("Protein at index", i), 
+     xlab = "Fractions",
+     ylab = "Values",
+     col = "blue",
+     lwd = 2,
+     ylim = range(c(cs, rs)))
+  
+lines(rs,
+      type = "l",
+      col = "red",
+      lwd = 2)
+}
+```
+
+This is as expected so far. Now the question rises, how the plots would look for those proteins, that exhibit a global maximum shift, but still show a high correlation value. Are they really candidates for RNA-dependent proteins?
+
+
+
+Visualization of the distribution of those proteins from ctrl/rnase_main_shift, that still show a high correlation value
+```{r}
+# Vector with indices of proteins, that show a near one correlation between ctrl and rnase
+near_one_cors_question = which(abs(testing_cor_shifter$correlations) >0.95) 
+
+indices = near_one_cors_question[1:5]
+                         
+# Plotting a respective curves
+for(i in indices) {
+  cs <- as.numeric(ctrl_main_shift[i, 1:25])
+  rs <- as.numeric(rnase_main_shift[i, 1:25])
+
+# Plot
+plot(cs,
+     type = "l",        
+     main = paste("Protein at index", i), 
+     xlab = "Fractions",
+     ylab = "Values",
+     col = "blue",
+     lwd = 2,
+     ylim = range(c(cs, rs)))
+  
+lines(rs,
+      type = "l",
+      col = "red",
+      lwd = 2)
+}
+```
+
+By looking at these curves, it becomes obvious, that these proteins do not seem RNA-dependent. Despite their on-paper shift of the global maximum, their appearance is still very similar.  
+
+
+
+
+
+
+***********************************************************************************************************
+1. Criterion for data set purification
+Identification of proteins from ctrl/rnase_no_main_shift (main peaks not significantly shifted) that exhibit a different number of total peaks (n_max_comb)
+***********************************************************************************************************
 
 ```{r}
-#Vektoren der Maxima-Anzahl extrahieren
+# Extract vectors of the maximum number
 n_max_ctrl  <- ctrl_no_main_shift$n_max_comb
 n_max_rnase <- rnase_no_main_shift$n_max_comb
 
-#Proteine (Zeilennamen) mit gleicher Maxima-Anzahl finden
+# Find proteins (row names) with the same number of maxima
 unequal_max_proteins <- rownames(ctrl_no_main_shift)[n_max_ctrl != n_max_rnase]
 
-#Neuen DataFrame ctrl_equal_max mit diesen Proteinen erstellen
+# Create new DataFrame ctrl_equal_max with these proteins
 ctrl_unequal_max <- ctrl_no_main_shift[unequal_max_proteins, ]
 rnase_unequal_max <- rnase_no_main_shift[unequal_max_proteins, ]
-
-
-#Vor Abgabe löschen
-#dim(ctrl_unequal_max)
-#dim(rnase_unequal_max)
 ```
 
 *******************************************************************************************************************************
-Proteine mit gleicher Anzahl an Gesamtmaxima (n_max_comb) aus ctrl/rnase_no_main_shift
+Proteins with the same number of total maxima (n_max_comb) from ctrl/rnase_no_main_shift
 
 
 ```{r}
-#Vektoren der Maxima-Anzahl extrahieren
+# Extract vectors of the maximum number
 n_max_ctrl  <- ctrl_no_main_shift$n_max_comb
 n_max_rnase <- rnase_no_main_shift$n_max_comb
 
-#Proteine (Zeilennamen) mit gleicher Maxima-Anzahl finden
+# Find proteins (row names) with the same number of maxima
 equal_max_proteins <- rownames(ctrl_no_main_shift)[n_max_ctrl == n_max_rnase]
 
-#Neuen DataFrame ctrl_equal_max mit diesen Proteinen erstellen
+#Create new DataFrame ctrl_equal_max with these proteins
 ctrl_equal_max <- ctrl_no_main_shift[equal_max_proteins, ]
 rnase_equal_max <- rnase_no_main_shift[equal_max_proteins, ]
-
-#Test: Löschen vor Abgabe
-#dim(ctrl_no_main_shift)
-#dim(rnase_equal_max)
-#dim(ctrl_main_shift)
-#length(n_max_ctrl)
-#length(n_max_rnase)
 ```
 
 
@@ -865,20 +990,20 @@ Statistische Beurteilung, ob die Aufreinigung des Datensatzes dazu geführt hat,
 5. Alternative: Mittels COM (center of mass) anstatt Differenzen der Mittelwerte arbeiten
 
 
-1.Schritt 
+1.Step
 ```{r}
 ctrl_selected = rbind(ctrl_main_shift, ctrl_unequal_max)
 rnase_selected = rbind(rnase_main_shift, rnase_unequal_max)
 ```
 
 
-2.Schritt
+2.Step
 ```{r}
 sum(rownames(ctrl_selected) != rownames(rnase_selected))
 ```
 
 
-3.Schritt
+3.Step
 ```{r}
 ctrl_not_selected = ctrl_equal_max
 rnase_not_selected = rnase_equal_max
@@ -887,23 +1012,23 @@ dim(ctrl_not_selected)[1] + dim(ctrl_selected)[1] == 4765
 ```
 
 
-4.Schritt
+4.Step
 ```{r}
-# Mittelwerte pro Zeile berechnen und Differenz bilden
+# Calculate mean values per row and form the difference
 get_differences <- function(ctrl_df, rnase_df, ctrl_col, rnase_col) {
   ctrl_means <- sapply(ctrl_df[[ctrl_col]], mean)
   rnase_means <- sapply(rnase_df[[rnase_col]], mean)
   return(ctrl_means - rnase_means)
 }
 
-# Berechne die Differenzvektoren für beide Gruppen
+# Calculate the difference vectors for both groups
 diff_selected <- get_differences(ctrl_selected, rnase_selected, "combined_max_ctrl", "combined_max_rnase")
 diff_not_selected <- get_differences(ctrl_not_selected, rnase_not_selected, "combined_max_ctrl", "combined_max_rnase")
 
-# Wilcoxon Rank-Sum Test (ungepaart)
+# Wilcoxon Rank-Sum Test (unpaired)
 wilcox_test_result <- wilcox.test(diff_selected, diff_not_selected)
 
-# Ergebnis anzeigen
+# Show result
 print(wilcox_test_result)
 ```
 
@@ -912,7 +1037,7 @@ Plots
 ```{r}
 library(ggplot2)
 
-# Vektor mit Gruppenzugehörigkeit
+# Vector with group membership
 group <- c(rep("selected", length(diff_selected)), rep("not_selected", length(diff_not_selected)))
 diffs <- c(diff_selected, diff_not_selected)
 
@@ -934,25 +1059,24 @@ ggplot(df_plot, aes(x = Difference, fill = Group)) +
 
 
 
-
-5.Schritt
+5.Step
 
 ```{r}
-# Vergleich bezüglich COM
+# Comparison regarding COM
 differences_COM <- function(ctrl_df, rnase_df) {
   ctrl_COM <- ctrl_df$COM
   rnase_COM <-rnase_df$COM
   return(ctrl_COM - rnase_COM)
 }
 
-# Berechne die Differenzvektoren für beide Gruppen
+# Calculate the difference vectors for both groups
 diff_selected2 <- differences_COM(ctrl_selected, rnase_selected)
 diff_not_selected2 <- differences_COM(ctrl_not_selected, rnase_not_selected)
 
-# Wilcoxon Rank-Sum Test (ungepaart)
+# Wilcoxon Rank-Sum Test (unpaired)
 wilcox_test_result2 <- wilcox.test(diff_selected2, diff_not_selected2)
 
-# Ergebnis anzeigen
+# Show results
 print(wilcox_test_result2)
 ```
 
