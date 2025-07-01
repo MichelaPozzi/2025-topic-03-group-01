@@ -987,7 +987,7 @@ hist(
   xlim = c(-1, 1) 
 )
 
-# Zweiter Plot: testing_cor_no_shifter
+
 hist(
   COM_no_shifter$correlations,
   main = "Correlation values no COM shifter",
@@ -1068,18 +1068,48 @@ lines(rs,
 }
 ```
 
-The plotted protein curves show the same problem as discussed earlier. On paper, their global maximum shifted, but their center of mass didnt. In comparison to those proteins plotted before from the same histogram, that had low correlation values and did not look similar, these proteins with high correlation values look very similar. Their peak regions look very similar over all. They are not classified as RNA-dependent in this analysis.
+The plotted protein curves show the same problem as discussed earlier. On paper, their global maximum shifted, but their center of mass didnt. In comparison to those proteins plotted before based on the same histogram, that had low correlation values and did not look similar, these protein curve with high correlation values look very similar. Their peak regions look very similar over all. They are not classified as RNA-dependent in this analysis.
 
 
 
 
 
 
+Define an arbitrary threshold of 0.7 for the histogram, in which the proteins with no shift in their center of mass are shown, in order to separate those with likely similar appearing curves (cor > 0.7) from the rest
+
+```{r}
+hist(
+  COM_no_shifter$correlations,
+  main = "Correlation values no COM shifter",
+  xlab = "Correlation value",
+  ylab = "Frequency",
+  col = "salmon",
+  border = "white",
+  breaks = 50, 
+  xlim = c(-1, 1)
+)
+abline(v = 0.7)
+```
 
 
+```{r}
+# Define threshold
+threshold = 0.7
 
+keep_indices = COM_no_shifter$correlations <= threshold
 
+# New data.frames with the proteins, that might be RNA-dependent
+ctrl_under_threshold = ctrl_no_COM_shift[keep_indices, ]
+rnase_under_threshold = rnase_no_COM_shift[keep_indices, ]
 
+# New data.frames with the proteins, that are not RNA-dependent by arbitrary choice
+ctrl_above_threshold = ctrl_no_COM_shift[!keep_indices, ]
+rnase_above_threshold = rnase_no_COM_shift[!keep_indices, ]
+
+# Check, if the new data.frames have the same proteins in the same order
+# sum(rownames(ctrl_under_threshold) == rownames(rnase_under_threshold))
+# sum(rownames(ctrl_above_threshold) == rownames(rnase_above_threshold))
+```
 
 
 
@@ -1090,14 +1120,20 @@ The plotted protein curves show the same problem as discussed earlier. On paper,
 
 
 ***********************************************************************************************************
-8. Wilcoxon rank-sum test
+8. Wilcoxon Rank-Sum Test
 ***********************************************************************************************************
 
-Statistische Beurteilung, ob die Aufreinigung des Datensatzes dazu geführt hat, dass die selektierten Proteine signifikante Unterschiede zwischen ctrl und rnase aufweisen (z.B. bei COM), während die nicht selektierten Proteine diese Unterschiede nicht aufweisen
+Statistical assessment of whether the purification of the dataset has resulted in the selected proteins showing significant differences between ctrl and rnase (e.g., in COM), while the non-selected proteins do not show these differences
 
 
-1: ctrl_unequal_max und ctrl_main_shift, sowie rnase_unequal_max und rnase_main_shift werden kombiniert
---> ctrl_selected und rnase_selected entstehen
+1: ctrl_COM_shift und ctrl_under_threshold, as well as rnase_COM_shift und rnase_under_threshold are combined
+--> ctrl_selected & rnase_selected
+
+```{r}
+
+```
+
+
 
 2: Test rownames(ctrl_selected) == rownames(rnase_selected), um sicherzugehen,dass die Proteine in der gleichen Reihenfolge sind, und auch sicher diegleichen Proteine vergleichen werden
 
