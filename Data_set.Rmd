@@ -1126,18 +1126,41 @@ rnase_above_threshold = rnase_no_COM_shift[!keep_indices, ]
 Statistical assessment of whether the purification of the dataset has resulted in the selected proteins showing significant differences between ctrl and rnase (e.g., in COM), while the non-selected proteins do not show these differences
 
 
-1: ctrl_COM_shift und ctrl_under_threshold, as well as rnase_COM_shift und rnase_under_threshold are combined
+1: ctrl_COM_shift and ctrl_under_threshold, as well as rnase_COM_shift and rnase_under_threshold are combined
 --> ctrl_selected & rnase_selected
 
 ```{r}
+ctrl_selected = rbind(ctrl_COM_shift, ctrl_under_threshold)
+rnase_selected = rbind(rnase_COM_shift, rnase_under_threshold)
+```
 
+2: Test, if rownames(ctrl_selected) != rownames(rnase_selected), so that they contain the same proteins in the same order. If the result is 0, then everything worked. 
+
+```{r}
+sum(rownames(ctrl_selected) != rownames(rnase_selected))
 ```
 
 
+3: ctrl_no_main_shift and ctrl_above_threshold, as well as rnase_no_main_shift and rnase_above_threshold are combined
+--> ctrl_not_selected & rnase_not_selected
 
-2: Test rownames(ctrl_selected) == rownames(rnase_selected), um sicherzugehen,dass die Proteine in der gleichen Reihenfolge sind, und auch sicher diegleichen Proteine vergleichen werden
+```{r}
+ctrl_not_selected = rbind(ctrl_no_main_shift, ctrl_above_threshold)
+rnase_not_selected = rbind(rnase_no_main_shift, rnase_above_threshold)
+```
 
-3: ctrl_equal_max und rnase_equal_max umbennen zu ctrl_not_selected und rnase_not_selected
+4: Test, if rownames(ctrl_not_selected) != rownames(rnase_not_selected), so that they contain the same proteins in the same order. If the result is 0, then everything worked. 
+
+```{r}
+sum(rownames(ctrl_not_selected) != rownames(rnase_not_selected))
+```
+
+5: Check, if the combination of both data.frames would still consits of all the proteins from the start data.frames. If the result is TRUE, then everything worked. 
+
+```{r}
+dim(ctrl_not_selected)[1] + dim(ctrl_selected)[1] == dim(ctrl_norm_mean)[1]
+```
+
 
 4.1: Aus der Spalte "combined_max_ctrl" von ctrl_selected wird pro Zeile der Mittelwert der Peak-Positionen  gebildet und dann verglichen mit dem Mittelwert der Peak-Positionen von "combined_max_rnase" von rnase_selected 
 
