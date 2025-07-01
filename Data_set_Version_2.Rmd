@@ -827,6 +827,7 @@ hist(
 
 par(mfrow = c(1, 1))
 ```
+
 It is shown, that by just selecting proteins that exhibit a shift in their main/global maximum, the correlation values are distributed more in the direction of 0, which implies less similar curves between ctrl and rnase for the respective proteins. It should be noted, that the sole criterium of shifting global maximum is not enough, because there are still high correlation proteins existent, even though there is a global maximum shift. 
 
 
@@ -863,14 +864,14 @@ lines(rs,
 Visualization of the distribution of some proteins from ctrl/rnase_no_main_shift
 ```{r}
 # Vector with indices of proteins, that show a near one correlation between ctrl and rnase
-near_one_cors = which(abs(testing_cor_shifter$correlations) <= 0.01) 
+near_one_cors = which(abs(testing_cor_no_shifter$correlations) >0.99) 
 
-indices = near_zero_cors[1:5]
+indices = near_one_cors[1:5]
                          
 # Plotting a respective curves
 for(i in indices) {
-  cs <- as.numeric(ctrl_main_shift[i, 1:25])
-  rs <- as.numeric(rnase_main_shift[i, 1:25])
+  cs <- as.numeric(ctrl_no_main_shift[i, 1:25])
+  rs <- as.numeric(rnase_no_main_shift[i, 1:25])
 
 # Plot
 plot(cs,
@@ -888,6 +889,12 @@ lines(rs,
       lwd = 2)
 }
 ```
+
+
+
+
+
+
 
 ***********************************************************************************************************
 1. Criterion for data set purification
