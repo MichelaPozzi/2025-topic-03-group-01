@@ -1296,6 +1296,7 @@ plot(pca_result_rnase, type = "l", main = "Elbow-Plot RNASE (SHIFT)")
 plot(pca_result_ctrl_not_selected, type = "l", main = "Elbow-Plot CTRL (NO SHIFT)")
 plot(pca_result_rnase_not_selected, type = "l", main = "Elbow-Plot RNASE (NO SHIFT)")
 ```
+
 ```{r}
 pca_ctrl_pc1_pc2 <- as.data.frame(pca_result_ctrl$x[, 1:2])
 pca_ctrl_pc1_pc3 <- as.data.frame(pca_result_ctrl$x[, c(1,3)])
@@ -1397,29 +1398,29 @@ library(factoextra)
 
 # pca_df contains the data, e.g. PC1 and PC2
 fviz_cluster(km_result_ctrl_pc1_pc2, data = pca_ctrl_pc1_pc2,
-             geom = "point", ellipse.type = "norm",
+             geom = "point", ellipse.type = "norm", stand = FALSE,
              palette = "jco", ggtheme = theme_minimal(),
              main = "k-Means Cluster: PC1 vs PC2 CTRL (SHIFT)")
 fviz_cluster(km_result_rnase_pc1_pc2, data = pca_rnase_pc1_pc2,
-             geom = "point", ellipse.type = "norm",
+             geom = "point", ellipse.type = "norm", stand = FALSE,
              palette = "jco", ggtheme = theme_minimal(),
              main = "k-Means Cluster: PC1 vs PC2 RNASE (SHIFT)")
 
 fviz_cluster(km_result_ctrl_pc1_pc3, data = pca_ctrl_pc1_pc3,
-             geom = "point", ellipse.type = "norm",
+             geom = "point", ellipse.type = "norm", stand = FALSE,
              palette = "jco", ggtheme = theme_minimal(),
              main = "k-Means Cluster: PC1 vs PC3 CTRL (SHIFT)")
 fviz_cluster(km_result_rnase_pc1_pc3, data = pca_rnase_pc1_pc3,
-             geom = "point", ellipse.type = "norm",
+             geom = "point", ellipse.type = "norm", stand = FALSE,
              palette = "jco", ggtheme = theme_minimal(),
              main = "k-Means Cluster: PC1 vs PC3 RNASE (SHIFT)")
 
 fviz_cluster(km_result_ctrl_pc2_pc3, data = pca_ctrl_pc2_pc3,
-             geom = "point", ellipse.type = "norm",
+             geom = "point", ellipse.type = "norm", stand = FALSE,
              palette = "jco", ggtheme = theme_minimal(),
              main = "k-Means Cluster: PC2 vs PC3 CTRL (SHIFT)")
 fviz_cluster(km_result_rnase_pc2_pc3, data = pca_rnase_pc2_pc3,
-             geom = "point", ellipse.type = "norm",
+             geom = "point", ellipse.type = "norm", stand = FALSE,
              palette = "jco", ggtheme = theme_minimal(),
              main = "k-Means Cluster: PC2 vs PC3 RNASE (SHIFT)")
 
@@ -1427,29 +1428,29 @@ fviz_cluster(km_result_rnase_pc2_pc3, data = pca_rnase_pc2_pc3,
 
 # pca_df contains the data, e.g. PC1 and PC2
 fviz_cluster(km_result_ctrl_pc1_pc2_not_selected, data = pca_ctrl_pc1_pc2_not_selected,
-             geom = "point", ellipse.type = "norm",
+             geom = "point", ellipse.type = "norm", stand = FALSE,
              palette = "jco", ggtheme = theme_minimal(),
              main = "k-Means Cluster der CTRL (NO SHIFT)")
 fviz_cluster(km_result_rnase_pc1_pc2_not_selected, data = pca_rnase_pc1_pc2_not_selected,
-             geom = "point", ellipse.type = "norm",
+             geom = "point", ellipse.type = "norm", stand = FALSE,
              palette = "jco", ggtheme = theme_minimal(),
              main = "k-Means Cluster: PC1 vs PC2 RNASE (NO SHIFT)")
 
 fviz_cluster(km_result_ctrl_pc1_pc3_not_selected, data = pca_ctrl_pc1_pc3_not_selected,
-             geom = "point", ellipse.type = "norm",
+             geom = "point", ellipse.type = "norm", stand = FALSE,
              palette = "jco", ggtheme = theme_minimal(),
              main = "k-Means Cluster der CTRL (NO SHIFT)")
 fviz_cluster(km_result_rnase_pc1_pc3_not_selected, data = pca_rnase_pc1_pc3_not_selected,
-             geom = "point", ellipse.type = "norm",
+             geom = "point", ellipse.type = "norm", stand = FALSE,
              palette = "jco", ggtheme = theme_minimal(),
              main = "k-Means Cluster: PC1 vs PC3 RNASE (NO SHIFT)")
 
 fviz_cluster(km_result_ctrl_pc2_pc3_not_selected, data = pca_ctrl_pc2_pc3_not_selected,
-             geom = "point", ellipse.type = "norm",
+             geom = "point", ellipse.type = "norm", stand = FALSE,
              palette = "jco", ggtheme = theme_minimal(),
              main = "k-Means Cluster der CTRL (NO SHIFT)")
 fviz_cluster(km_result_rnase_pc2_pc3_not_selected, data = pca_rnase_pc2_pc3_not_selected,
-             geom = "point", ellipse.type = "norm",
+             geom = "point", ellipse.type = "norm", stand = FALSE,
              palette = "jco", ggtheme = theme_minimal(),
              main = "k-Means Cluster: PC2 vs PC3 RNASE (NO SHIFT)")
 ```
@@ -1668,104 +1669,3 @@ summary(model_selected_pc3_1)
 #summary(model_selected_pc3_3)
 ```
 
-
-**************************************************************************************************************
-**************************************************************************************************************
-Question Ben:
-
-```{r}
-#plot PC1 with PC2
-plot(pca_result_ctrl$x[,1:2], col = "blue", pch = 16,
-     xlab = "PC1", ylab = "PC2", main = "PCA: PC1 vs PC2 CTRL (SHIFT)")
-# pca_df enthält deine Daten, z. B. PC1 und PC2
-fviz_cluster(km_result_ctrl_pc1_pc2, data = pca_ctrl_pc1_pc2,
-             geom = "point", ellipse.type = "norm",
-             palette = "jco", ggtheme = theme_minimal(),
-             main = "k-Means Cluster: PC1 vs PC2 CTRL (SHIFT)")
-
-plot(pca_result_rnase$x[,1:2], col = "blue", pch = 16,
-     xlab = "PC1", ylab = "PC2", main = "PCA: PC1 vs PC2 RNASE (SHIFT)")
-fviz_cluster(km_result_rnase_pc1_pc2, data = pca_rnase_pc1_pc2,
-             geom = "point", ellipse.type = "norm",
-             palette = "jco", ggtheme = theme_minimal(),
-             main = "k-Means Cluster: PC1 vs PC2 RNASE (SHIFT)")
-
-#plot PC1 with PC3
-plot(pca_result_ctrl$x[,c(1, 3)], col = "blue", pch = 16,
-     xlab = "PC1", ylab = "PC3", main = "PCA: PC1 vs PC3 CTRL (SHIFT)")
-fviz_cluster(km_result_ctrl_pc1_pc3, data = pca_ctrl_pc1_pc3,
-             geom = "point", ellipse.type = "norm",
-             palette = "jco", ggtheme = theme_minimal(),
-             main = "k-Means Cluster: PC1 vs PC3 CTRL (SHIFT)")
-
-plot(pca_result_rnase$x[,c(1, 3)], col = "blue", pch = 16,
-     xlab = "PC1", ylab = "PC3", main = "PCA: PC1 vs PC3 RNASE (SHIFT)")
-fviz_cluster(km_result_rnase_pc1_pc3, data = pca_rnase_pc1_pc3,
-             geom = "point", ellipse.type = "norm",
-             palette = "jco", ggtheme = theme_minimal(),
-             main = "k-Means Cluster: PC1 vs PC3 RNASE (SHIFT)")
-
-#plot PC2 with PC3
-plot(pca_result_ctrl$x[,2:3], col = "blue", pch = 16,
-     xlab = "PC2", ylab = "PC3", main = "PCA: PC2 vs PC3 CTRL (SHIFT)")
-fviz_cluster(km_result_ctrl_pc2_pc3, data = pca_ctrl_pc2_pc3,
-             geom = "point", ellipse.type = "norm",
-             palette = "jco", ggtheme = theme_minimal(),
-             main = "k-Means Cluster: PC2 vs PC3 CTRL (SHIFT)")
-
-plot(pca_result_rnase$x[,2:3], col = "blue", pch = 16,
-     xlab = "PC2", ylab = "PC3", main = "PCA: PC2 vs PC3 RNASE (SHIFT)")
-fviz_cluster(km_result_rnase_pc2_pc3, data = pca_rnase_pc2_pc3,
-             geom = "point", ellipse.type = "norm",
-             palette = "jco", ggtheme = theme_minimal(),
-             main = "k-Means Cluster: PC2 vs PC3 RNASE (SHIFT)")
-
-
-
-# Einfaches 2D PCA-Plot
-plot(pca_result_ctrl_not_selected$x[,1:2], col = "blue", pch = 16,
-     xlab = "PC1", ylab = "PC2", main = "PCA: PC1 vs PC2 CTRL (NO SHIFT)")
-# pca_df enthält deine Daten, z. B. PC1 und PC2
-fviz_cluster(km_result_ctrl_pc1_pc2_not_selected, data = pca_ctrl_pc1_pc2_not_selected,
-             geom = "point", ellipse.type = "norm",
-             palette = "jco", ggtheme = theme_minimal(),
-             main = "k-Means Cluster der CTRL (NO SHIFT)")
-
-plot(pca_result_rnase_not_selected$x[,1:2], col = "blue", pch = 16,
-     xlab = "PC1", ylab = "PC2", main = "PCA: PC1 vs PC2 RNASE (NO SHIFT)")
-fviz_cluster(km_result_rnase_pc1_pc2_not_selected, data = pca_rnase_pc1_pc2_not_selected,
-             geom = "point", ellipse.type = "norm",
-             palette = "jco", ggtheme = theme_minimal(),
-             main = "k-Means Cluster: PC1 vs PC2 RNASE (NO SHIFT)")
-
-#plot PC1 with PC3
-plot(pca_result_ctrl_not_selected$x[,c(1, 3)], col = "blue", pch = 16,
-     xlab = "PC1", ylab = "PC3", main = "PCA: PC1 vs PC3 CTRL (NO SHIFT)")
-fviz_cluster(km_result_ctrl_pc1_pc3_not_selected, data = pca_ctrl_pc1_pc3_not_selected,
-             geom = "point", ellipse.type = "norm",
-             palette = "jco", ggtheme = theme_minimal(),
-             main = "k-Means Cluster der CTRL (NO SHIFT)")
-
-plot(pca_result_rnase_not_selected$x[,c(1, 3)], col = "blue", pch = 16,
-     xlab = "PC1", ylab = "PC3", main = "PCA: PC1 vs PC3 RNASE (NO SHIFT)")
-fviz_cluster(km_result_rnase_pc1_pc3_not_selected, data = pca_rnase_pc1_pc3_not_selected,
-             geom = "point", ellipse.type = "norm",
-             palette = "jco", ggtheme = theme_minimal(),
-             main = "k-Means Cluster: PC1 vs PC3 RNASE (NO SHIFT)")
-
-
-#plot PC2 with PC3
-plot(pca_result_ctrl_not_selected$x[,2:3], col = "blue", pch = 16,
-     xlab = "PC2", ylab = "PC3", main = "PCA: PC2 vs PC3 CTRL (NO SHIFT)")
-fviz_cluster(km_result_ctrl_pc2_pc3_not_selected, data = pca_ctrl_pc2_pc3_not_selected,
-             geom = "point", ellipse.type = "norm",
-             palette = "jco", ggtheme = theme_minimal(),
-             main = "k-Means Cluster der CTRL (NO SHIFT)")
-
-plot(pca_result_rnase_not_selected$x[,2:3], col = "blue", pch = 16,
-     xlab = "PC2", ylab = "PC3", main = "PCA: PC2 vs PC3 RNASE (NO SHIFT)")
-fviz_cluster(km_result_rnase_pc2_pc3_not_selected, data = pca_rnase_pc2_pc3_not_selected,
-             geom = "point", ellipse.type = "norm",
-             palette = "jco", ggtheme = theme_minimal(),
-             main = "k-Means Cluster: PC2 vs PC3 RNASE (NO SHIFT)")
-```
