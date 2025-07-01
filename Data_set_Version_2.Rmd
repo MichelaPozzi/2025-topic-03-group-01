@@ -370,22 +370,24 @@ rnase_norm_mean[rowSums(ctrl_norm_mean[1:25])==0,] <- 0
 Plot Example Protein Fractionation Profiles
 
 ```{r}
-row_data1 <- as.numeric(ctrl_norm_mean["PRKDC_HUMAN", ])
-row_data2 <- as.numeric(rnase_norm_mean["PRKDC_HUMAN", ])
+row_data1 <- as.numeric(ctrl_norm_mean["NUCL_HUMAN", 1:25])
+row_data2 <- as.numeric(rnase_norm_mean["NUCL_HUMAN", 1:25])
+
 
 # Plot
-plot(row_data2,
+plot(row_data1,
      type = "l",        
-     main = "Plot for PRKDC_HUMAN",
+     main = "Plot for NUCL_HUMAN",
      xlab = "Fractions",
      ylab = "Values",
      col = "blue",
      lwd = 2)
-
-lines(row_data1,
+     
+lines(row_data2,
       type = "l",
       col = "red",
       lwd = 2)
+
 ```
 
 
@@ -1320,7 +1322,7 @@ summary(model_ctrl_pc2_pc3)
 **************************************************************************************************************
 Explanation of regression analysis results:
 
-[Pefet fit - perfect multicollinearity with same variable used as predictor and target]
+[Perfect fit - perfect multicollinearity with same variable used as predictor and target]
   Residuals: Almost zero, model's prediction matches taget values almost perfectly
   Intercept: Essentially zero
   PC1: Essentially zero
@@ -1433,7 +1435,7 @@ plot(pca_ctrl_pc1_pc3$PC3,pca_rnase_pc1_pc3$PC3,pch=20,col='blue', xlab='Ctrl PC
 
 
 #Per PCA component a target variable is defined, so what should be predicted by the regression analysis
-target_selected_pc1_1 <- pca_ctrl_pc1_pc2$PC1
+target_selected_pc1_1 <- ctrl_selected$global_maximum
 target_selected_pc1_2 <- pca_ctrl_pc1_pc2$PC1
 target_selected_pc1_3 <- pca_ctrl_pc1_pc2$PC1
 
@@ -1447,7 +1449,7 @@ target_selected_pc3_3 <- pca_ctrl_pc1_pc3$PC3
 
 #Build combined data frame for regression analysis from target variable with two PCA components
 df_regression_selected_11 <- cbind(target = target_selected_pc1_1 ,
-                       pca_ctrl_pc1_pc2)
+                       ctrl_selected$global_maximum)
 df_regression_selected_12 <- cbind(target =target_selected_pc1_2 ,
                        pca_ctrl_pc1_pc2)
 df_regression_selected_13 <- cbind(target = target_selected_pc1_3 ,
