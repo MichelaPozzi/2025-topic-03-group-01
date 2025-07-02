@@ -1607,7 +1607,7 @@ plot(ctrl_ns_3,rnase_ns_3,pch=20,col='blue', xlab='Ctrl not-selected PC3',ylab='
 
 
 #Defines a target variable, so what should be predicted by the regression analysis
-target_not_selected <- ctrl_not_selected$global_maximum
+target_not_selected <- ctrl_selected$global_maximum
 
 
 #Builds matrix for regression analysis from target variable with two PCA components
@@ -1674,5 +1674,11 @@ summary(model_not_selected_pc3_3)
 
 
 ```
+**************************************************************************************************************
+
+Conclusion: 
+The regression analyses for the selected proteins describe the target variable (ctrl_selected$global_maximum) well.
+The regression analyses for the not-selected proteins describe its own target variable (ctrl_not_selected$global_maximum) also very well, in comparison to the selected proteins sometimes even better, as there are more proteins used in the model. However, the analysis for the not-selected proteins shows a bad fit for the selected target variable (ctrl_selected$global_maximum). This proves, that there is a difference between the selected and not-selected proteins, and therefore, that the selection criteria worked.
+
 **************************************************************************************************************
 **************************************************************************************************************
