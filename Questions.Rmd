@@ -1,9 +1,0 @@
----
-title: "Questions"
-author: "Benjamin Nicklas"
-date: "2025-05-03"
-output: html_document
----
-Questions:
-
-1. Hab mit nem T-test die PC2 der selektierten und non_selected vergleichen und nen P-Wert von 1 rausbekommen. Warum? Zeile 1107 Vision 2
