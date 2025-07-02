@@ -1269,49 +1269,49 @@ summary(pca_result_rnase)
 
 ```{r}
 #plot PC1 with PC2
-plot(pca_result_ctrl$x[,1:2], col = "blue", pch = 16,
+plot(pca_result_ctrl$x[,1:2], col = "midnightblue", pch = 16,
      xlab = "PC1", ylab = "PC2", main = "PCA: PC1 vs PC2 CTRL (SHIFT)")
 
-plot(pca_result_rnase$x[,1:2], col = "blue", pch = 16,
+plot(pca_result_rnase$x[,1:2], col = "midnightblue", pch = 16,
      xlab = "PC1", ylab = "PC2", main = "PCA: PC1 vs PC2 RNASE (SHIFT)")
 
 #plot PC1 with PC3
-plot(pca_result_ctrl$x[,c(1, 3)], col = "blue", pch = 16,
+plot(pca_result_ctrl$x[,c(1, 3)], col = "midnightblue", pch = 16,
      xlab = "PC1", ylab = "PC3", main = "PCA: PC1 vs PC3 CTRL (SHIFT)")
 
-plot(pca_result_rnase$x[,c(1, 3)], col = "blue", pch = 16,
+plot(pca_result_rnase$x[,c(1, 3)], col = "midnightblue", pch = 16,
      xlab = "PC1", ylab = "PC3", main = "PCA: PC1 vs PC3 RNASE (SHIFT)")
 
 
 #plot PC2 with PC3
-plot(pca_result_ctrl$x[,2:3], col = "blue", pch = 16,
+plot(pca_result_ctrl$x[,2:3], col = "midnightblue", pch = 16,
      xlab = "PC2", ylab = "PC3", main = "PCA: PC2 vs PC3 CTRL (SHIFT)")
 
-plot(pca_result_rnase$x[,2:3], col = "blue", pch = 16,
+plot(pca_result_rnase$x[,2:3], col = "midnightblue", pch = 16,
      xlab = "PC2", ylab = "PC3", main = "PCA: PC2 vs PC3 RNASE (SHIFT)")
 
 
 
 # Simple 2D PCA-Plot
-plot(pca_result_ctrl_not_selected$x[,1:2], col = "blue", pch = 16,
+plot(pca_result_ctrl_not_selected$x[,1:2], col = "midnightblue", pch = 16,
      xlab = "PC1", ylab = "PC2", main = "PCA: PC1 vs PC2 CTRL (NO SHIFT)")
 
-plot(pca_result_rnase_not_selected$x[,1:2], col = "blue", pch = 16,
+plot(pca_result_rnase_not_selected$x[,1:2], col = "midnightblue", pch = 16,
      xlab = "PC1", ylab = "PC2", main = "PCA: PC1 vs PC2 RNASE (NO SHIFT)")
 
 #plot PC1 with PC3
-plot(pca_result_ctrl_not_selected$x[,c(1, 3)], col = "blue", pch = 16,
+plot(pca_result_ctrl_not_selected$x[,c(1, 3)], col = "midnightblue", pch = 16,
      xlab = "PC1", ylab = "PC3", main = "PCA: PC1 vs PC3 CTRL (NO SHIFT)")
 
-plot(pca_result_rnase_not_selected$x[,c(1, 3)], col = "blue", pch = 16,
+plot(pca_result_rnase_not_selected$x[,c(1, 3)], col = "midnightblue", pch = 16,
      xlab = "PC1", ylab = "PC3", main = "PCA: PC1 vs PC3 RNASE (NO SHIFT)")
 
 
 #plot PC2 with PC3
-plot(pca_result_ctrl_not_selected$x[,2:3], col = "blue", pch = 16,
+plot(pca_result_ctrl_not_selected$x[,2:3], col = "midnightblue", pch = 16,
      xlab = "PC2", ylab = "PC3", main = "PCA: PC2 vs PC3 CTRL (NO SHIFT)")
 
-plot(pca_result_rnase_not_selected$x[,2:3], col = "blue", pch = 16,
+plot(pca_result_rnase_not_selected$x[,2:3], col = "midnightblue", pch = 16,
      xlab = "PC2", ylab = "PC3", main = "PCA: PC2 vs PC3 RNASE (NO SHIFT)")
 ```
 ```{r}
