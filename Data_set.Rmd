@@ -1488,211 +1488,191 @@ fviz_cluster(km_result_rnase_pc2_pc3_not_selected, data = pca_rnase_pc2_pc3_not_
 **************************************************************************************************************
 
 ```{r}
-#For ctrl and selected
+#For ctrl selected vs rnase selected 
+#Rename relevant variables to avoid PC name redundance later on
+ctrl_1 <- pca_ctrl_pc1_pc2$PC1
+ctrl_2 <- pca_ctrl_pc1_pc2$PC2
+ctrl_3 <- pca_ctrl_pc1_pc3$PC3
+
+rnase_1 <- pca_rnase_pc1_pc2$PC1
+rnase_2 <- pca_rnase_pc1_pc2$PC2
+rnase_3 <- pca_rnase_pc1_pc3$PC3
+
+
 #Generates plot with PCA datapoints and draws a trendline through it
-plot(pca_ctrl_pc1_pc2$PC1,pca_ctrl_pc1_pc2$PC2,pch=20,col='blue', xlab='PC1',ylab='PC2');abline(0,1,col='red')
-plot(pca_ctrl_pc1_pc3$PC1,pca_ctrl_pc1_pc3$PC3,pch=20,col='blue', xlab='PC1',ylab='PC3');abline(0,1,col='red')
-plot(pca_ctrl_pc2_pc3$PC2,pca_ctrl_pc2_pc3$PC3,pch=20,col='blue', xlab='PC2',ylab='PC3');abline(0,1,col='red')
+plot(ctrl_1,rnase_1,pch=20,col='blue', xlab='Ctrl selected PC1',ylab='Rnase selected PC1', main = "Ctrl selected PC1 vs Rnase selected PC1");abline(0,1,col='red')
+plot(ctrl_1,rnase_2,pch=20,col='blue', xlab='Ctrl selected PC1',ylab='Rnase selected PC2', main = "Ctrl selected PC1 vs Rnase selected PC2");abline(0,1,col='red')
+plot(ctrl_1,rnase_3,pch=20,col='blue', xlab='Ctrl selected PC1',ylab='Rnase selected PC3', main = "Ctrl selected PC1 vs Rnase selected PC3");abline(0,1,col='red')
 
-#Per PCA component a target variable is defined, so what should be predicted by the regression analysis
-target_ctrl_pc1pc2 <- pca_ctrl_pc1_pc2$PC2
-target_ctrl_pc1pc3 <- pca_ctrl_pc1_pc3$PC3
-target_ctrl_pc2pc3 <- pca_ctrl_pc2_pc3$PC3
+plot(ctrl_2,rnase_1,pch=20,col='blue', xlab='Ctrl selected PC2',ylab='Rnase selected PC1', main = "Ctrl selected PC2 vs Rnase selected PC1");abline(0,1,col='red')
+plot(ctrl_2,rnase_2,pch=20,col='blue', xlab='Ctrl selected PC2',ylab='Rnase selected PC2', main = "Ctrl selected PC2 vs Rnase selected PC2");abline(0,1,col='red')
+plot(ctrl_2,rnase_3,pch=20,col='blue', xlab='Ctrl selected PC2',ylab='Rnase selected PC3', main = "Ctrl selected PC2 vs Rnase selected PC3");abline(0,1,col='red')
 
-#Build combined data frame for regression analysis from target variable with two PCA components
-df_regression_ctrl_1 <- cbind(target = target_ctrl_pc1pc2,
-                       pca_ctrl_pc1_pc2)
-df_regression_ctrl_2 <- cbind(target = target_ctrl_pc1pc3,
-                       pca_ctrl_pc1_pc3)
-df_regression_ctrl_3 <- cbind(target = target_ctrl_pc2pc3,
-                       pca_ctrl_pc2_pc3)
+plot(ctrl_3,rnase_1,pch=20,col='blue', xlab='Ctrl selected PC3',ylab='Rnase selected PC1', main = "Ctrl selected PC3 vs Rnase selected PC1");abline(0,1,col='red')
+plot(ctrl_3,rnase_2,pch=20,col='blue', xlab='Ctrl selected PC3',ylab='Rnase selected PC2', main = "Ctrl selected PC3 vs Rnase selected PC2");abline(0,1,col='red')
+plot(ctrl_3,rnase_3,pch=20,col='blue', xlab='Ctrl selected PC3',ylab='Rnase selected PC3', main = "Ctrl selected PC3 vs Rnase selected PC3");abline(0,1,col='red')
+
+
+#Defines a target variable, so what should be predicted by the regression analysis
+target_selected <- ctrl_selected$global_maximum
+
+
+#Builds matrix for regression analysis from target variable with two PCA components
+df_regression_selected_11 <- cbind(target = target_selected ,
+                      ctrl_1, rnase_1)
+df_regression_selected_12 <- cbind(target = target_selected ,
+                       ctrl_1, rnase_2)
+df_regression_selected_13 <- cbind(target = target_selected ,
+                       ctrl_1, rnase_3)
+
+df_regression_selected_21 <- cbind(target = target_selected ,
+                       ctrl_2, rnase_1)
+df_regression_selected_22 <- cbind(target =target_selected,
+                       ctrl_2, rnase_2)
+df_regression_selected_23 <- cbind(target = target_selected ,
+                       ctrl_2, rnase_3)
+
+df_regression_selected_31 <- cbind(target = target_selected ,
+                       ctrl_3, rnase_1)
+df_regression_selected_32 <- cbind(target =target_selected ,
+                       ctrl_3, rnase_2)
+df_regression_selected_33 <- cbind(target = target_selected ,
+                       ctrl_3, rnase_3)
+
+
+#Make matrix a data frame
+df_regression_selected_11 <- as.data.frame(df_regression_selected_11)
+df_regression_selected_12 <- as.data.frame(df_regression_selected_12)
+df_regression_selected_13 <- as.data.frame(df_regression_selected_13)
+
+df_regression_selected_21 <- as.data.frame(df_regression_selected_21)
+df_regression_selected_22 <- as.data.frame(df_regression_selected_22)
+df_regression_selected_23 <- as.data.frame(df_regression_selected_23)
+
+df_regression_selected_31 <- as.data.frame(df_regression_selected_31)
+df_regression_selected_32 <- as.data.frame(df_regression_selected_32)
+df_regression_selected_33 <- as.data.frame(df_regression_selected_33)
 
 #Multiple linear regression analysis
-model_ctrl_pc1_pc2 <- lm(target ~ PC1 + PC2, data = df_regression_ctrl_1)
-model_ctrl_pc1_pc3 <- lm(target ~ PC1 + PC3, data = df_regression_ctrl_2)
-model_ctrl_pc2_pc3 <- lm(target ~ PC2 + PC3, data = df_regression_ctrl_3)
+model_selected_pc1_1<- lm(target ~ ctrl_1 + rnase_1, data = df_regression_selected_11)
+model_selected_pc1_2<- lm(target ~ctrl_1 + rnase_2, data = df_regression_selected_12)
+model_selected_pc1_3<- lm(target ~ ctrl_1 + rnase_3, data = df_regression_selected_13)
 
-#Show results/summary
-summary(model_ctrl_pc1_pc2)
-summary(model_ctrl_pc1_pc3)
-summary(model_ctrl_pc2_pc3)
-```
-**************************************************************************************************************
-Explanation of regression analysis results:
+model_selected_pc2_1<- lm(target ~ ctrl_2 + rnase_1, data = df_regression_selected_21)
+model_selected_pc2_2<- lm(target ~ ctrl_2 + rnase_2, data = df_regression_selected_22)
+model_selected_pc2_3<- lm(target ~ ctrl_2 + rnase_3, data = df_regression_selected_23)
 
-[Perfect fit - perfect multicollinearity with same variable used as predictor and target]
-  Residuals: Almost zero, model's prediction matches taget values almost perfectly
-  Intercept: Essentially zero
-  PC1: Essentially zero
-  PC2: Exactly one
-    --> PC2 is identical to target, PC1 and intercept contribute nothing
-  R-squared: Model explains 100% of the variance in the target (too perfect, because target is PC2)
-
---> A target variable needs to be chosen that is none of the predictors. The PCS are used as predictors of that target, not vice versa.
-**************************************************************************************************************
-```{r}
-#Same for rnase and selected
-plot(pca_rnase_pc1_pc2$PC1,pca_rnase_pc1_pc2$PC2,pch=20,col='blue', xlab='PC1',ylab='PC2');abline(0,1,col='red')
-plot(pca_rnase_pc1_pc3$PC1,pca_rnase_pc1_pc3$PC3,pch=20,col='blue', xlab='PC1',ylab='PC3');abline(0,1,col='red')
-plot(pca_rnase_pc2_pc3$PC2,pca_rnase_pc2_pc3$PC3,pch=20,col='blue', xlab='PC2',ylab='PC3');abline(0,1,col='red')
-
-target_rnase_pc1pc2 <- pca_rnase_pc1_pc2$PC2
-target_rnase_pc1pc3 <- pca_rnase_pc1_pc3$PC3
-target_rnase_pc2pc3 <- pca_rnase_pc2_pc3$PC3
-
-df_regression_rnase_1 <- cbind(target = target_rnase_pc1pc2,
-                       pca_rnase_pc1_pc2)
-df_regression_rnase_2 <- cbind(target = target_rnase_pc1pc3,
-                       pca_rnase_pc1_pc3)
-df_regression_rnase_3 <- cbind(target = target_rnase_pc2pc3,
-                       pca_rnase_pc2_pc3)
-
-model_rnase_pc1_pc2 <- lm(target ~ PC1 + PC2, data = df_regression_rnase_1)
-model_rnase_pc1_pc3 <- lm(target ~ PC1 + PC3, data = df_regression_rnase_2)
-model_rnase_pc2_pc3 <- lm(target ~ PC2 + PC3, data = df_regression_rnase_3)
-
-summary(model_rnase_pc1_pc2)
-summary(model_rnase_pc1_pc3)
-summary(model_rnase_pc2_pc3)
-```
-```{r}
-#For ctrl and not selected
-#Generates plot with PCA datapoints and draws a trendline through it
-plot(pca_ctrl_pc1_pc2_not_selected$PC1,pca_ctrl_pc1_pc2_not_selected$PC2,pch=20,col='blue', xlab='PC1',ylab='PC2');abline(0,1,col='red')
-plot(pca_ctrl_pc1_pc3_not_selected$PC1,pca_ctrl_pc1_pc3_not_selected$PC3,pch=20,col='blue', xlab='PC1',ylab='PC3');abline(0,1,col='red')
-plot(pca_ctrl_pc2_pc3_not_selected$PC2,pca_ctrl_pc2_pc3_not_selected$PC3,pch=20,col='blue', xlab='PC2',ylab='PC3');abline(0,1,col='red')
-
-#Per PCA component a target variable is defined, so what should be predicted by the regression analysis
-target_ctrl_pc1pc2_not_selected <- pca_ctrl_pc1_pc2_not_selected$PC2
-target_ctrl_pc1pc3_not_selected <- pca_ctrl_pc1_pc3_not_selected$PC3
-target_ctrl_pc2pc3_not_selected <- pca_ctrl_pc2_pc3_not_selected$PC3
-
-#Build combined data frame for regression analysis from target variable with two PCA components
-df_regression_ctrl_1_not_selected <- cbind(target = target_ctrl_pc1pc2_not_selected,
-                       pca_ctrl_pc1_pc2_not_selected)
-df_regression_ctrl_2_not_selected <- cbind(target = target_ctrl_pc1pc3_not_selected,
-                       pca_ctrl_pc1_pc3_not_selected)
-df_regression_ctrl_3_not_selected <- cbind(target = target_ctrl_pc2pc3_not_selected,
-                       pca_ctrl_pc2_pc3_not_selected)
-
-#Multiple linear regression analysis
-model_ctrl_pc1_pc2_not_selected <- lm(target ~ PC1 + PC2, data = df_regression_ctrl_1_not_selected)
-model_ctrl_pc1_pc3_not_selected <- lm(target ~ PC1 + PC3, data = df_regression_ctrl_2_not_selected)
-model_ctrl_pc2_pc3_not_selected <- lm(target ~ PC2 + PC3, data = df_regression_ctrl_3_not_selected)
-
-#Show results/summary
-summary(model_ctrl_pc1_pc2_not_selected)
-summary(model_ctrl_pc1_pc3_not_selected)
-summary(model_ctrl_pc2_pc3_not_selected)
-```
-
-```{r}
-#Same for rnase and not selected
-plot(pca_rnase_pc1_pc2_not_selected$PC1,pca_rnase_pc1_pc2_not_selected$PC2,pch=20,col='blue', xlab='PC1',ylab='PC2');abline(0,1,col='red')
-plot(pca_rnase_pc1_pc3_not_selected$PC1,pca_rnase_pc1_pc3_not_selected$PC3,pch=20,col='blue', xlab='PC1',ylab='PC3');abline(0,1,col='red')
-plot(pca_rnase_pc2_pc3_not_selected$PC2,pca_rnase_pc2_pc3_not_selected$PC3,pch=20,col='blue', xlab='PC2',ylab='PC3');abline(0,1,col='red')
-
-target_rnase_pc1pc2_not_selected <- pca_rnase_pc1_pc2_not_selected$PC2
-target_rnase_pc1pc3_not_selected <- pca_rnase_pc1_pc3_not_selected$PC3
-target_rnase_pc2pc3_not_selected <- pca_rnase_pc2_pc3_not_selected$PC3
-
-df_regression_rnase_1_not_selected <- cbind(target = target_rnase_pc1pc2_not_selected,
-                       pca_rnase_pc1_pc2_not_selected)
-df_regression_rnase_2_not_selected <- cbind(target = target_rnase_pc1pc3_not_selected,
-                       pca_rnase_pc1_pc3_not_selected)
-df_regression_rnase_3_not_selected <- cbind(target = target_rnase_pc2pc3_not_selected,
-                       pca_rnase_pc2_pc3_not_selected)
-
-model_rnase_pc1_pc2_not_selected <- lm(target ~ PC1 + PC2, data = df_regression_rnase_1_not_selected)
-model_rnase_pc1_pc3_not_selected <- lm(target ~ PC1 + PC3, data = df_regression_rnase_2_not_selected)
-model_rnase_pc2_pc3_not_selected <- lm(target ~ PC2 + PC3, data = df_regression_rnase_3_not_selected)
-
-summary(model_rnase_pc1_pc2_not_selected)
-summary(model_rnase_pc1_pc3_not_selected)
-summary(model_rnase_pc2_pc3_not_selected)
-```
-
-**************************************************************************************************************
-**************************************************************************************************************
-Alternative for regression analysis, in which each principle component in ctrl gets compared to its equivalent in rnase instead of to the other principle components in its category.
-But why do some not work and how can I change my target variable so there isn't a perfect fit?
-```{r}
-#For ctrl selected vs rnase selected
-#Generates plot with PCA datapoints and draws a trendline through it
-plot(pca_ctrl_pc1_pc2$PC1,pca_rnase_pc1_pc2$PC1,pch=20,col='blue', xlab='Ctrl PC1',ylab='Rnase PC1');abline(0,1,col='red')
-plot(pca_ctrl_pc1_pc2$PC1,pca_rnase_pc1_pc2$PC2,pch=20,col='blue', xlab='Ctrl PC1',ylab='Rnase PC2');abline(0,1,col='red')
-plot(pca_ctrl_pc1_pc2$PC1,pca_rnase_pc1_pc3$PC3,pch=20,col='blue', xlab='Ctrl PC1',ylab='Rnase PC3');abline(0,1,col='red')
-
-plot(pca_ctrl_pc1_pc2$PC2,pca_rnase_pc1_pc2$PC1,pch=20,col='blue', xlab='Ctrl PC2',ylab='Rnase PC1');abline(0,1,col='red')
-plot(pca_ctrl_pc1_pc2$PC2,pca_rnase_pc1_pc2$PC2,pch=20,col='blue', xlab='Ctrl PC2',ylab='Rnase PC2');abline(0,1,col='red')
-plot(pca_ctrl_pc1_pc2$PC2,pca_rnase_pc1_pc3$PC3,pch=20,col='blue', xlab='Ctrl PC2',ylab='Rnase PC3');abline(0,1,col='red')
-
-plot(pca_ctrl_pc1_pc3$PC3,pca_rnase_pc1_pc2$PC2,pch=20,col='blue', xlab='Ctrl PC3',ylab='Rnase PC1');abline(0,1,col='red')
-plot(pca_ctrl_pc1_pc3$PC3,pca_rnase_pc1_pc2$PC2,pch=20,col='blue', xlab='Ctrl PC3',ylab='Rnase PC2');abline(0,1,col='red')
-plot(pca_ctrl_pc1_pc3$PC3,pca_rnase_pc1_pc3$PC3,pch=20,col='blue', xlab='Ctrl PC3',ylab='Rnase PC3');abline(0,1,col='red')
-
-
-#Per PCA component a target variable is defined, so what should be predicted by the regression analysis
-target_selected_pc1_1 <- ctrl_selected$global_maximum
-target_selected_pc1_2 <- pca_ctrl_pc1_pc2$PC1
-target_selected_pc1_3 <- pca_ctrl_pc1_pc2$PC1
-
-target_selected_pc2_1 <- pca_ctrl_pc1_pc2$PC2
-target_selected_pc2_2 <- pca_ctrl_pc1_pc2$PC2
-target_selected_pc2_3 <- pca_ctrl_pc1_pc2$PC2
-
-target_selected_pc3_1 <- pca_ctrl_pc1_pc3$PC3
-target_selected_pc3_2 <- pca_ctrl_pc1_pc3$PC3
-target_selected_pc3_3 <- pca_ctrl_pc1_pc3$PC3
-
-#Build combined data frame for regression analysis from target variable with two PCA components
-df_regression_selected_11 <- cbind(target = target_selected_pc1_1 ,
-                       ctrl_selected$global_maximum)
-df_regression_selected_12 <- cbind(target =target_selected_pc1_2 ,
-                       pca_ctrl_pc1_pc2)
-df_regression_selected_13 <- cbind(target = target_selected_pc1_3 ,
-                       pca_ctrl_pc1_pc2)
-
-df_regression_selected_21 <- cbind(target = target_selected_pc2_1 ,
-                       pca_ctrl_pc1_pc2)
-df_regression_selected_22 <- cbind(target =target_selected_pc2_2 ,
-                       pca_ctrl_pc1_pc2)
-df_regression_selected_23 <- cbind(target = target_selected_pc2_3 ,
-                       pca_ctrl_pc1_pc2)
-
-df_regression_selected_31 <- cbind(target = target_selected_pc3_1 ,
-                       pca_ctrl_pc1_pc3)
-df_regression_selected_32 <- cbind(target =target_selected_pc3_2 ,
-                       pca_ctrl_pc1_pc3)
-df_regression_selected_33 <- cbind(target = target_selected_pc3_3 ,
-                       pca_ctrl_pc1_pc3)
-
-
-#Multiple linear regression analysis
-model_selected_pc1_1<- lm(target ~ PC1 + PC1, data = df_regression_selected_11) #WIE ANDERS FORMULIEREN, at this point just redundant. Muss ich die Sachen nochmal umbenennen?
-model_selected_pc1_2<- lm(target ~ PC1 + PC2, data = df_regression_selected_12)
-#model_selected_pc1_3<- lm(target ~ PC1 + PC3, data = df_regression_selected_13)
-
-model_selected_pc2_1<- lm(target ~ PC2 + PC1, data = df_regression_selected_21)
-model_selected_pc2_2<- lm(target ~ PC2 + PC2, data = df_regression_selected_22) #WIE ANDERS FORMULIEREN
-#model_selected_pc2_3<- lm(target ~ PC2 + PC3, data = df_regression_selected_23)
-
-model_selected_pc3_1<- lm(target ~ PC3 + PC1, data = df_regression_selected_31)
-#model_selected_pc3_2<- lm(target ~ PC3 + PC2, data = df_regression_selected_32)
-#model_selected_pc3_3<- lm(target ~ PC3 + PC3, data = df_regression_selected_33) #WIE ANDERS PC3 + PC3 FORMULIEREN
-
+model_selected_pc3_1<- lm(target ~ ctrl_3 + rnase_1, data = df_regression_selected_31)
+model_selected_pc3_2<- lm(target ~ ctrl_3 + rnase_2, data = df_regression_selected_32)
+model_selected_pc3_3<- lm(target ~ ctrl_3 + rnase_3, data = df_regression_selected_33)
 
 #Show results/summary
 summary(model_selected_pc1_1)
 summary(model_selected_pc1_2)
-#summary(model_selected_pc1_3)
+summary(model_selected_pc1_3)
 
 summary(model_selected_pc2_1)
 summary(model_selected_pc2_2)
-#summary(model_selected_pc2_3)
+summary(model_selected_pc2_3)
 
 summary(model_selected_pc3_1)
-#summary(model_selected_pc3_2)
-#summary(model_selected_pc3_3)
+summary(model_selected_pc3_2)
+summary(model_selected_pc3_3)
 ```
 
+```{r}
+#For ctrl not-selected vs rnase not-selected
+#Rename relevant variables to avoid PC name redundance later on
+ctrl_ns_1 <- pca_ctrl_pc1_pc2_not_selected$PC1
+ctrl_ns_2 <- pca_ctrl_pc1_pc2_not_selected$PC2
+ctrl_ns_3 <- pca_ctrl_pc1_pc3_not_selected$PC3
+
+rnase_ns_1 <- pca_rnase_pc1_pc2_not_selected$PC1
+rnase_ns_2 <- pca_rnase_pc1_pc2_not_selected$PC2
+rnase_ns_3 <- pca_rnase_pc1_pc3_not_selected$PC3
+
+
+#Generates plot with PCA datapoints and draws a trendline through it
+plot(ctrl_ns_1,rnase_ns_1,pch=20,col='blue', xlab='Ctrl not-selected PC1',ylab='Rnase not-selected PC1', main = "Ctrl not-selected PC1 vs Rnase not-selected PC1");abline(0,1,col='red')
+plot(ctrl_ns_1,rnase_ns_2,pch=20,col='blue', xlab='Ctrl not-selected PC1',ylab='Rnase not-selected PC2', main = "Ctrl not-selected PC1 vs Rnase not-selected PC2");abline(0,1,col='red')
+plot(ctrl_ns_1,rnase_ns_3,pch=20,col='blue', xlab='Ctrl not-selected PC1',ylab='Rnase not-selected PC3', main = "Ctrl not-selected PC1 vs Rnase not-selected PC3");abline(0,1,col='red')
+
+plot(ctrl_ns_2,rnase_ns_1,pch=20,col='blue', xlab='Ctrl not-selected PC2',ylab='Rnase not-selected PC1', main = "Ctrl not-selected PC2 vs Rnase not-selected PC1");abline(0,1,col='red')
+plot(ctrl_ns_2,rnase_ns_2,pch=20,col='blue', xlab='Ctrl not-selected PC2',ylab='Rnase not-selected PC2', main = "Ctrl not-selected PC2 vs Rnase not-selected PC2");abline(0,1,col='red')
+plot(ctrl_ns_2,rnase_ns_3,pch=20,col='blue', xlab='Ctrl not-selected PC2',ylab='Rnase not-selected PC3', main = "Ctrl not-selected PC2 vs Rnase not-selected PC3");abline(0,1,col='red')
+
+plot(ctrl_ns_3,rnase_ns_1,pch=20,col='blue', xlab='Ctrl not-selected PC3',ylab='Rnase not-selected PC1', main = "Ctrl not-selected PC3 vs Rnase not-selected PC1");abline(0,1,col='red')
+plot(ctrl_ns_3,rnase_ns_2,pch=20,col='blue', xlab='Ctrl not-selected PC3',ylab='Rnase not-selected PC2', main = "Ctrl not-selected PC3 vs Rnase not-selected PC2");abline(0,1,col='red')
+plot(ctrl_ns_3,rnase_ns_3,pch=20,col='blue', xlab='Ctrl not-selected PC3',ylab='Rnase not-selected PC3', main = "Ctrl not-selected PC3 vs Rnase not-selected PC3");abline(0,1,col='red')
+
+
+#Defines a target variable, so what should be predicted by the regression analysis
+target_not_selected <- ctrl_not_selected$global_maximum
+
+
+#Builds matrix for regression analysis from target variable with two PCA components
+df_regression_not_selected_11 <- cbind(target = target_not_selected ,
+                      ctrl_ns_1, rnase_ns_1)
+df_regression_not_selected_12 <- cbind(target = target_not_selected ,
+                       ctrl_ns_1, rnase_ns_2)
+df_regression_not_selected_13 <- cbind(target = target_not_selected ,
+                       ctrl_ns_1, rnase_ns_3)
+
+df_regression_not_selected_21 <- cbind(target = target_not_selected ,
+                       ctrl_ns_2, rnase_ns_1)
+df_regression_not_selected_22 <- cbind(target =target_not_selected,
+                       ctrl_ns_2, rnase_ns_2)
+df_regression_not_selected_23 <- cbind(target = target_not_selected ,
+                       ctrl_ns_2, rnase_ns_3)
+
+df_regression_not_selected_31 <- cbind(target = target_not_selected ,
+                       ctrl_ns_3, rnase_ns_1)
+df_regression_not_selected_32 <- cbind(target =target_not_selected ,
+                       ctrl_ns_3, rnase_ns_2)
+df_regression_not_selected_33 <- cbind(target = target_not_selected ,
+                       ctrl_ns_3, rnase_ns_3)
+
+
+#Make matrix a data frame
+df_regression_not_selected_11 <- as.data.frame(df_regression_not_selected_11)
+df_regression_not_selected_12 <- as.data.frame(df_regression_not_selected_12)
+df_regression_not_selected_13 <- as.data.frame(df_regression_not_selected_13)
+
+df_regression_not_selected_21 <- as.data.frame(df_regression_not_selected_21)
+df_regression_not_selected_22 <- as.data.frame(df_regression_not_selected_22)
+df_regression_not_selected_23 <- as.data.frame(df_regression_not_selected_23)
+
+df_regression_not_selected_31 <- as.data.frame(df_regression_not_selected_31)
+df_regression_not_selected_32 <- as.data.frame(df_regression_not_selected_32)
+df_regression_not_selected_33 <- as.data.frame(df_regression_not_selected_33)
+
+#Multiple linear regression analysis
+model_not_selected_pc1_1<- lm(target ~ ctrl_ns_1 + rnase_ns_1, data = df_regression_not_selected_11)
+model_not_selected_pc1_2<- lm(target ~ctrl_ns_1 + rnase_ns_2, data = df_regression_not_selected_12)
+model_not_selected_pc1_3<- lm(target ~ ctrl_ns_1 + rnase_ns_3, data = df_regression_not_selected_13)
+
+model_not_selected_pc2_1<- lm(target ~ ctrl_ns_2 + rnase_ns_1, data = df_regression_not_selected_21)
+model_not_selected_pc2_2<- lm(target ~ ctrl_ns_2 + rnase_ns_2, data = df_regression_not_selected_22)
+model_not_selected_pc2_3<- lm(target ~ ctrl_ns_2 + rnase_ns_3, data = df_regression_not_selected_23)
+
+model_not_selected_pc3_1<- lm(target ~ ctrl_ns_3 + rnase_ns_1, data = df_regression_not_selected_31)
+model_not_selected_pc3_2<- lm(target ~ ctrl_ns_3 + rnase_ns_2, data = df_regression_not_selected_32)
+model_not_selected_pc3_3<- lm(target ~ ctrl_ns_3 + rnase_ns_3, data = df_regression_not_selected_33)
+
+#Show results/summary
+summary(model_not_selected_pc1_1)
+summary(model_not_selected_pc1_2)
+summary(model_not_selected_pc1_3)
+
+summary(model_not_selected_pc2_1)
+summary(model_not_selected_pc2_2)
+summary(model_not_selected_pc2_3)
+
+summary(model_not_selected_pc3_1)
+summary(model_not_selected_pc3_2)
+summary(model_not_selected_pc3_3)
+
+
+```
+**************************************************************************************************************
+**************************************************************************************************************
