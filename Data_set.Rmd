@@ -1031,10 +1031,8 @@ rnase_above_threshold = rnase_main_shift[!keep_indices, ]
 
 
 ***********************************************************************************************************
-8. Wilcoxon Rank-Sum Test
+3. Combining the purified data sets back together for further analysis
 ***********************************************************************************************************
-
-Statistical assessment of whether the purification of the dataset has resulted in the selected proteins showing significant differences between ctrl and rnase (e.g., in COM), while the non-selected proteins do not show these differences
 
 
 1: ctrl_COM_shift and ctrl_under_threshold, as well as rnase_COM_shift and rnase_under_threshold are combined
@@ -1048,13 +1046,6 @@ Statistical assessment of whether the purification of the dataset has resulted i
 4: Test, if rownames(ctrl_not_selected) != rownames(rnase_not_selected), so that they contain the same proteins in the same order. If the result is 0, then everything worked. 
 
 5: Check, if the combination of both data.frames would still consist of all the proteins from the start data.frames. If the result is TRUE, then everything worked. 
-
-6.1: The mean value of the peak positions per row is calculated from the column "combined_max_ctrl" of ctrl_selected, and then compared with the mean value of the peak positions of "combined_max_rnase" of rnase_selected
-
-6.2: The mean value of the peak positions per row is calculated from the column "combined_max_ctrl" of control_not_selected  and then compared with the mean value of the peak positions of "combined_max_rnase" of rnase_not_selected
-
-6.3: Wilcoxon Rank Sum Test is performed, to compare the differences of the mean values of the peak positions
---> H0: There is no systematic difference in the distribution of these differences
 
 
 ```{r}
@@ -1075,20 +1066,32 @@ sum(rownames(ctrl_not_selected) != rownames(rnase_not_selected))
 #5 
 dim(ctrl_not_selected)[1] + dim(ctrl_selected)[1] == dim(ctrl_norm_mean)[1]
 ```
+Evaluation of the data purification criteria so far:
+As shown, a shift in the center of mass on its own is not suitable to identify all RNA-binding proteins. Even with a totally unchanged center of mass a protein can still be RNA-dependent. However, by additionally applying the criterion of a shift in the global maximum and by cutting out those proteins, that despite change in the global maximum retained their general appearance of the distribution curve, statements on the RNA-dependency of a protein can be made more certainly. 
+
+
+
+
+
+
+
+***********************************************************************************************************
+4. Statistical Test (Wilcoxon Rank Sum Test)
+***********************************************************************************************************
+
+Statistical assessment of whether the purification of the dataset has resulted in the selected proteins showing significant differences between ctrl and rnase (e.g., in COM), while the non-selected proteins do not show these differences
+
+
+6.1: The mean value of the peak positions per row is calculated from the column "combined_max_ctrl" of ctrl_selected, and then compared with the mean value of the peak positions of "combined_max_rnase" of rnase_selected
+
+6.2: The mean value of the peak positions per row is calculated from the column "combined_max_ctrl" of control_not_selected  and then compared with the mean value of the peak positions of "combined_max_rnase" of rnase_not_selected
+
+6.3: Wilcoxon Rank Sum Test is performed, to compare the differences of the mean values of the peak positions
+--> H0: There is no systematic difference in the distribution of these differences
+
 
 ```{r}
 #6
-# Calculate mean values per row and form the difference
-get_differences <- function(ctrl_df, rnase_df, ctrl_col, rnase_col) {
-  ctrl_means <- ctrl_df[[ctrl_col]]
-  rnase_means <- rnase_df[[rnase_col]]
-  return(ctrl_means - rnase_means)
-}
-
-# Calculate the difference vectors for both groups
-diff_selected <- get_differences(ctrl_selected, rnase_selected, "COM", "COM")
-diff_not_selected <- get_differences(ctrl_not_selected, rnase_not_selected, "COM", "COM")
-
 # Wilcoxon Rank-Sum Test (unpaired)
 wilcox_test_result <- wilcox.test(diff_selected, diff_not_selected)
 
@@ -1098,29 +1101,15 @@ print(wilcox_test_result)
 
 
 
-Plots
-```{r}
-library(ggplot2)
-
-# Vector with group membership
-group <- c(rep("selected", length(diff_selected)), rep("not_selected", length(diff_not_selected)))
-diffs <- c(diff_selected, diff_not_selected)
-
-df_plot <- data.frame(Group = group, Difference = diffs)
-
-ggplot(df_plot, aes(x = Difference, fill = Group)) +
-  geom_density(alpha = 0.5) +
-  theme_minimal() +
-  labs(title = "density distribution of the differnces", x = "difference (ctrl - rnase)")
-```
-What can you see on this plot?
-The density for the differences for "not_selected" are concentrated around 0. This is expected, because our criteria aimed to separate the not RNA-dependent proteins, that show very similar curves for ctrl and rnase, and therefore no real difference between their local maxima and shoulder regions. 
-The density for the differences for "selected" is more even distributed, but reaches far greater values, which is expected, because, under our criteria, these proteins should be not similar between theri ctrl and rnase curves. 
-The density is also mostly around positive values. Therefore, the following largely seems to hold: The mean values of the control maxima are larger than the mean values of the RNase maxima, which may indicate an increased left shift of the RNase fractions.
 
 
 
-Scatter plots for visualization of how the COM values and global_maximum values behave for the selected and not_selected proteins between ctrl and rnase 
+
+***********************************************************************************************************
+5. Further visualizations and interpretation of the purified data
+***********************************************************************************************************
+
+Scatter plot for visualizing how the COM values behave for the selected and not_selected proteins between ctrl and rnase groups
 ```{r}
 par(mfrow = c(1, 2)) 
 
@@ -1149,12 +1138,50 @@ abline(a = 0, b = 1, col = "red", lwd = 3, lty = 3)
 
 par(mfrow = c(1, 1)) 
 ```
+Interpretation: For the not selected proteins, there is mostly no or only a small deviation for the COM values when comparing ctrl and rnase intensities. 
+For the selected proteins, there is a clear deviation for the COM values when comparing ctrl and rnase. There is a clear trend observable. Most of the data points show a high COM value in the ctrl group, and at the same time, a lower COM value for the rnase group. This indicates, that during the RNse digestion in the experiment, those proteins previously bound to RNA were freed and isolated from their RNP-complexes and migrated into less dense fractions. They then appear more in the smaller fractions, which leads to the observed lower COM values fro the rnase group.
 
 
-Wichtig für die Conclusion:
 
-correlation ist nicht alleine aussagekräftig, man kann auch hoch korrelieren und trotzdem vollkommen unterschiedlich sein, aber zusammen mit COM ist es geeignet zum finden. 
 
+
+
+
+
+
+
+
+Plots
+```{r}
+library(ggplot2)
+
+# Calculate mean values of the combined maxima (local maxima + shoulders) per row and form the difference
+get_differences <- function(ctrl_df, rnase_df, ctrl_col, rnase_col) {
+  ctrl_means <- sapply(ctrl_df[[ctrl_col]], mean)
+  rnase_means <- sapply(rnase_df[[rnase_col]], mean)
+  return(ctrl_means - rnase_means)
+}
+
+# Calculate the difference vectors for both groups
+diff_selected <- get_differences(ctrl_selected, rnase_selected, "combined_max_ctrl", "combined_max_rnase")
+diff_not_selected <- get_differences(ctrl_not_selected, rnase_not_selected, "combined_max_ctrl", "combined_max_rnase")
+
+# Vector with group membership
+group <- c(rep("selected", length(diff_selected)), rep("not_selected", length(diff_not_selected)))
+diffs <- c(diff_selected, diff_not_selected)
+
+df_plot <- data.frame(Group = group, Difference = diffs)
+
+ggplot(df_plot, aes(x = Difference, fill = Group)) +
+  geom_density(alpha = 0.5) +
+  theme_minimal() +
+  labs(title = "density distribution of the differnces", x = "difference (ctrl - rnase)")
+```
+
+What can you see on this plot?
+The density for the differences for "not_selected" are concentrated around 0. This is expected, because our criteria aimed to separate the not RNA-dependent proteins, that show very similar curves for ctrl and rnase, and therefore no real difference between their local maxima and shoulder regions. 
+The density for the differences for "selected" is more even distributed, but reaches far greater values, which is expected, because, under our criteria, these proteins should be not similar between their ctrl and rnase curves. 
+The density is also mostly around positive values. Therefore, the following largely seems to hold: The mean values of the control maxima are larger than the mean values of the RNase maxima, which may indicate an increased left shift of the RNase fractions.
 
 
 
