@@ -694,7 +694,7 @@ rnase_norm_mean$COM <- apply(rnase_norm_mean[, 1:25], 1, function(x) {
 
 
 ###########################################################################
-Teil von Julian Baureis (Zeile 701 - 1218), Codewriting assisted by ChatGPT 
+Teil von Julian Baureis und Luisa Fee Wintel (Zeile 701 - 1218), Codewriting assisted by ChatGPT 
 ###########################################################################
 
 ***********************************************************************************************************
@@ -1190,9 +1190,8 @@ print(wilcox_test_result)
 
 
 Plots
-
 ```{r}
-library(ggplot2)
+#library(ggplot2)
 
 # Vector with group membership
 group <- c(rep("selected", length(diff_selected)), rep("not_selected", length(diff_not_selected)))
@@ -1210,6 +1209,14 @@ Interpretation: The widest point of the differences of "selected" is at positive
 
 
 ```{r}
+library(ggplot2)
+
+# Vector with group membership
+group <- c(rep("selected", length(diff_selected)), rep("not_selected", length(diff_not_selected)))
+diffs <- c(diff_selected, diff_not_selected)
+
+df_plot <- data.frame(Group = group, Difference = diffs)
+
 ggplot(df_plot, aes(x = Difference, fill = Group)) +
   geom_density(alpha = 0.5) +
   theme_minimal() +
@@ -1219,7 +1226,10 @@ ggplot(df_plot, aes(x = Difference, fill = Group)) +
 
 
 
+Scatter plots for Visualization 
+```{r}
 
+```
 
 
 
