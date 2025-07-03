@@ -966,8 +966,8 @@ Plotting the correlation values as a histogram
 par(mfrow = c(1, 2)) 
 
 hist(
-  COM_shifter$correlations,
-  main = "Correlation values for COM shifter",
+  main_shifter$correlations,
+  main = "Correlation values for main shifter",
   xlab = "Correlation value",
   ylab = "Frequency",
   col = "skyblue",
@@ -977,8 +977,8 @@ hist(
 
 
 hist(
-  COM_no_shifter$correlations,
-  main = "Correlation values for not COM shifter",
+  main_no_shifter$correlations,
+  main = "Correlation values for not main shifter",
   xlab = "Correlation value",
   ylab = "Frequency",
   col = "salmon",
@@ -988,57 +988,34 @@ hist(
 
 par(mfrow = c(1, 1))
 ```
-
-
-
-
-
-
-
-
-
-
-Define an arbitrary threshold of 0.7 for the histogram, in which the proteins with no shift in their center of mass are shown, in order to separate those with likely similar appearing curves (cor > 0.7) from the rest
-
+Validation, that "two-sided" shifting proteins may not have a change in their COM value, but could be identified by using a shift of just their global maximum as a criterion. They seem RNA-dependent, even though their correlation value is very high (due to their unchanged COM)
 ```{r}
-hist(
-  COM_no_shifter$correlations,
-  main = "Correlation values no COM shifter",
-  xlab = "Correlation value",
-  ylab = "Frequency",
-  col = "salmon",
-  border = "white",
-  breaks = 50, 
-  xlim = c(-1, 1)
-)
-abline(v = 0.7)
+# Vector with indices of proteins, that show a near zero correlation between ctrl and rnase
+near_one_cors = which(abs(COM_no_shifter$correlations) > 0.9) 
+
+indices = near_one_cors[1:5]
+                         
+# Plotting respective curves
+for(i in indices) {
+  cs <- as.numeric(ctrl_main_shift[i, 1:25])
+  rs <- as.numeric(rnase_main_shift[i, 1:25])
+
+# Plot
+plot(cs,
+     type = "l",        
+     main = paste("Protein at index", i), 
+     xlab = "Fractions",
+     ylab = "Values",
+     col = "blue",
+     lwd = 2,
+     ylim = range(c(cs, rs)))
+  
+lines(rs,
+      type = "l",
+      col = "red",
+      lwd = 2)
+}
 ```
-
-
-```{r}
-# Define threshold
-threshold = 0.7
-
-keep_indices = COM_no_shifter$correlations <= threshold
-
-# New data.frames with the proteins, that might be RNA-dependent
-ctrl_under_threshold = ctrl_no_COM_shift[keep_indices, ]
-rnase_under_threshold = rnase_no_COM_shift[keep_indices, ]
-
-# New data.frames with the proteins, that are not RNA-dependent by arbitrary choice
-ctrl_above_threshold = ctrl_no_COM_shift[!keep_indices, ]
-rnase_above_threshold = rnase_no_COM_shift[!keep_indices, ]
-
-# Check, if the new data.frames have the same proteins in the same order
-# sum(rownames(ctrl_under_threshold) == rownames(rnase_under_threshold))
-# sum(rownames(ctrl_above_threshold) == rownames(rnase_above_threshold))
-```
-
-
-
-
-
-
 
 
 
@@ -1049,41 +1026,17 @@ rnase_above_threshold = rnase_no_COM_shift[!keep_indices, ]
 Statistical assessment of whether the purification of the dataset has resulted in the selected proteins showing significant differences between ctrl and rnase (e.g., in COM), while the non-selected proteins do not show these differences
 
 
-1: ctrl_COM_shift and ctrl_under_threshold, as well as rnase_COM_shift and rnase_under_threshold are combined
+1: ctrl_COM_shift and ctrl_main_shift, as well as rnase_COM_shift and rnase_under_threshold are combined
 --> ctrl_selected & rnase_selected
 
-```{r}
-ctrl_selected = rbind(ctrl_COM_shift, ctrl_under_threshold)
-rnase_selected = rbind(rnase_COM_shift, rnase_under_threshold)
-```
+2: Test, if rownames(ctrl_selected) != rownames(rnase_selected), so that they contain the same proteins in the same order. If the result is 0, then everything worked.
 
-2: Test, if rownames(ctrl_selected) != rownames(rnase_selected), so that they contain the same proteins in the same order. If the result is 0, then everything worked. 
-
-```{r}
-sum(rownames(ctrl_selected) != rownames(rnase_selected))
-```
-
-
-3: ctrl_no_main_shift and ctrl_above_threshold, as well as rnase_no_main_shift and rnase_above_threshold are combined
+3: ctrl_no_main_shift, as well as rnase_no_main_shift represent the not selected proteins of our criteria
 --> ctrl_not_selected & rnase_not_selected
-
-```{r}
-ctrl_not_selected = rbind(ctrl_no_main_shift, ctrl_above_threshold)
-rnase_not_selected = rbind(rnase_no_main_shift, rnase_above_threshold)
-```
 
 4: Test, if rownames(ctrl_not_selected) != rownames(rnase_not_selected), so that they contain the same proteins in the same order. If the result is 0, then everything worked. 
 
-```{r}
-sum(rownames(ctrl_not_selected) != rownames(rnase_not_selected))
-```
-
-5: Check, if the combination of both data.frames would still consits of all the proteins from the start data.frames. If the result is TRUE, then everything worked. 
-
-```{r}
-dim(ctrl_not_selected)[1] + dim(ctrl_selected)[1] == dim(ctrl_norm_mean)[1]
-```
-(maybe Com differences, or even something completely different for the statistical test?!)
+5: Check, if the combination of both data.frames would still consist of all the proteins from the start data.frames. If the result is TRUE, then everything worked. 
 
 6.1: The mean value of the peak positions per row is calculated from the column "combined_max_ctrl" of ctrl_selected, and then compared with the mean value of the peak positions of "combined_max_rnase" of rnase_selected
 
@@ -1092,7 +1045,28 @@ dim(ctrl_not_selected)[1] + dim(ctrl_selected)[1] == dim(ctrl_norm_mean)[1]
 6.3: Wilcoxon Rank Sum Test is performed, to compare the differences of the mean values of the peak positions
 --> H0: There is no systematic difference in the distribution of these differences
 
+
 ```{r}
+#1
+ctrl_selected = rbind(ctrl_COM_shift, ctrl_main_shift)
+rnase_selected = rbind(rnase_COM_shift, rnase_main_shift)
+
+#2
+sum(rownames(ctrl_selected) != rownames(rnase_selected))
+
+#3
+ctrl_not_selected = ctrl_no_main_shift
+rnase_not_selected = rnase_no_main_shift
+
+#4
+sum(rownames(ctrl_not_selected) != rownames(rnase_not_selected))
+
+#5 
+dim(ctrl_not_selected)[1] + dim(ctrl_selected)[1] == dim(ctrl_norm_mean)[1]
+```
+
+```{r}
+#6
 # Calculate mean values per row and form the difference
 get_differences <- function(ctrl_df, rnase_df, ctrl_col, rnase_col) {
   ctrl_means <- sapply(ctrl_df[[ctrl_col]], mean)
@@ -1128,9 +1102,7 @@ ggplot(df_plot, aes(x = Difference, fill = Group)) +
   theme_minimal() +
   labs(title = "density distribution of the differnces", x = "difference (ctrl - rnase)")
 ```
-Interpretation: The density for the differences for selected is greater for positive values. Therefore, the following largely seems to hold: The mean values of the control maxima are larger than the mean values of the RNase maxima, which may indicate an increased left shift of the RNase fractions.
-
-
+Interpretation: The density for the differences for "selected" is greater for positive values. Therefore, the following largely seems to hold: The mean values of the control maxima are larger than the mean values of the RNase maxima, which may indicate an increased left shift of the RNase fractions.
 
 
 
