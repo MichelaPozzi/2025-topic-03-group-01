@@ -1109,7 +1109,7 @@ The density is also mostly around positive values. Therefore, the following larg
 
 
 
-Scatter plots for Visualization 
+Scatter plots for visualization of how the COM values and global_maximum values behave for the selected and not_selected proteins between ctrl and rnase 
 ```{r}
 par(mfrow = c(1, 2)) 
 
@@ -1138,8 +1138,36 @@ abline(a = 0, b = 1, col = "red", lwd = 3, lty = 3)
 
 par(mfrow = c(1, 1)) 
 ```
-Interpretation
 
+
+```{r}
+par(mfrow = c(1, 2)) 
+
+plot(
+  ctrl_selected$global_maximum, rnase_selected$global_maximum,
+  xlab = "global_maximum from ctrl_selected",
+  ylab = "global_maximum from rnase_selected",
+  main = "Scatter Plot global_maximum values",
+  pch = 19,       
+  col = "blue"    
+)
+abline(a = 0, b = 1, col = "red", lwd = 3, lty = 3)
+
+
+plot(
+  ctrl_not_selected$global_maximum, rnase_not_selected$global_maximum,
+  xlab = "global_maximum from ctrl_not_selected",
+  ylab = "global_maximum from rnase_not_selected",
+  main = "Scatter Plot global_maximum values",
+  pch = 19,       
+  col = "blue"    
+)
+abline(a = 0, b = 1, col = "red", lwd = 3, lty = 3)
+
+
+
+par(mfrow = c(1, 1)) 
+```
 
 
 
