@@ -1102,7 +1102,10 @@ ggplot(df_plot, aes(x = Difference, fill = Group)) +
   theme_minimal() +
   labs(title = "density distribution of the differnces", x = "difference (ctrl - rnase)")
 ```
-Interpretation: The density for the differences for "selected" is greater for positive values. Therefore, the following largely seems to hold: The mean values of the control maxima are larger than the mean values of the RNase maxima, which may indicate an increased left shift of the RNase fractions.
+What can you see on this plot?
+The density for the differences for "not_selected" are concentrated around 0. This is expected, because our criteria aimed to separate the not RNA-dependent proteins, that show very similar curves for ctrl and rnase, and therefore no real difference between their local maxima and shoulder regions. 
+The density for the differences for "selected" is more even distributed, but reaches far greater values, which is expected, because, under our criteria, these proteins should be not similar between theri ctrl and rnase curves. 
+The density is also mostly around positive values. Therefore, the following largely seems to hold: The mean values of the control maxima are larger than the mean values of the RNase maxima, which may indicate an increased left shift of the RNase fractions.
 
 
 
@@ -1118,7 +1121,7 @@ plot(
   pch = 19,       
   col = "blue"    
 )
-abline(a = 0, b = 1, col = "red", lwd = 2, lty = 2)
+abline(a = 0, b = 1, col = "red", lwd = 3, lty = 3)
 
 
 plot(
@@ -1129,7 +1132,7 @@ plot(
   pch = 19,       
   col = "blue"    
 )
-abline(a = 0, b = 1, col = "red", lwd = 2, lty = 2)
+abline(a = 0, b = 1, col = "red", lwd = 3, lty = 3)
 
 
 
