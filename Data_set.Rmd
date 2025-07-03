@@ -1191,24 +1191,6 @@ print(wilcox_test_result)
 
 Plots
 ```{r}
-#library(ggplot2)
-
-# Vector with group membership
-group <- c(rep("selected", length(diff_selected)), rep("not_selected", length(diff_not_selected)))
-diffs <- c(diff_selected, diff_not_selected)
-
-df_plot <- data.frame(Group = group, Difference = diffs)
-
-ggplot(df_plot, aes(x = Group, y = Difference)) +
-  geom_violin(trim = FALSE, fill = "lightblue") +
-  geom_boxplot(width = 0.1, outlier.shape = NA) +
-  theme_minimal() +
-  labs(title = "distribution of the differences", y = "ctrl - rnase", x = "")
-```
-Interpretation: The widest point of the differences of "selected" is at positive values. Therefore, the following largely seems to hold: The mean values of the control maxima are larger than the mean values of the RNase maxima, which may indicate an increased left shift of the RNase fractions.
-
-
-```{r}
 library(ggplot2)
 
 # Vector with group membership
@@ -1222,16 +1204,42 @@ ggplot(df_plot, aes(x = Difference, fill = Group)) +
   theme_minimal() +
   labs(title = "density distribution of the differnces", x = "difference (ctrl - rnase)")
 ```
+Interpretation: The density for the differences for selected is greater for positive values. Therefore, the following largely seems to hold: The mean values of the control maxima are larger than the mean values of the RNase maxima, which may indicate an increased left shift of the RNase fractions.
+
 
 
 
 
 Scatter plots for Visualization 
 ```{r}
+par(mfrow = c(1, 2)) 
 
+plot(
+  ctrl_selected$COM, rnase_selected$COM,
+  xlab = "COM from ctrl_selected",
+  ylab = "COM from rnase_selected",
+  main = "Scatter Plot of the COM values",
+  pch = 19,       
+  col = "blue"    
+)
+abline(a = 0, b = 1, col = "red", lwd = 2, lty = 2)
+
+
+plot(
+  ctrl_not_selected$COM, rnase_not_selected$COM,
+  xlab = "COM from ctrl_not_selected",
+  ylab = "COM from rnase_not_selected",
+  main = "Scatter Plot of the COM values",
+  pch = 19,       
+  col = "blue"    
+)
+abline(a = 0, b = 1, col = "red", lwd = 2, lty = 2)
+
+
+
+par(mfrow = c(1, 1)) 
 ```
-
-
+Interpretation
 
 
 
