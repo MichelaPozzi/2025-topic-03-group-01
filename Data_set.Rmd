@@ -373,19 +373,18 @@ Plot Example Protein Fractionation Profiles
 row_data1 <- as.numeric(ctrl_norm_mean["NUCL_HUMAN", 1:25])
 row_data2 <- as.numeric(rnase_norm_mean["NUCL_HUMAN", 1:25])
 
-
 # Plot
 plot(row_data1,
      type = "l",        
      main = "Plot for NUCL_HUMAN",
      xlab = "Fractions",
      ylab = "Values",
-     col = "blue",
+     col = "midnightblue",
      lwd = 2)
      
 lines(row_data2,
       type = "l",
-      col = "red",
+      col = "firebrick3",
       lwd = 2)
 
 ```
@@ -1317,6 +1316,7 @@ plot(pca_result_ctrl_not_selected$x[,2:3], col = "midnightblue", pch = 16,
 plot(pca_result_rnase_not_selected$x[,2:3], col = "midnightblue", pch = 16,
      xlab = "PC2", ylab = "PC3", main = "PCA: PC2 vs PC3 RNASE (NO SHIFT)")
 ```
+
 ```{r}
 #Recognize centers for k-means clustering -> 3 centers
 plot(pca_result_ctrl, type = "l", main = "Elbow-Plot CTRL (SHIFT)")
@@ -1326,7 +1326,6 @@ plot(pca_result_rnase, type = "l", main = "Elbow-Plot RNASE (SHIFT)")
 plot(pca_result_ctrl_not_selected, type = "l", main = "Elbow-Plot CTRL (NO SHIFT)")
 plot(pca_result_rnase_not_selected, type = "l", main = "Elbow-Plot RNASE (NO SHIFT)")
 ```
-
 ```{r}
 pca_ctrl_pc1_pc2 <- as.data.frame(pca_result_ctrl$x[, 1:2])
 pca_ctrl_pc1_pc3 <- as.data.frame(pca_result_ctrl$x[, c(1,3)])
@@ -1460,7 +1459,7 @@ fviz_cluster(km_result_rnase_pc2_pc3, data = pca_rnase_pc2_pc3,
 fviz_cluster(km_result_ctrl_pc1_pc2_not_selected, data = pca_ctrl_pc1_pc2_not_selected,
              geom = "point", ellipse.type = "norm", stand = FALSE,
              palette = c("midnightblue", "firebrick3", "violetred4"), ggtheme = theme_minimal(),
-             main = "k-Means Cluster der CTRL (NO SHIFT)")
+             main = "k-Means Cluster: PC1 vs PC2 CTRL (NO SHIFT)")
 fviz_cluster(km_result_rnase_pc1_pc2_not_selected, data = pca_rnase_pc1_pc2_not_selected,
              geom = "point", ellipse.type = "norm", stand = FALSE,
              palette = c("midnightblue", "firebrick3", "violetred4"), ggtheme = theme_minimal(),
@@ -1469,7 +1468,7 @@ fviz_cluster(km_result_rnase_pc1_pc2_not_selected, data = pca_rnase_pc1_pc2_not_
 fviz_cluster(km_result_ctrl_pc1_pc3_not_selected, data = pca_ctrl_pc1_pc3_not_selected,
              geom = "point", ellipse.type = "norm", stand = FALSE,
              palette = c("midnightblue", "firebrick3", "violetred4"), ggtheme = theme_minimal(),
-             main = "k-Means Cluster der CTRL (NO SHIFT)")
+             main = "k-Means Cluster: PC1 vs PC3 CTRL (NO SHIFT)")
 fviz_cluster(km_result_rnase_pc1_pc3_not_selected, data = pca_rnase_pc1_pc3_not_selected,
              geom = "point", ellipse.type = "norm", stand = FALSE,
              palette = c("firebrick3", "midnightblue", "violetred4"), ggtheme = theme_minimal(),
@@ -1478,11 +1477,25 @@ fviz_cluster(km_result_rnase_pc1_pc3_not_selected, data = pca_rnase_pc1_pc3_not_
 fviz_cluster(km_result_ctrl_pc2_pc3_not_selected, data = pca_ctrl_pc2_pc3_not_selected,
              geom = "point", ellipse.type = "norm", stand = FALSE,
              palette = c("midnightblue", "firebrick3", "violetred4"), ggtheme = theme_minimal(),
-             main = "k-Means Cluster der CTRL (NO SHIFT)")
+             main = "k-Means Cluster: PC2 vs PC3 CTRL (NO SHIFT)")
 fviz_cluster(km_result_rnase_pc2_pc3_not_selected, data = pca_rnase_pc2_pc3_not_selected,
              geom = "point", ellipse.type = "norm", stand = FALSE,
              palette = c("midnightblue", "firebrick3", "violetred4"), ggtheme = theme_minimal(),
-             main = "k-Means Cluster: PC2 vs PC3 RNASE (NO SHIFT)")
+             main = "k-Means Cluster: PC2 vs PC3 RNASE (SHIFT)")
+```
+```{r}
+# JPEG-Datei öffnen
+jpeg("k-Means Cluster PC1 vs PC2 RNASE (NO SHIFT).jpeg", width = 800, height = 600)
+
+fviz_cluster(km_result_rnase_pc1_pc2_not_selected, data = pca_rnase_pc1_pc2_not_selected,
+             geom = "point", ellipse.type = "norm", stand = FALSE,
+             palette = c("midnightblue", "firebrick3", "violetred4"), ggtheme = theme_minimal(),
+             main = "k-Means Cluster: PC1 vs PC2 RNASE (NO SHIFT)")
+
+
+# Grafikgerät schließen
+dev.off()
+
 ```
 
 **************************************************************************************************************
