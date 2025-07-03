@@ -25,7 +25,7 @@ Ribonucleoprotein (RNP) complexes - composed of RNA and RNA-binding proteins (RB
 
 Our approach enables the identification of RNA-dependent proteins based on their redistribution across the sucrose gradient upon RNase treatment. Specifically, we select proteins that exhibit a shift of at least three fractions in both their main peak fraction and center of mass between the control and RNase-treated conditions. Proteins displaying highly correlated abundance profiles (based on intensity across all 25 fractions) between both conditions are excluded, as such consistent profiles indicate minimal redistribution and are unlikely to be RNA-dependent. The robustness of our selection criteria was evaluated by comparison with external datasets in which RNA dependence has been previously annotated.
 
-![***Fig. 1:** Plot of the NUCL_HUMAN protein showing a significant shift of the RNASE compared to the control.*](images/NUCL_HUMAN_plot.jpg){width="620"}
+![Fig. 1: Plot of the NUCL_HUMAN protein showing a significant shift of the RNASE compared to the control.](Images/NUCL_HUMAN_Plot.jpeg){width="734"}
 
 ------------------------------------------------------------------------
 
