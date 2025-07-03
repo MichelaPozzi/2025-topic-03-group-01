@@ -904,7 +904,7 @@ Examine the proteins with no big COM shift, that have a lower correlation value
 ```{r}
 header_plotting(COM_no_shifter$correlations, ctrl_no_COM_shift, rnase_no_COM_shift, n = 5, cor_threshold = 0.7, direction = "lt")
 ```
-The proteins did not show a COM shift. However, their overall distribution looks very different. Often, one curve shifts a bit to both sides at the same time, resulting in this effect. 
+The proteins did not show a COM shift. However, their overall distribution looks different. Often, one curve shifts a bit to both sides at the same time, resulting in this effect. 
 
 
 
@@ -915,7 +915,7 @@ The proteins did not show a COM shift. However, their overall distribution looks
 The shift of the global maximum between ctrl and rnase is used as a further purification criterion
 ***********************************************************************************************************
 
-We use a shift in the global maximum as another criterion, to identify those proteins, that do not show a big shift in their COM, but still look very different, and therefore exhibit a shift, when only observing their greatest/global maximum. 
+We use a shift in the global maximum as another criterion, to identify those proteins, that do not show a big shift in their COM, but still look very different, and therefore should exhibit a shift, when only observing their greatest/global maximum. 
 Therefore, from the data.frame "ctrl/rnase_no_COM_shift", we first separate the proteins, that actually show a shift in their global maxima. 
 
 ```{r}
@@ -986,7 +986,7 @@ par(mfrow = c(1, 1))
 
 Examine the proteins of the left histogram, that additional to no big COM shift, showed a main shift
 ```{r}
-header_plotting(main_shifter$correlations, ctrl_main_shift, rnase_main_shift, n = 5, cor_threshold = 0.8, direction = "lt" )
+header_plotting(main_shifter$correlations, ctrl_main_shift, rnase_main_shift, n = 5, cor_threshold = 0.9, direction = "gt" )
 ```
 
 These proteins do not seem RNA-dependent, the curves look very similar. This is because there is no COM shift, and the existent global maximum shift does not lead to a change in the overall curve, for example because there are two big maxima in each ctrl and rnase, and ctrl has the global maximum at one of them, rnase has its global maximum at the other one. On paper, this is a global maximum shift, but the overall curves still look very similar. 
@@ -1080,14 +1080,14 @@ dim(ctrl_not_selected)[1] + dim(ctrl_selected)[1] == dim(ctrl_norm_mean)[1]
 #6
 # Calculate mean values per row and form the difference
 get_differences <- function(ctrl_df, rnase_df, ctrl_col, rnase_col) {
-  ctrl_means <- sapply(ctrl_df[[ctrl_col]], mean)
-  rnase_means <- sapply(rnase_df[[rnase_col]], mean)
+  ctrl_means <- ctrl_df[[ctrl_col]]
+  rnase_means <- rnase_df[[rnase_col]]
   return(ctrl_means - rnase_means)
 }
 
 # Calculate the difference vectors for both groups
-diff_selected <- get_differences(ctrl_selected, rnase_selected, "combined_max_ctrl", "combined_max_rnase")
-diff_not_selected <- get_differences(ctrl_not_selected, rnase_not_selected, "combined_max_ctrl", "combined_max_rnase")
+diff_selected <- get_differences(ctrl_selected, rnase_selected, "COM", "COM")
+diff_not_selected <- get_differences(ctrl_not_selected, rnase_not_selected, "COM", "COM")
 
 # Wilcoxon Rank-Sum Test (unpaired)
 wilcox_test_result <- wilcox.test(diff_selected, diff_not_selected)
