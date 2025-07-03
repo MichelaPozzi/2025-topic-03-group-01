@@ -989,13 +989,42 @@ header_plotting(main_shifter$correlations, ctrl_main_shift, rnase_main_shift, n 
 ```
 
 These proteins do not seem RNA-dependent, the curves look very similar. This is because there is no COM shift, and the existent global maximum shift does not lead to a change in the overall curve, for example because there are two big maxima in each ctrl and rnase, and ctrl has the global maximum at one of them, rnase has its global maximum at the other one. On paper, this is a global maximum shift, but the overall curves still look very similar. 
-In order to separate these proteins, an arbitrary threshold is used 
+In order to separate these proteins, an arbitrary threshold is used, to cut off those proteins, whose curves look to similar despite a global maximum shift. 
 
 
 
 
+Plot the left histogram and the arbitrary threshold. On the right side of the threshold, the respective proteins will be consideres as not RNA-dependent for our analysis. 
+```{r}
+hist(
+  main_shifter$correlations,
+  main = "Corr values main shifter",
+  xlab = "Correlation value",
+  ylab = "Frequency",
+  col = "salmon",
+  border = "white",
+  breaks = 50, 
+  xlim = c(-1, 1)
+)
+abline(v = 0.75)
+```
 
 
+```{r}
+# Define threshold
+threshold = 0.7
+
+keep_indices = COM_no_shifter$correlations <= threshold
+
+# New data.frames with the proteins, that might be RNA-dependent
+ctrl_under_threshold = ctrl_no_COM_shift[keep_indices, ]
+rnase_under_threshold = rnase_no_COM_shift[keep_indices, ]
+
+# New data.frames with the proteins, that are not RNA-dependent by arbitrary choice
+ctrl_above_threshold = ctrl_no_COM_shift[!keep_indices, ]
+rnase_above_threshold = rnase_no_COM_shift[!keep_indices, ]
+
+```
 
 
 
