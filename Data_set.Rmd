@@ -1656,3 +1656,109 @@ The regression analyses for the not-selected proteins describe its own target va
 
 **************************************************************************************************************
 **************************************************************************************************************
+
+
+**************************************************************************************************************
+12. Evaluation of the Selection Criteria
+  by Luisa Wintel influenced by ChatGPT
+**************************************************************************************************************
+
+```{r}
+rbp_pos <- read.delim("Daten/RBP2GO Table RBPs.txt", skip = 6, sep = "\t", stringsAsFactors = FALSE)
+rbp_neg <- read.delim("Daten/RBP2GO Table Non-RBPs.txt", skip = 6, sep = "\t", stringsAsFactors = FALSE)
+```
+
+```{r}
+# Neue Spalte in deinem DataFrame mit "unbekannt" als Startwert
+ctrl_norm_mean$RBP2GO_status <- "unkown"
+
+ctrl_norm_mean$RBP2GO_status[
+  toupper(rownames(ctrl_norm_mean)) %in% toupper(rbp_pos$Entry_Name)
+] <- "RBP"
+
+ctrl_norm_mean$RBP2GO_status[
+  toupper(rownames(ctrl_norm_mean)) %in% toupper(rbp_neg$Entry_Name)
+] <- "Non-RBP"
+```
+
+```{r}
+library(ggplot2)
+
+df_plot <- as.data.frame(table(ctrl_norm_mean$RBP2GO_status))
+colnames(df_plot) <- c("Status", "Anzahl")
+
+ggplot(df_plot, aes(x = "", y = Anzahl, fill = Status)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y") +
+  theme_void() +
+  labs(title = "Klassifikation nach RBP2GO") +
+  scale_fill_manual(values = c("firebrick", "midnightblue", "darkseagreen3"))
+```
+
+```{r}
+z = rownames(ctrl_selected) %in% rbp_pos$Entry_Name
+length(z)
+sum(z)
+
+y = rownames(ctrl_not_selected) %in% rbp_pos$Entry_Name
+
+length(y)
+sum(y)
+```
+```{r}
+# Status-Spalte für ctrl_selected erzeugen, ohne sie direkt in ctrl_selected zu speichern
+status_selected <- rep("unknown", nrow(ctrl_selected))
+
+# Groß-/Kleinschreibung angleichen und matchen
+prot_names_selected <- toupper(rownames(ctrl_selected))
+rbp_pos_names <- toupper(rbp_pos$Entry_Name)
+rbp_neg_names <- toupper(rbp_neg$Entry_Name)
+
+status_selected[prot_names_selected %in% rbp_pos_names] <- "selected RBPs"
+status_selected[prot_names_selected %in% rbp_neg_names] <- "selected Non-RBPs"
+
+# Zusammenfassung für das Tortendiagramm
+library(ggplot2)
+
+df_plot <- as.data.frame(table(status_selected))
+colnames(df_plot) <- c("Status", "Amount")
+
+ggplot(df_plot, aes(x = "", y = Amount, fill = Status)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y") +
+  theme_void() +
+  labs(title = "Classification of the selected proteins") +
+  scale_fill_manual(values = c("selected RBPs" = "midnightblue", 
+                               "selected Non-RBPs" = "firebrick", 
+                               "unknown" = "darkseagreen3"))
+
+print(df_plot$Status)
+```
+
+```{r}
+ Status-Vektor für ctrl_not_selected erzeugen, ohne Spalte einzufügen
+status_not_selected <- rep("unknown", nrow(ctrl_not_selected))
+
+# Groß-/Kleinschreibung angleichen und matchen
+prot_names_not_selected <- toupper(rownames(ctrl_not_selected))
+rbp_pos_names <- toupper(rbp_pos$Entry_Name)
+rbp_neg_names <- toupper(rbp_neg$Entry_Name)
+
+status_not_selected[prot_names_not_selected %in% rbp_pos_names] <- "selected RBPs"
+status_not_selected[prot_names_not_selected %in% rbp_neg_names] <- "selected Non-RBPs"
+
+# Zusammenfassung für das Tortendiagramm
+library(ggplot2)
+
+df_plot_not_selected <- as.data.frame(table(status_not_selected))
+colnames(df_plot_not_selected) <- c("Status", "Amount")
+
+ggplot(df_plot_not_selected, aes(x = "", y = Amount, fill = Status)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y") +
+  theme_void() +
+  labs(title = "Classification of the NOT selected proteins") +
+  scale_fill_manual(values = c("selected RBPs" = "midnightblue", 
+                               "selected Non-RBPs" = "firebrick", 
+                               "unknown" = "darkseagreen3"))
+```
