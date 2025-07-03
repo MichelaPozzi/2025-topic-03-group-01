@@ -1139,7 +1139,7 @@ abline(a = 0, b = 1, col = "red", lwd = 3, lty = 3)
 par(mfrow = c(1, 1)) 
 ```
 Interpretation: For the not selected proteins, there is mostly no or only a small deviation for the COM values when comparing ctrl and rnase intensities. 
-For the selected proteins, there is a clear deviation for the COM values when comparing ctrl and rnase. There is a clear trend observable. Most of the data points show a high COM value in the ctrl group, and at the same time, a lower COM value for the rnase group. This indicates, that during the RNse digestion in the experiment, those proteins previously bound to RNA were freed and isolated from their RNP-complexes and migrated into less dense fractions. They then appear more in the smaller fractions, which leads to the observed lower COM values fro the rnase group.
+For the selected proteins, there is a clear deviation for the COM values when comparing ctrl and rnase. There is a clear trend observable. Most of the data points show a high COM value in the ctrl group, and at the same time, a lower COM value for the rnase group. This indicates, that during the RNse digestion in the experiment, those proteins previously bound to RNA were freed and isolated from their RNP-complexes and migrated into less dense fractions. They then appear more in the smaller fractions, which leads to the observed lower COM values for the rnase group.
 
 
 
