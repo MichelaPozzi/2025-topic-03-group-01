@@ -776,11 +776,12 @@ header_plotting <- function(cor_vector,
   for (i in selected_indices) {
     cs = as.numeric(ctrl_data[i, 1:25])
     rs = as.numeric(rnase_data[i, 1:25])
+    corr_value = cor_vector[i]
     
     plot(
       cs,
       type = "l",
-      main = paste("Protein at index", i),
+      main = paste("Protein at index", i, "/ Correlation", round(corr_value, 3)),
       xlab = "Fractions",
       ylab = "Values",
       col = "blue",
@@ -985,7 +986,7 @@ par(mfrow = c(1, 1))
 
 Examine the proteins of the left histogram, that additional to no big COM shift, showed a main shift
 ```{r}
-header_plotting(main_shifter$correlations, ctrl_main_shift, rnase_main_shift, n = 5, cor_threshold = 0.9, direction = "gt" )
+header_plotting(main_shifter$correlations, ctrl_main_shift, rnase_main_shift, n = 5, cor_threshold = 0.8, direction = "lt" )
 ```
 
 These proteins do not seem RNA-dependent, the curves look very similar. This is because there is no COM shift, and the existent global maximum shift does not lead to a change in the overall curve, for example because there are two big maxima in each ctrl and rnase, and ctrl has the global maximum at one of them, rnase has its global maximum at the other one. On paper, this is a global maximum shift, but the overall curves still look very similar. 
@@ -994,7 +995,7 @@ In order to separate these proteins, an arbitrary threshold is used, to cut off 
 
 
 
-Plot the left histogram and the arbitrary threshold. On the right side of the threshold, the respective proteins will be consideres as not RNA-dependent for our analysis. 
+Plot the left histogram and the arbitrary threshold. On the right side of the threshold, the respective proteins will be considered as not RNA-dependent for our analysis. 
 ```{r}
 hist(
   main_shifter$correlations,
@@ -1006,7 +1007,7 @@ hist(
   breaks = 50, 
   xlim = c(-1, 1)
 )
-abline(v = 0.75)
+abline(v = 0.70)
 ```
 
 
@@ -1014,16 +1015,15 @@ abline(v = 0.75)
 # Define threshold
 threshold = 0.7
 
-keep_indices = COM_no_shifter$correlations <= threshold
+keep_indices = main_shifter$correlations <= threshold
 
 # New data.frames with the proteins, that might be RNA-dependent
-ctrl_under_threshold = ctrl_no_COM_shift[keep_indices, ]
-rnase_under_threshold = rnase_no_COM_shift[keep_indices, ]
+ctrl_under_threshold = ctrl_main_shift[keep_indices, ]
+rnase_under_threshold = rnase_main_shift[keep_indices, ]
 
 # New data.frames with the proteins, that are not RNA-dependent by arbitrary choice
-ctrl_above_threshold = ctrl_no_COM_shift[!keep_indices, ]
-rnase_above_threshold = rnase_no_COM_shift[!keep_indices, ]
-
+ctrl_above_threshold = ctrl_main_shift[!keep_indices, ]
+rnase_above_threshold = rnase_main_shift[!keep_indices, ]
 ```
 
 
@@ -1037,12 +1037,12 @@ rnase_above_threshold = rnase_no_COM_shift[!keep_indices, ]
 Statistical assessment of whether the purification of the dataset has resulted in the selected proteins showing significant differences between ctrl and rnase (e.g., in COM), while the non-selected proteins do not show these differences
 
 
-1: ctrl_COM_shift and ctrl_main_shift, as well as rnase_COM_shift and rnase_under_threshold are combined
+1: ctrl_COM_shift and ctrl_under_threshold, as well as rnase_COM_shift and rnase_under_threshold are combined
 --> ctrl_selected & rnase_selected
 
 2: Test, if rownames(ctrl_selected) != rownames(rnase_selected), so that they contain the same proteins in the same order. If the result is 0, then everything worked.
 
-3: ctrl_no_main_shift, as well as rnase_no_main_shift represent the not selected proteins of our criteria
+3: ctrl_no_main_shift and ctrl_above_threshold, as well as rnase_no_main_shift and rnase_above_threshold are combined
 --> ctrl_not_selected & rnase_not_selected
 
 4: Test, if rownames(ctrl_not_selected) != rownames(rnase_not_selected), so that they contain the same proteins in the same order. If the result is 0, then everything worked. 
@@ -1059,15 +1059,15 @@ Statistical assessment of whether the purification of the dataset has resulted i
 
 ```{r}
 #1
-ctrl_selected = rbind(ctrl_COM_shift, ctrl_main_shift)
-rnase_selected = rbind(rnase_COM_shift, rnase_main_shift)
+ctrl_selected = rbind(ctrl_COM_shift, ctrl_under_threshold)
+rnase_selected = rbind(rnase_COM_shift, rnase_under_threshold)
 
 #2
 sum(rownames(ctrl_selected) != rownames(rnase_selected))
 
 #3
-ctrl_not_selected = ctrl_no_main_shift
-rnase_not_selected = rnase_no_main_shift
+ctrl_not_selected = rbind(ctrl_no_main_shift, ctrl_above_threshold)
+rnase_not_selected = rbind(rnase_no_main_shift, rnase_above_threshold)
 
 #4
 sum(rownames(ctrl_not_selected) != rownames(rnase_not_selected))
