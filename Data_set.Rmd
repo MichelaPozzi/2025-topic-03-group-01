@@ -1151,39 +1151,12 @@ par(mfrow = c(1, 1))
 ```
 
 
-```{r}
-par(mfrow = c(1, 2)) 
-
-plot(
-  ctrl_selected$global_maximum, rnase_selected$global_maximum,
-  xlab = "global_maximum from ctrl_selected",
-  ylab = "global_maximum from rnase_selected",
-  main = "Scatter Plot global_maximum values",
-  pch = 19,       
-  col = "blue"    
-)
-abline(a = 0, b = 1, col = "red", lwd = 3, lty = 3)
-
-
-plot(
-  ctrl_not_selected$global_maximum, rnase_not_selected$global_maximum,
-  xlab = "global_maximum from ctrl_not_selected",
-  ylab = "global_maximum from rnase_not_selected",
-  main = "Scatter Plot global_maximum values",
-  pch = 19,       
-  col = "blue"    
-)
-abline(a = 0, b = 1, col = "red", lwd = 3, lty = 3)
-
-
-
-par(mfrow = c(1, 1)) 
-```
-
-
 Wichtig für die Conclusion:
 
 correlation ist nicht alleine aussagekräftig, man kann auch hoch korrelieren und trotzdem vollkommen unterschiedlich sein, aber zusammen mit COM ist es geeignet zum finden. 
+
+
+
 
 
 
@@ -1660,7 +1633,7 @@ The regression analyses for the not-selected proteins describe its own target va
 
 **************************************************************************************************************
 12. Evaluation of the Selection Criteria
-  by Luisa Wintel influenced by ChatGPT
+  by Luisa Wintel (and Julian) influenced by ChatGPT
 **************************************************************************************************************
 
 ```{r}
@@ -1736,7 +1709,7 @@ print(df_plot$Status)
 ```
 
 ```{r}
- Status-Vektor für ctrl_not_selected erzeugen, ohne Spalte einzufügen
+#Status-Vektor für ctrl_not_selected erzeugen, ohne Spalte einzufügen
 status_not_selected <- rep("unknown", nrow(ctrl_not_selected))
 
 # Groß-/Kleinschreibung angleichen und matchen
@@ -1762,3 +1735,8 @@ ggplot(df_plot_not_selected, aes(x = "", y = Amount, fill = Status)) +
                                "selected Non-RBPs" = "firebrick", 
                                "unknown" = "darkseagreen3"))
 ```
+```{r}
+
+#header_plotting(cor_all_proteins$correlations, ctrl_norm_mean, rnase_norm_mean, n =500, cor_threshold = 0.99, direction = "lt")
+```
+
