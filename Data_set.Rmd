@@ -1141,7 +1141,7 @@ Question: Are the isoelectric points of the selected proteins greater than 7?
 t.test(final_df_combined$isoelectric_point, mu = 7.0, alternative = "greater")
 ```
 
-We get a very high value for the test statistic (19,4), and a clearly significant p-value (<< 0.05). The H0-hypothesis is rejected, and the H1-hypothesis is statistically proven. The mean isoelectric point of the selected proteins is significantly greater than the neutral value of 7. The mean value of all isoelectric points is 8.17, which is unambiguously different from 7. 
+We get a very high value for the test statistic (19,4), and a clearly significant p-value (p << 0.05). The H0-hypothesis is rejected, and the H1-hypothesis is statistically proven. The mean isoelectric point of the selected proteins is significantly greater than the neutral value of 7. The mean value of all isoelectric points is 8.2, which is unambiguously different from 7. 
 
 
 Visualize the isoelectric points in a histogram 
@@ -1154,9 +1154,7 @@ abline(v = mean(final_df_combined_selected$isoelectric_point), col = "red")
 
 
 
-
-
-
+Perform the same data set preparations again for the whole data set with all initial proteins (use ctrl_norm_mean as the data set)
 ```{r}
 # Create a new dataframe, that only contains all initial proteins, that were also listed in the external data rbp_pos & rbp_neg, as well as their respective isoelectric points for these proteins.
 
@@ -1209,6 +1207,8 @@ Question: Are the isoelectric points of the not selected proteins different from
 # Perform the second t-test
 t.test(final_df_combined_not_selected$isoelectric_point, mu = 7.0, alternative = "two.sided")
 ```
+The value for the test-statistic is still high (6.1), and the p-value is again very small (p << 0.05). However, it should be noted, that the observed effect is not as clear as for the last test. For example, the p value in this test is still higher compared to the previous test. The mean value of the isoelectric points in this test is 7.2, and therefore much smaller than the mean value of 8.2, we gained for the last test. 
+
 
 
 
