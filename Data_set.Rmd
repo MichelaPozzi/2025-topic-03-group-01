@@ -1291,8 +1291,9 @@ For the selected proteins, there is a clear deviation between the COM values whe
 
 
 
-
-
+#####################################
+Julian Baureis Teil des Codes zu Ende 
+#####################################
 
 
 
