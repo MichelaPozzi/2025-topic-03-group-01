@@ -784,7 +784,7 @@ header_plotting <- function(cor_vector,
       main = paste("Protein at index", i, "/ Correlation", round(corr_value, 3)),
       xlab = "Fractions",
       ylab = "Values",
-      col = "blue",
+      col = "midnightblue",
       lwd = 2,
       ylim = range(c(cs, rs), na.rm = TRUE)
     )
@@ -792,7 +792,7 @@ header_plotting <- function(cor_vector,
     lines(
       rs,
       type = "l",
-      col = "red",
+      col = "firebrick",
       lwd = 2
     )
   }
@@ -861,7 +861,7 @@ hist(
   main = "Correlation values for COM shifter",
   xlab = "Correlation value",
   ylab = "Frequency",
-  col = "skyblue",
+  col = "midnightblue",
   border = "white",
   xlim = c(-1, 1) 
 )
@@ -872,7 +872,7 @@ hist(
   main = "Correlation values for not COM shifter",
   xlab = "Correlation value",
   ylab = "Frequency",
-  col = "salmon",
+  col = "firebrick",
   border = "white",
   xlim = c(-1, 1)
 )
@@ -964,7 +964,7 @@ hist(
   main = "Corr values for main shifter",
   xlab = "Correlation value",
   ylab = "Frequency",
-  col = "skyblue",
+  col = "midnightblue",
   border = "white",
   xlim = c(-1, 1) 
 )
@@ -975,7 +975,7 @@ hist(
   main = "Corr values for not main shifter",
   xlab = "Correlation value",
   ylab = "Frequency",
-  col = "salmon",
+  col = "firebrick",
   border = "white",
   xlim = c(-1, 1)
 )
@@ -1002,12 +1002,12 @@ hist(
   main = "Corr values main shifter",
   xlab = "Correlation value",
   ylab = "Frequency",
-  col = "salmon",
+  col = "midnightblue",
   border = "white",
   breaks = 50, 
   xlim = c(-1, 1)
 )
-abline(v = 0.70)
+abline(v = 0.70, lwd = 3, col = "firebrick")
 ```
 
 
@@ -1079,29 +1079,136 @@ As shown, a shift in the center of mass on its own is not suitable to identify a
 4. Statistical Test (Wilcoxon Rank Sum Test)
 ***********************************************************************************************************
 
-Statistical assessment of whether the purification of the dataset has resulted in the selected proteins showing significant differences between ctrl and rnase (e.g., in COM), while the non-selected proteins do not show these differences
+We assume, that RBPs, due to their ability to interact with the negatively charged RNA, should exhibit a higher isoelectric point than neutral proteins. Here, we perform a statistical test, to assess, whether the selected proteins have a statistically higher isoelectric point than the neutral value, which is represented by the isoelectric point of 7. As a source for the values of the isoelectric points, we use the database RBP2GO. 
 
 
-6.1: The mean value of the peak positions per row is calculated from the column "combined_max_ctrl" of ctrl_selected, and then compared with the mean value of the peak positions of "combined_max_rnase" of rnase_selected
+First t-test is performed (One sided, right tailed)
+Question: Are the isoelectric points of the selected proteins greater than 7?
 
-6.2: The mean value of the peak positions per row is calculated from the column "combined_max_ctrl" of control_not_selected  and then compared with the mean value of the peak positions of "combined_max_rnase" of rnase_not_selected
+--> H0: Random variable X (the isoelectric points) origin from a population with an expected value ≤ 7    
+--> E(X) ≤ 7
 
-6.3: Wilcoxon Rank Sum Test is performed, to compare the differences of the mean values of the peak positions
---> H0: There is no systematic difference in the distribution of these differences
+--> H1: Random variable X (the isoelectric points) origin from a population with an expected value > 7     
+--> E(X) > 7
+
+```{r}
+# Read the two data sets from the website RBP2GO, among other things they contain protein names for RBPs and not RBPs, as well as the values for their isoelectric points
+rbp_pos <- read.delim("Daten/RBP2GO Table RBPs.txt", skip = 6, sep = "\t", stringsAsFactors = FALSE)
+rbp_neg <- read.delim("Daten/RBP2GO Table Non-RBPs.txt", skip = 6, sep = "\t", stringsAsFactors = FALSE)
+```
+
+```{r}
+# Create a new dataframe, that only contains those proteins from our selected group, that were also listed in the external data rbp_pos & rbp_neg, as well as the respective isoelectric points for these proteins.
+
+# Protein names of all selected proteins 
+protein_names = rownames(ctrl_selected)
+
+# Extract the protein names from rbp_pos and rbp_neg
+rbp_pos_proteins = rbp_pos$Entry_Name
+rbp_neg_proteins = rbp_neg$Entry_Name
+
+# Get indices of the matching proteins
+indices_pos = which(protein_names %in% rbp_pos_proteins)
+indices_neg = which(protein_names %in% rbp_neg_proteins)
+
+# Get the subsets for the included proteins
+df_pos = ctrl_selected[indices_pos, ]
+df_neg = ctrl_selected[indices_neg, ]
+
+# Get the matching protein names
+matched_pos_names = rownames(df_pos)
+matched_neg_names = rownames(df_neg)
+
+# Get the values for the isoelectric points
+df_pos_pI = rbp_pos$pI[match(matched_pos_names, rbp_pos$Entry_Name)]
+df_neg_pI = rbp_neg$pI[match(matched_neg_names, rbp_pos$Entry_Name)]
+
+# Combine to new dataframes, with Protein Names and their isoelectric point 
+df_pos_combined_selected = data.frame(protein = matched_pos_names, isoelectric_point = df_pos_pI)
+df_neg_combined_selected = data.frame(protein = matched_neg_names, isoelectric_point = df_neg_pI)
+
+# Merge those two dataframes together 
+final_df_combined_selected = rbind(df_pos_combined_selected, df_neg_combined_selected)
+
+# How many proteins were not listed in either rbp_pos or rbp_neg, but still used in our data set - 39
+dim(ctrl_selected)[1] - dim(final_df_combined_selected)[1]
+```
+
+```{r}
+# Perform the first t-test
+t.test(final_df_combined$isoelectric_point, mu = 7.0, alternative = "greater")
+```
+
+We get a very high value for the test statistic (19,4), and a clearly significant p-value (<< 0.05). The H0-hypothesis is rejected, and the H1-hypothesis is statistically proven. The mean isoelectric point of the selected proteins is significantly greater than the neutral value of 7.
+
+
 
 
 ```{r}
-#6
-# Wilcoxon Rank-Sum Test (unpaired)
-wilcox_test_result <- wilcox.test(diff_selected, diff_not_selected)
-
-# Show result
-print(wilcox_test_result)
+hist(final_df_combined_selected$isoelectric_point, breaks = 50)
+abline(v = mean(final_df_combined_selected$isoelectric_point), col = "red")
 ```
 
 
 
 
+
+Second t-test is performed (two sided, tow-tailed)
+Question: Are the isoelectric points of the not selected proteins different from 7?
+
+--> H0: Random variable X (the isoelectric points) origin from a population with an expected value = 7    
+--> E(X) = 7
+
+--> H1: Random variable X (the isoelectric points) origin from a population with an expected value ≠ 7     
+--> E(X) ≠ 7
+
+
+```{r}
+# Create a new dataframe, that only contains those proteins from our not selected group, that were also listed in the external data rbp_pos & rbp_neg, as well as the respective isoelectric points for these proteins.
+
+# Protein names of all selected proteins 
+protein_names = rownames(ctrl_norm_mean)
+
+# Extract the protein names from rbp_pos and rbp_neg
+rbp_pos_proteins = rbp_pos$Entry_Name
+rbp_neg_proteins = rbp_neg$Entry_Name
+
+# Get indices of the matching proteins
+indices_pos = which(protein_names %in% rbp_pos_proteins)
+indices_neg = which(protein_names %in% rbp_neg_proteins)
+
+# Get the subsets for the included proteins
+df_pos = ctrl_norm_mean[indices_pos, ]
+df_neg = ctrl_norm_mean[indices_neg, ]
+
+# Get the matching protein names
+matched_pos_names = rownames(df_pos)
+matched_neg_names = rownames(df_neg)
+
+# Get the values for the isoelectric points
+df_pos_pI = rbp_pos$pI[match(matched_pos_names, rbp_pos$Entry_Name)]
+df_neg_pI = rbp_neg$pI[match(matched_neg_names, rbp_pos$Entry_Name)]
+
+# Combine to new dataframes, with Protein Names and their isoelectric point 
+df_pos_combined_not_selected = data.frame(protein = matched_pos_names, isoelectric_point = df_pos_pI)
+df_neg_combined_not_selected = data.frame(protein = matched_neg_names, isoelectric_point = df_neg_pI)
+
+# Merge those two dataframes together 
+final_df_combined_not_selected = rbind(df_pos_combined_not_selected, df_neg_combined_not_selected)
+
+# How many proteins were not listed in either rbp_pos or rbp_neg, but still used in our data set - 235
+dim(ctrl_norm_mean)[1] - dim(final_df_combined_not_selected)[1]
+```
+
+```{r}
+# Perform the second t-test
+t.test(final_df_combined_not_selected$isoelectric_point, mu = 7.0, alternative = "two.sided")
+```
+
+```{r}
+hist(final_df_combined_not_selected$isoelectric_point, breaks = 50)
+abline(v = mean(final_df_combined_selected$isoelectric_point), col = "red") 
+```
 
 
 
@@ -1119,9 +1226,9 @@ plot(
   ylab = "COM from rnase_selected",
   main = "Scatter Plot of the COM values",
   pch = 19,       
-  col = "blue"    
+  col = "midnightblue"    
 )
-abline(a = 0, b = 1, col = "red", lwd = 3, lty = 3)
+abline(a = 0, b = 1, col = "firebrick", lwd = 3, lty = 3)
 
 
 plot(
@@ -1130,9 +1237,9 @@ plot(
   ylab = "COM from rnase_not_selected",
   main = "Scatter Plot of the COM values",
   pch = 19,       
-  col = "blue"    
+  col = "midnightblue"    
 )
-abline(a = 0, b = 1, col = "red", lwd = 3, lty = 3)
+abline(a = 0, b = 1, col = "firebrick", lwd = 3, lty = 3)
 
 
 
