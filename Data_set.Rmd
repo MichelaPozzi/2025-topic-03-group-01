@@ -697,7 +697,7 @@ rnase_norm_mean$COM <- apply(rnase_norm_mean[, 1:25], 1, function(x) {
 
 
 ###########################################################################
-Teil von Julian Baureis und Luisa Fee Wintel (Zeile 701 - 1218), Codewriting assisted by ChatGPT 
+Teil von Julian Baureis (Zeile 701 - 1218), Codewriting assisted by ChatGPT 
 ###########################################################################
 
 ***********************************************************************************************************
@@ -1141,17 +1141,10 @@ Question: Are the isoelectric points of the selected proteins greater than 7?
 
 ```{r}
 # Perform the first t-test
-t.test(final_df_combined$isoelectric_point, mu = 7.0, alternative = "greater")
+t.test(final_df_combined_selected$isoelectric_point, mu = 7.0, alternative = "greater")
 ```
 
 We get a very high value for the test statistic (19,4), and a clearly significant p-value (p << 0.05). The H0-hypothesis is rejected, and the H1-hypothesis is statistically proven. The mean isoelectric point of the selected proteins is significantly greater than the neutral value of 7. The mean value of all isoelectric points is 8.2, which is unambiguously different from 7. 
-
-
-Visualize the isoelectric points in a histogram 
-```{r}
-hist(final_df_combined_selected$isoelectric_point, breaks = 50)
-abline(v = mean(final_df_combined_selected$isoelectric_point), col = "red")
-```
 
 
 
@@ -1208,17 +1201,41 @@ Question: Are the isoelectric points of the not selected proteins different from
 
 ```{r}
 # Perform the second t-test
-t.test(final_df_combined_not_selected$isoelectric_point, mu = 7.0, alternative = "two.sided")
+t.test(final_df_combined_all_proteins$isoelectric_point, mu = 7.0, alternative = "two.sided")
 ```
 The value for the test-statistic is still high (6.1), and the p-value is again very small (p << 0.05). However, it should be noted, that the observed effect is not as clear as for the last test. For example, the p value in this test is still higher compared to the previous test. The mean value of the isoelectric points in this test is 7.2, and therefore much smaller than the mean value of 8.2, we gained for the last test. 
 
 
 
-
 Visualize the isoelectric points in a histogram 
+
 ```{r}
-hist(final_df_combined_not_selected$isoelectric_point, breaks = 50)
-abline(v = mean(final_df_combined_selected$isoelectric_point), col = "red") 
+par(mfrow = c(1, 2)) 
+
+hist(
+  final_df_combined_selected$isoelectric_point,
+  main = "Isoelectric points of the selected proteins",
+  xlab = "Isoelectric point",
+  ylab = "Frequency",
+  breaks = 50,
+  col = "midnightblue",
+  border = "white",
+  xlim = c(0, 14) 
+)
+
+
+hist(
+  final_df_combined_all_proteins$isoelectric_point,
+  main = "Isoelectric points for all proteins",
+  xlab = "Isoelectric point",
+  ylab = "Frequency",
+  breaks = 50,
+  col = "firebrick",
+  border = "white",
+  xlim = c(0, 14)
+)
+
+par(mfrow = c(1, 1))
 ```
 
 
@@ -1260,6 +1277,8 @@ Interpretation: For the not selected proteins, there is mostly no or only a smal
 For the selected proteins, there is a clear deviation between the COM values when comparing ctrl and rnase. There is a trend observable. Most of the data points show a high COM value in the ctrl group, and at the same time, a lower COM value for the rnase group. This indicates, that during the RNse digestion in the experiment, those proteins previously bound to RNA were freed and isolated from their RNP-complexes and migrated into less dense fractions. A big part of their intensity "potential" and hence their center of mass consequently appears in smaller fractions, leading to the observed lower COM values for the rnase group.
 
 
+##################
+Part Luisa Wintel
 
 
 
