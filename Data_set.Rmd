@@ -1082,15 +1082,6 @@ As shown, a shift in the center of mass on its own is not suitable to identify a
 We assume, that RBPs, due to their ability to interact with the negatively charged RNA, should exhibit a higher isoelectric point than neutral proteins. Here, we perform a statistical test, to assess, whether the selected proteins have a statistically higher isoelectric point than the neutral value, which is represented by the isoelectric point of 7. As a source for the values of the isoelectric points, we use the database RBP2GO. 
 
 
-First t-test is performed (One sided, right tailed)
-Question: Are the isoelectric points of the selected proteins greater than 7?
-
---> H0: Random variable X (the isoelectric points) origin from a population with an expected value ≤ 7    
---> E(X) ≤ 7
-
---> H1: Random variable X (the isoelectric points) origin from a population with an expected value > 7     
---> E(X) > 7
-
 ```{r}
 # Read the two data sets from the website RBP2GO, among other things they contain protein names for RBPs and not RBPs, as well as the values for their isoelectric points
 rbp_pos <- read.delim("Daten/RBP2GO Table RBPs.txt", skip = 6, sep = "\t", stringsAsFactors = FALSE)
@@ -1131,19 +1122,29 @@ df_neg_combined_selected = data.frame(protein = matched_neg_names, isoelectric_p
 final_df_combined_selected = rbind(df_pos_combined_selected, df_neg_combined_selected)
 
 # How many proteins were not listed in either rbp_pos or rbp_neg, but still used in our data set - 39
-dim(ctrl_selected)[1] - dim(final_df_combined_selected)[1]
+# dim(ctrl_selected)[1] - dim(final_df_combined_selected)[1]
 ```
+
+
+
+First t-test is performed (One sided, right tailed)
+Question: Are the isoelectric points of the selected proteins greater than 7?
+
+--> H0: Random variable X (the isoelectric points) origin from a population with an expected value ≤ 7    
+--> E(X) ≤ 7
+
+--> H1: Random variable X (the isoelectric points) origin from a population with an expected value > 7     
+--> E(X) > 7
 
 ```{r}
 # Perform the first t-test
 t.test(final_df_combined$isoelectric_point, mu = 7.0, alternative = "greater")
 ```
 
-We get a very high value for the test statistic (19,4), and a clearly significant p-value (<< 0.05). The H0-hypothesis is rejected, and the H1-hypothesis is statistically proven. The mean isoelectric point of the selected proteins is significantly greater than the neutral value of 7.
+We get a very high value for the test statistic (19,4), and a clearly significant p-value (<< 0.05). The H0-hypothesis is rejected, and the H1-hypothesis is statistically proven. The mean isoelectric point of the selected proteins is significantly greater than the neutral value of 7. The mean value of all isoelectric points is 8.17, which is unambiguously different from 7. 
 
 
-
-
+Visualize the isoelectric points in a histogram 
 ```{r}
 hist(final_df_combined_selected$isoelectric_point, breaks = 50)
 abline(v = mean(final_df_combined_selected$isoelectric_point), col = "red")
@@ -1153,20 +1154,13 @@ abline(v = mean(final_df_combined_selected$isoelectric_point), col = "red")
 
 
 
-Second t-test is performed (two sided, tow-tailed)
-Question: Are the isoelectric points of the not selected proteins different from 7?
 
---> H0: Random variable X (the isoelectric points) origin from a population with an expected value = 7    
---> E(X) = 7
-
---> H1: Random variable X (the isoelectric points) origin from a population with an expected value ≠ 7     
---> E(X) ≠ 7
 
 
 ```{r}
-# Create a new dataframe, that only contains those proteins from our not selected group, that were also listed in the external data rbp_pos & rbp_neg, as well as the respective isoelectric points for these proteins.
+# Create a new dataframe, that only contains all initial proteins, that were also listed in the external data rbp_pos & rbp_neg, as well as their respective isoelectric points for these proteins.
 
-# Protein names of all selected proteins 
+# Protein names of all inital proteins 
 protein_names = rownames(ctrl_norm_mean)
 
 # Extract the protein names from rbp_pos and rbp_neg
@@ -1190,21 +1184,35 @@ df_pos_pI = rbp_pos$pI[match(matched_pos_names, rbp_pos$Entry_Name)]
 df_neg_pI = rbp_neg$pI[match(matched_neg_names, rbp_pos$Entry_Name)]
 
 # Combine to new dataframes, with Protein Names and their isoelectric point 
-df_pos_combined_not_selected = data.frame(protein = matched_pos_names, isoelectric_point = df_pos_pI)
-df_neg_combined_not_selected = data.frame(protein = matched_neg_names, isoelectric_point = df_neg_pI)
+df_pos_combined_all_proteins = data.frame(protein = matched_pos_names, isoelectric_point = df_pos_pI)
+df_neg_combined_all_proteins = data.frame(protein = matched_neg_names, isoelectric_point = df_neg_pI)
 
 # Merge those two dataframes together 
-final_df_combined_not_selected = rbind(df_pos_combined_not_selected, df_neg_combined_not_selected)
+final_df_combined_all_proteins = rbind(df_pos_combined_all_proteins, df_neg_combined_all_proteins)
 
-# How many proteins were not listed in either rbp_pos or rbp_neg, but still used in our data set - 235
-dim(ctrl_norm_mean)[1] - dim(final_df_combined_not_selected)[1]
+# How many proteins were not listed in either rbp_pos or rbp_neg, but still used in our data set - 274
+# dim(ctrl_norm_mean)[1] - dim(final_df_combined_all_proteins)[1]
 ```
+
+
+
+Second t-test is performed (two sided, tow-tailed)
+Question: Are the isoelectric points of the not selected proteins different from 7?
+
+--> H0: Random variable X (the isoelectric points) origin from a population with an expected value = 7    
+--> E(X) = 7
+
+--> H1: Random variable X (the isoelectric points) origin from a population with an expected value ≠ 7     
+--> E(X) ≠ 7
 
 ```{r}
 # Perform the second t-test
 t.test(final_df_combined_not_selected$isoelectric_point, mu = 7.0, alternative = "two.sided")
 ```
 
+
+
+Visualize the isoelectric points in a histogram 
 ```{r}
 hist(final_df_combined_not_selected$isoelectric_point, breaks = 50)
 abline(v = mean(final_df_combined_selected$isoelectric_point), col = "red") 
@@ -1245,8 +1253,8 @@ abline(a = 0, b = 1, col = "firebrick", lwd = 3, lty = 3)
 
 par(mfrow = c(1, 1)) 
 ```
-Interpretation: For the not selected proteins, there is mostly no or only a small deviation for the COM values when comparing ctrl and rnase intensities.  
-For the selected proteins, there is a clear deviation for the COM values when comparing ctrl and rnase. There is a clear trend observable. Most of the data points show a high COM value in the ctrl group, and at the same time, a lower COM value for the rnase group. This indicates, that during the RNse digestion in the experiment, those proteins previously bound to RNA were freed and isolated from their RNP-complexes and migrated into less dense fractions. They then appear more in the smaller fractions, which leads to the observed lower COM values for the rnase group.
+Interpretation: For the not selected proteins, there is mostly no or only a small deviation between the COM values when comparing ctrl and rnase intensities.  
+For the selected proteins, there is a clear deviation between the COM values when comparing ctrl and rnase. There is a trend observable. Most of the data points show a high COM value in the ctrl group, and at the same time, a lower COM value for the rnase group. This indicates, that during the RNse digestion in the experiment, those proteins previously bound to RNA were freed and isolated from their RNP-complexes and migrated into less dense fractions. A big part of their intensity "potential" and hence their center of mass consequently appears in smaller fractions, leading to the observed lower COM values for the rnase group.
 
 
 
@@ -1254,41 +1262,6 @@ For the selected proteins, there is a clear deviation for the COM values when co
 
 
 
-
-
-
-
-Plots
-```{r}
-library(ggplot2)
-
-# Calculate mean values of the combined maxima (local maxima + shoulders) per row and form the difference
-get_differences <- function(ctrl_df, rnase_df, ctrl_col, rnase_col) {
-  ctrl_means <- sapply(ctrl_df[[ctrl_col]], mean)
-  rnase_means <- sapply(rnase_df[[rnase_col]], mean)
-  return(ctrl_means - rnase_means)
-}
-
-# Calculate the difference vectors for both groups
-diff_selected <- get_differences(ctrl_selected, rnase_selected, "combined_max_ctrl", "combined_max_rnase")
-diff_not_selected <- get_differences(ctrl_not_selected, rnase_not_selected, "combined_max_ctrl", "combined_max_rnase")
-
-# Vector with group membership
-group <- c(rep("selected", length(diff_selected)), rep("not_selected", length(diff_not_selected)))
-diffs <- c(diff_selected, diff_not_selected)
-
-df_plot <- data.frame(Group = group, Difference = diffs)
-
-ggplot(df_plot, aes(x = Difference, fill = Group)) +
-  geom_density(alpha = 0.5) +
-  theme_minimal() +
-  labs(title = "density distribution of the differnces", x = "difference (ctrl - rnase)")
-```
-
-What can you see on this plot?
-The density for the differences for "not_selected" are concentrated around 0. This is expected, because our criteria aimed to separate the not RNA-dependent proteins, that show very similar curves for ctrl and rnase, and therefore no real difference between their local maxima and shoulder regions. 
-The density for the differences for "selected" is more even distributed, but reaches far greater values, which is expected, because, under our criteria, these proteins should be not similar between their ctrl and rnase curves. 
-The density is also mostly around positive values. Therefore, the following largely seems to hold: The mean values of the control maxima are larger than the mean values of the RNase maxima, which may indicate an increased left shift of the RNase fractions.
 
 
 
