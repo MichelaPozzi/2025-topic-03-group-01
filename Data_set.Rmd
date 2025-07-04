@@ -1298,6 +1298,126 @@ Julian Baureis Teil des Codes zu Ende
 
 
 
+```{r}
+# Calculate the absolute difference of the positions of the COM values between ctrl and rnase 
+diff_test <- (ctrl_selected$COM - rnase_selected$COM)
+
+# Indices of proteins with deviation ≥ 3 fractions
+deviating_test <- which(diff_test >= 3)
+
+# Apply on the data.frames
+ctrl_test_shift = ctrl_selected[deviating_test, ]
+rnase_test_shift = rnase_selected[deviating_test, ]
+
+# Create the complementary data.frame that contains all proteins whose COM do not shift by at least 2 fractions
+ctrl_no_test_shift = ctrl_selected[-deviating_test, ]
+rnase_no_test_shift = rnase_selected[-deviating_test, ]
+```
+
+
+```{r}
+library(ggplot2)
+
+# Falls nötig: nur die ersten 25 Spalten auswählen
+rnase_test_shift_25 <- rnase_test_shift[, 1:25]
+rnase_no_test_shift_25 <- rnase_no_test_shift[, 1:25]
+
+# Gemeinsame Proteine sicherstellen (optional, falls Spalten unterschiedlich)
+common_proteins <- intersect(colnames(rnase_test_shift_25), colnames(rnase_no_test_shift_25))
+rnase_test_shift_25 <- rnase_test_shift_25[, common_proteins]
+rnase_no_test_shift_25 <- rnase_no_test_shift_25[, common_proteins]
+
+# Daten kombinieren
+combined <- rbind(rnase_test_shift_25, rnase_no_test_shift_25)
+
+# Labels erstellen
+labels <- c(rep("rnase_test_shift", nrow(rnase_test_shift_25)), rep("rnase_no_test_shift", nrow(rnase_no_test_shift_25)))
+
+# Daten standardisieren
+combined_scaled <- scale(combined)
+
+# PCA durchführen
+pca_res <- prcomp(combined_scaled, center = FALSE, scale. = FALSE)
+
+# PCA-Ergebnisse als Dataframe für Plot
+pca_df <- data.frame(PC1 = pca_res$x[,1],
+                     PC2 = pca_res$x[,2],
+                     Group = labels)
+
+# Plot erstellen
+ggplot(pca_df, aes(x = PC1, y = PC2, color = Group)) +
+  geom_point(alpha = 0.8, size = 3) +
+  labs(title = "PCA: rnase_test_shift vs rnase_no_test_shift",
+       x = paste0("PC1 (", round(summary(pca_res)$importance[2,1]*100,1), "% Varianz)"),
+       y = paste0("PC2 (", round(summary(pca_res)$importance[2,2]*100,1), "% Varianz)")) +
+  theme_minimal() +
+  scale_color_manual(values = c("red", "orange"))
+```
+
+
+```{r}
+library(ggplot2)
+
+# Nur die ersten 25 Spalten auswählen
+ctrl_test_shift_25 <- ctrl_test_shift[, 1:25]
+rnase_test_shift_25 <- rnase_test_shift[, 1:25]
+
+# Gemeinsame Proteine (Spalten) sicherstellen
+common_proteins <- intersect(colnames(ctrl_test_shift_25), colnames(rnase_test_shift_25))
+ctrl_test_shift_25 <- ctrl_test_shift_25[, common_proteins]
+rnase_test_shift_25 <- rnase_test_shift_25[, common_proteins]
+
+# Daten kombinieren
+combined <- rbind(ctrl_test_shift_25, rnase_test_shift_25)
+
+# Labels erstellen
+labels <- c(rep("ctrl_test_shift", nrow(ctrl_test_shift_25)),
+            rep("rnase_test_shift", nrow(rnase_test_shift_25)))
+
+# Daten standardisieren
+combined_scaled <- scale(combined)
+
+# PCA durchführen
+pca_res <- prcomp(combined_scaled, center = FALSE, scale. = FALSE)
+
+# PCA-Ergebnisse als Dataframe
+pca_df <- data.frame(PC1 = pca_res$x[,1],
+                     PC2 = pca_res$x[,2],
+                     Group = labels)
+
+# Plot erstellen
+ggplot(pca_df, aes(x = PC1, y = PC2, color = Group)) +
+  geom_point(alpha = 0.8, size = 3) +
+  labs(title = "PCA: ctrl_test_shift vs rnase_test_shift",
+       x = paste0("PC1 (", round(summary(pca_res)$importance[2,1]*100,1), "% Varianz)"),
+       y = paste0("PC2 (", round(summary(pca_res)$importance[2,2]*100,1), "% Varianz)")) +
+  theme_minimal() +
+  scale_color_manual(values = c("blue", "red"))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
