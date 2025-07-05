@@ -370,16 +370,18 @@ ctrl_norm_mean[rowSums(rnase_norm_mean[1:25])==0,] <- 0
 rnase_norm_mean[rowSums(ctrl_norm_mean[1:25])==0,] <- 0
 ```
 
-Plot Example Protein Fractionation Profiles
 
+Plot Example Protein Fractionation Profiles
 ```{r}
-row_data1 <- as.numeric(ctrl_norm_mean["NUCL_HUMAN", 1:25])
-row_data2 <- as.numeric(rnase_norm_mean["NUCL_HUMAN", 1:25])
+par(mfrow = c(1, 2)) 
+
+row_data1 <- as.numeric(ctrl_norm_mean["SPTN1_HUMAN", 1:25])
+row_data2 <- as.numeric(rnase_norm_mean["SPTN1_HUMAN", 1:25])
 
 # Plot
 plot(row_data1,
      type = "l",        
-     main = "Plot for NUCL_HUMAN",
+     main = "Plot for SPTN1_HUMAN",
      xlab = "Fractions",
      ylab = "Values",
      col = "midnightblue",
@@ -390,7 +392,27 @@ lines(row_data2,
       col = "firebrick3",
       lwd = 2)
 
+row_data3 <- as.numeric(ctrl_norm_mean["DDX21_HUMAN", 1:25])
+row_data4 <- as.numeric(rnase_norm_mean["DDX21_HUMAN", 1:25])
+
+# Plot
+plot(row_data3,
+     type = "l",        
+     main = "Plot for DDX21_HUMAN",
+     xlab = "Fractions",
+     ylab = "Values",
+     col = "midnightblue",
+     lwd = 2)
+     
+lines(row_data4,
+      type = "l",
+      col = "firebrick3",
+      lwd = 2)
+
+par(mfrow = c(1, 1))
 ```
+
+
 
 
 
@@ -784,7 +806,7 @@ header_plotting <- function(cor_vector,
     plot(
       cs,
       type = "l",
-      main = paste("Protein at index", i, "/ Correlation", round(corr_value, 3)),
+      main = paste("Protein at index", i, "/ Correlation: ", round(corr_value, 3), "/ name: ", rownames(ctrl_data)[i]),
       xlab = "Fractions",
       ylab = "Values",
       col = "midnightblue",
@@ -1294,6 +1316,10 @@ For the selected proteins, there is a clear deviation between the COM values whe
 #####################################
 Julian Baureis Teil des Codes zu Ende 
 #####################################
+
+
+
+
 
 
 
