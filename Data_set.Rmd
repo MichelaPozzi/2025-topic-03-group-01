@@ -1440,8 +1440,8 @@ ggplot(df_plot, aes(x = "", y = Amount, fill = Status)) +
   geom_bar(stat = "identity", width = 1) +
   coord_polar("y") +
   theme_void() +
-  labs(title = "RBP2GO Classification of all ctrl_norm_mean proteins"
-  scale_fill_manual(values = c("firebrick", "midnightblue", "darkseagreen3"))
+  labs(title = "RBP2GO Classification of all ctrl_norm_mean proteins",
+  scale_fill_manual(values = c("firebrick", "midnightblue", "darkseagreen3")))
 ```
 
 ```{r}
