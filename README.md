@@ -35,18 +35,24 @@ Our approach enables the identification of RNA-dependent proteins based on their
 
 This document contains our project code. It is divided into the following sections:
 
-> 1.  Load Dataset
-> 2.  Data Cleanup
+> 1.  Load dataset
+> 2.  Data cleanup
 > 3.  Normalization
 > 4.  Identification of local maxima as fit parameters
 > 5.  Identification of shoulders
 > 6.  Total count of maxima (peaks and shoulders) per protein
 > 7.  Identification of proteins with different maxima amount in ctrl vs rnase
-> 8.  Criteria for selecting rna-dependent proteins
-> 9.  Wilcoxon rank-sum test
-> 10. Principle Component Analysis
-> 11. k-means clustering
-> 12. Linear regression analysis
+> 8.  Add center of mass values
+> 9.  Correlation functions
+> 10. First criterion for data set purification
+> 11. Second criterion for data set purification
+> 12. Combining purified data sets
+> 13. t-test
+> 14. Further visualization/interpretation of purified data
+> 15. Evaluation of selection criteria
+> 16. Principle Component Analysis
+> 17. k-means clustering
+> 18. Linear regression analysis
 
 ***Poster:***
 
