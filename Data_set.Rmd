@@ -1289,7 +1289,7 @@ plot(
   ylab = "COM from rnase_selected",
   main = "COM: selected proteins",
   pch = 19,       
-  col = "steelblue"    
+  col = "salmon"    
 )
 
 points(
@@ -1302,18 +1302,18 @@ abline(a = 0, b = 1, col = "black", lwd = 3, lty = 3)
 
 
 plot(
-  ctrl_no_COM_shift$COM, rnase_no_COM_shift$COM,
+  ctrl_no_main_shift$COM, rnase_no_main_shift$COM,
   xlab = "COM from ctrl_not_selected",
   ylab = "COM from rnase_not_selected",
   main = "COM: not selected proteins",
   pch = 19,       
-  col = "midnightblue"    
+  col = "mediumpurple1"    
 )
 
 points(
   ctrl_above_threshold$COM, rnase_above_threshold$COM,
   pch = 19,
-  col = "seagreen3"
+  col = "midnightblue"
 )
 
 abline(a = 0, b = 1, col = "black", lwd = 3, lty = 3)
@@ -1322,9 +1322,8 @@ abline(a = 0, b = 1, col = "black", lwd = 3, lty = 3)
 
 par(mfrow = c(1, 1)) 
 ```
-
-Interpretation: For the not selected proteins, there is mostly no or only a small deviation between the COM values when comparing ctrl and rnase intensities.  
-For the selected proteins, there is a clear deviation between the COM values when comparing ctrl and rnase. There is a trend observable. Most of the proteins show a high COM value in the ctrl group, and at the same time, a lower COM value for the rnase group. This indicates, that during the RNse digestion in the experiment, those proteins previously bound to RNA were freed and isolated from their RNP-complexes and migrated into less dense fractions. A big part of their intensity "potential" and hence their center of mass consequently appears in smaller fractions, leading to the observed lower COM values for the rnase group.
+The selected proteins consist of the two substes ctrl/rnase_COM_shift (color salmon) and ctrl/rnase_under_threshold (color firebrick). The not selected proteins consist of the two substes ctrl/rnase_no_main_shift (color purple) and ctrl/rnase_above_threshold (color midnightblue).
+Interpretation: For the not selected proteins, there is mostly no or only a small deviation between the COM values when comparing ctrl and rnase intensities. For the selected proteins, there is a clear deviation between the COM values when comparing ctrl and rnase. There is a trend observable. Most of the proteins show a high COM value in the ctrl group, and at the same time, a lower COM value for the rnase group. This indicates, that during the RNse digestion in the experiment, those proteins previously bound to RNA were freed and isolated from their RNP-complexes and migrated into less dense fractions. A big part of their intensity "potential" and hence their center of mass consequently appears in smaller fractions, leading to the observed lower COM values for the rnase group.
 It should be further noted, that among our selected proteins, there are also a few with no big COM shift. They are marked in red. They mostly show their COM value for ctrl and rnase in higher fractions. Per definition, these proteins have a shift in their main maximum between ctrl and rnase, and also have a correlation value < 0.7 between ctrl and rnase. The combination of these properties (main maximum shift + lower correlation value + COM at higher fractions) may be explained by the protein partially shifting left and right in the rnase group compared to the ctrl group. If one part of the protein distribution moves in lower fractions and the other part in higher fractions, the overall COM value is not changed that much, but there is a shift in the main maximum and a reduced correlation value, which is seen for these red proteins.
 
 #####################################
