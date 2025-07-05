@@ -1240,16 +1240,16 @@ hist(
   xlab = "Isoelectric point",
   ylab = "Frequency",
   breaks = 30,
-  col = "midnightblue",
+  col = "mediumpurple1",
   border = "white",
   xlim = c(0, 14) 
 )
 
 # ablines
-abline(v = 7, col = "seagreen3", lwd = 2, lty = 2)
+abline(v = 7, col = "firebrick", lwd = 4, lty = 2)
 
 abline(v = mean(final_df_combined_selected$isoelectric_point, na.rm = TRUE),
-       col = "yellow", lwd = 2)
+       col = "midnightblue", lwd = 4)
 
 
 hist(
@@ -1258,16 +1258,16 @@ hist(
   xlab = "Isoelectric point",
   ylab = "Frequency",
   breaks = 30,
-  col = "firebrick",
+  col = "salmon",
   border = "white",
   xlim = c(0, 14)
 )
 
 #ablines 
-abline(v = 7, col = "seagreen3", lwd = 2, lty = 2)
+abline(v = 7, col = "firebrick", lwd = 4, lty = 2)
 
 abline(v = mean(final_df_combined_all_proteins$isoelectric_point, na.rm = TRUE),
-       col = "yellow", lwd = 2)
+       col = "midnightblue", lwd = 4)
 
 par(mfrow = c(1, 1))
 ```
