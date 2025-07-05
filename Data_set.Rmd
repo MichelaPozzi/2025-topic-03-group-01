@@ -1479,6 +1479,19 @@ plot(pca_result_rnase_not_selected$x[,2:3], col = "midnightblue", pch = 16,
 ```
 
 ```{r}
+# JPEG-Datei öffnen
+jpeg("PC1 vs PC2 RNASE (SHIFT).jpeg", width = 800, height = 600)
+
+plot(pca_result_rnase$x[,1:2], col = "midnightblue", pch = 16,
+     xlab = "PC1", ylab = "PC2", main = "PCA: PC1 vs PC2 RNASE (SHIFT)")
+
+
+# Grafikgerät schließen
+dev.off()
+
+```
+
+```{r}
 #Recognize centers for k-means clustering -> 3 centers
 plot(pca_result_ctrl, type = "l", main = "Elbow-Plot CTRL (SHIFT)")
 plot(pca_result_rnase, type = "l", main = "Elbow-Plot RNASE (SHIFT)")
@@ -1487,6 +1500,7 @@ plot(pca_result_rnase, type = "l", main = "Elbow-Plot RNASE (SHIFT)")
 plot(pca_result_ctrl_not_selected, type = "l", main = "Elbow-Plot CTRL (NO SHIFT)")
 plot(pca_result_rnase_not_selected, type = "l", main = "Elbow-Plot RNASE (NO SHIFT)")
 ```
+
 ```{r}
 pca_ctrl_pc1_pc2 <- as.data.frame(pca_result_ctrl$x[, 1:2])
 pca_ctrl_pc1_pc3 <- as.data.frame(pca_result_ctrl$x[, c(1,3)])
@@ -1590,7 +1604,7 @@ fviz_cluster(km_result_ctrl_pc1_pc2, data = pca_ctrl_pc1_pc2,
              main = "k-Means Cluster: PC1 vs PC2 CTRL (SHIFT)")
 fviz_cluster(km_result_rnase_pc1_pc2, data = pca_rnase_pc1_pc2,
              geom = "point", ellipse.type = "norm", stand = FALSE,
-             palette = c("firebrick3", "violetred4", "midnightblue"), ggtheme = theme_minimal(),
+             palette = c("violetred4", "firebrick3", "midnightblue"), ggtheme = theme_minimal(),
              main = "k-Means Cluster: PC1 vs PC2 RNASE (SHIFT)")
 
 fviz_cluster(km_result_ctrl_pc1_pc3, data = pca_ctrl_pc1_pc3,
@@ -1599,7 +1613,7 @@ fviz_cluster(km_result_ctrl_pc1_pc3, data = pca_ctrl_pc1_pc3,
              main = "k-Means Cluster: PC1 vs PC3 CTRL (SHIFT)")
 fviz_cluster(km_result_rnase_pc1_pc3, data = pca_rnase_pc1_pc3,
              geom = "point", ellipse.type = "norm", stand = FALSE,
-             palette = c("violetred4", "midnightblue", "firebrick3"), ggtheme = theme_minimal(),
+             palette = c("midnightblue", "firebrick3", "violetred4"), ggtheme = theme_minimal(),
              main = "k-Means Cluster: PC1 vs PC3 RNASE (SHIFT)")
 
 fviz_cluster(km_result_ctrl_pc2_pc3, data = pca_ctrl_pc2_pc3,
@@ -1620,7 +1634,7 @@ fviz_cluster(km_result_ctrl_pc1_pc2_not_selected, data = pca_ctrl_pc1_pc2_not_se
              main = "k-Means Cluster: PC1 vs PC2 CTRL (NO SHIFT)")
 fviz_cluster(km_result_rnase_pc1_pc2_not_selected, data = pca_rnase_pc1_pc2_not_selected,
              geom = "point", ellipse.type = "norm", stand = FALSE,
-             palette = c("midnightblue", "firebrick3", "violetred4"), ggtheme = theme_minimal(),
+             palette = c("violetred4", "firebrick3", "midnightblue"), ggtheme = theme_minimal(),
              main = "k-Means Cluster: PC1 vs PC2 RNASE (NO SHIFT)")
 
 fviz_cluster(km_result_ctrl_pc1_pc3_not_selected, data = pca_ctrl_pc1_pc3_not_selected,
@@ -1629,7 +1643,7 @@ fviz_cluster(km_result_ctrl_pc1_pc3_not_selected, data = pca_ctrl_pc1_pc3_not_se
              main = "k-Means Cluster: PC1 vs PC3 CTRL (NO SHIFT)")
 fviz_cluster(km_result_rnase_pc1_pc3_not_selected, data = pca_rnase_pc1_pc3_not_selected,
              geom = "point", ellipse.type = "norm", stand = FALSE,
-             palette = c("firebrick3", "midnightblue", "violetred4"), ggtheme = theme_minimal(),
+             palette = c("midnightblue", "firebrick3", "violetred4"), ggtheme = theme_minimal(),
              main = "k-Means Cluster: PC1 vs PC3 RNASE (NO SHIFT)")
 
 fviz_cluster(km_result_ctrl_pc2_pc3_not_selected, data = pca_ctrl_pc2_pc3_not_selected,
@@ -1640,20 +1654,6 @@ fviz_cluster(km_result_rnase_pc2_pc3_not_selected, data = pca_rnase_pc2_pc3_not_
              geom = "point", ellipse.type = "norm", stand = FALSE,
              palette = c("midnightblue", "firebrick3", "violetred4"), ggtheme = theme_minimal(),
              main = "k-Means Cluster: PC2 vs PC3 RNASE (SHIFT)")
-```
-```{r}
-# JPEG-Datei öffnen
-jpeg("k-Means Cluster PC1 vs PC2 RNASE (NO SHIFT).jpeg", width = 800, height = 600)
-
-fviz_cluster(km_result_rnase_pc1_pc2_not_selected, data = pca_rnase_pc1_pc2_not_selected,
-             geom = "point", ellipse.type = "norm", stand = FALSE,
-             palette = c("midnightblue", "firebrick3", "violetred4"), ggtheme = theme_minimal(),
-             main = "k-Means Cluster: PC1 vs PC2 RNASE (NO SHIFT)")
-
-
-# Grafikgerät schließen
-dev.off()
-
 ```
 
 **************************************************************************************************************
