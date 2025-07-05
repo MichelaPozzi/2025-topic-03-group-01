@@ -1279,7 +1279,7 @@ The selected proteins (left histogram) show a tendency to higher values for the 
 14. Further visualizations and interpretation of the purified data
 ***********************************************************************************************************
 
-Scatter plot for visualizing how the COM values behave for the selected and not_selected proteins between ctrl and rnase groups
+Scatter plot for visualizing how the COM values behave for the selected and not_selected proteins between ctrl and rnase groups 
 ```{r}
 par(mfrow = c(1, 2)) 
 
