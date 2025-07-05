@@ -1284,38 +1284,58 @@ Scatter plot for visualizing how the COM values behave for the selected and not_
 par(mfrow = c(1, 2)) 
 
 plot(
-  ctrl_selected$COM, rnase_selected$COM,
+  ctrl_COM_shift$COM, rnase_COM_shift$COM,
   xlab = "COM from ctrl_selected",
   ylab = "COM from rnase_selected",
-  main = "Scatter Plot of the COM values",
+  main = "COM: selected proteins",
   pch = 19,       
-  col = "midnightblue"    
+  col = "steelblue"    
 )
-abline(a = 0, b = 1, col = "firebrick", lwd = 3, lty = 3)
+
+points(
+  ctrl_under_threshold$COM, rnase_under_threshold$COM,
+  pch = 19,
+  col = "firebrick"
+)
+
+abline(a = 0, b = 1, col = "black", lwd = 3, lty = 3)
 
 
 plot(
-  ctrl_not_selected$COM, rnase_not_selected$COM,
+  ctrl_no_COM_shift$COM, rnase_no_COM_shift$COM,
   xlab = "COM from ctrl_not_selected",
   ylab = "COM from rnase_not_selected",
-  main = "Scatter Plot of the COM values",
+  main = "COM: not selected proteins",
   pch = 19,       
   col = "midnightblue"    
 )
-abline(a = 0, b = 1, col = "firebrick", lwd = 3, lty = 3)
+
+points(
+  ctrl_above_threshold$COM, rnase_above_threshold$COM,
+  pch = 19,
+  col = "seagreen3"
+)
+
+abline(a = 0, b = 1, col = "black", lwd = 3, lty = 3)
 
 
 
 par(mfrow = c(1, 1)) 
 ```
+
 Interpretation: For the not selected proteins, there is mostly no or only a small deviation between the COM values when comparing ctrl and rnase intensities.  
 For the selected proteins, there is a clear deviation between the COM values when comparing ctrl and rnase. There is a trend observable. Most of the data points show a high COM value in the ctrl group, and at the same time, a lower COM value for the rnase group. This indicates, that during the RNse digestion in the experiment, those proteins previously bound to RNA were freed and isolated from their RNP-complexes and migrated into less dense fractions. A big part of their intensity "potential" and hence their center of mass consequently appears in smaller fractions, leading to the observed lower COM values for the rnase group.
-
+It should be further noted, that among our selected proteins are also ones with no big COM shift. They are marked in red. They mostly show their COM value in higher fractions. Per definition, these proteins have a shift in their main maximum between ctrl and rnase, and also have a correlation value < 0.7. These points contain for example proteins, that partially precipitate in the rnase group, and at the same time also partially shift to the left when compared to their ctrl distribution. This may explain the higher presence of these proteins for higher COM values. 
 
 
 #####################################
 Julian Baureis Teil des Codes zu Ende 
 #####################################
+
+
+
+
+
 
 
 
