@@ -32,13 +32,13 @@ Supervisors: Maïwen Caudron-Herger and Michela Pozzi
 **************************************************************************************************************
 
 ```{r}
-#Reads table by indicating path to directory where the dataset is stored, and stores it to variable NS_Table (NS for Non-synchronizied HeLa-cells)
+#Reads table by indicating path to directory where the dataset is stored, and stores it to variable NS_Table (NS for Non-synchronized HeLa-cells)
 
 NS_Table <- read.table("Data/Excel table of original data, copy but dont open.csv", header=TRUE, row.names=1, sep = ";")
 ```
 
 ```{r}
-#The first 12 titles of the table (NS_Table) rows/colums are read out
+#The first 12 titles of the table (NS_Table) rows/columns are read out
 
 #Row names are protein names
 head(rownames(NS_Table),12)
@@ -390,8 +390,8 @@ par(mfrow = c(1, 1))
 ```
 
 **************************************************************************************************************
-4. Find local maxima
-  by Julian Baureis/ Luisa Wintel
+4. Find Local Maxima
+  by Julian Baureis & Luisa Wintel
 **************************************************************************************************************
 
 - Local maxima are peaks, that are higher than the two surrounding values 
@@ -480,7 +480,8 @@ rnase_norm_mean$global_maximum <- sapply(1:nrow(ctrl_norm_mean), function(i) {
 
 
 ****************************************************************************************************************
-5. Identify shoulders
+5. Identify Shoulders
+  by Julian Baureis & Luisa Wintel
 ****************************************************************************************************************
 
 - Shoulders are regions that are not recognized as peaks, even though they have a high signal intensity.
@@ -617,6 +618,7 @@ rnase_norm_mean$combined_max_rnase = rnase_3[, "combined_max_rnase"]
 
 ***********************************************************************************************************
 6. Count Total Number of Maxima (Peaks + Shoulders) per Protein
+   by Julian Baureis & Luisa Wintel influenced by ChatGPT 
 ***********************************************************************************************************
 
 ```{r}
@@ -645,6 +647,7 @@ rnase_norm_mean$n_max_comb = rnase_3[, "n_max_comb"]
 
 ***********************************************************************************************************
 7. Identification of proteins with a different number of peaks in CTRL vs. RNASE
+   by Julian Baureis & Luisa Wintel influenced by ChatGPT 
 ***********************************************************************************************************
 
 ```{r}
@@ -672,6 +675,7 @@ rnase_norm_mean$n_local_maxima = rnase_3[, "n_local_maxima"]
 
 ***********************************************************************************************************
 8. Add COM (center of mass) values 
+   by Julian Baureis & Luisa Wintel influenced by ChatGPT 
 ***********************************************************************************************************
 
 ```{r}
@@ -687,9 +691,6 @@ rnase_norm_mean$COM <- apply(rnase_norm_mean[, 1:25], 1, function(x) {
   sum((1:25) * x, na.rm = TRUE) / sum(x, na.rm = TRUE)
 })
 ```
-
-
-
 
 
 ***********************************************************************************************************
@@ -1269,7 +1270,7 @@ It should be further noted, that among our selected proteins, there are also a f
 
 ***********************************************************************************************************
 15. Evaluation of the Selection Criteria
-  by Luisa Wintel (and Julian Baureis) influenced by ChatGPT
+  by Luisa Wintel & Julian Baureis influenced by ChatGPT
 ***********************************************************************************************************
 
 Loading Reference Datasets from RBP2GO
@@ -1367,6 +1368,7 @@ ggplot(df_rbp_pie, aes(x = "", y = Amount, fill = Status)) +
   scale_fill_manual(values = c("Selected RBP" = "firebrick", 
                                "Not Selected RBP" = "salmon"))
 ```
+
 Assessing False Positives in Non-RBPs (False Positives, True Negatives)
 
 ```{r}
@@ -1415,7 +1417,7 @@ ggplot(df_non_rbp_pie, aes(x = "", y = Amount, fill = Status)) +
 ```
 
 ***********************************************************************************************************
-15. Principle Component Analysis (PCA)
+16. Principle Component Analysis (PCA)
   by Benjamin Nicklas influenced by ChatGPT
 ***********************************************************************************************************
 
@@ -1579,7 +1581,7 @@ fviz_nbclust(pca_rnase_pc2_pc3_not_selected, kmeans, method = "silhouette") +
 ```
 
 ***********************************************************************************************************
-10. K-means clustering 
+17. K-means clustering 
   by Benjamin Nicklas influenced by ChatGPT
 ***********************************************************************************************************
 
@@ -1668,7 +1670,7 @@ fviz_cluster(km_result_rnase_pc2_pc3_not_selected, data = pca_rnase_pc2_pc3_not_
 ```
 
 **************************************************************************************************************
-11. Linear regression analysis
+18. Linear regression analysis
   by Julia Ferdin influenced by ChatGPT
 **************************************************************************************************************
 
