@@ -1166,16 +1166,16 @@ hist(
   xlab = "Isoelectric point",
   ylab = "Frequency",
   breaks = 30,
-  col = "mediumpurple1",
+  col = "salmon",
   border = "white",
   xlim = c(0, 14) 
 )
 
 # ablines
-abline(v = 7, col = "firebrick", lwd = 4, lty = 2)
+#abline(v = 7, col = "firebrick", lwd = 4, lty = 2)
 
 abline(v = mean(final_df_combined_selected$isoelectric_point, na.rm = TRUE),
-       col = "midnightblue", lwd = 4)
+       col = "black", lwd = 4)
 
 
 hist(
@@ -1184,19 +1184,20 @@ hist(
   xlab = "Isoelectric point",
   ylab = "Frequency",
   breaks = 30,
-  col = "salmon",
+  col = "grey70",
   border = "white",
   xlim = c(0, 14)
 )
 
 #ablines 
-abline(v = 7, col = "firebrick", lwd = 4, lty = 2)
+#abline(v = 7, col = "firebrick", lwd = 4, lty = 2)
 
 abline(v = mean(final_df_combined_all_proteins$isoelectric_point, na.rm = TRUE),
-       col = "midnightblue", lwd = 4)
+       col = "black", lwd = 4)
 
 par(mfrow = c(1, 1))
 ```
+
 The selected proteins (left histogram) show a tendency to higher values for the isoelectric point. The mean value (black line) of the isoelectric points is higher in this histogram than in the other histogram, and differs more from the neutral value (red line). There are in general more values for higher isoelectric points among the selected proteins. Based on our intensity distribution criteria we managed to separate proteins we assumed are RNA-dependent. This assumption seems to be in accord with the observed behaviour of the histogramms, in which our likely RNA-dependent proteins tend to show a higher isoelectric point.
 
 
@@ -1255,9 +1256,11 @@ It should be further noted, that among our selected proteins, there are also a f
 End part Julian Baureis
 Beginning part Luisa Wintel
 ***********************************************************************************************************
-15. Evaluation of the Selection Criteria
-  by Luisa Wintel (and Julian) influenced by ChatGPT
+100. Evaluation of the Selection Criteria
+  by Luisa Wintel (and Julian Baureis) influenced by ChatGPT
 ***********************************************************************************************************
+
+Loading Reference Datasets from RBP2GO
 
 ```{r}
 # RBP2GO database contains proteome-wide datasets for RBPs from 53 studies including 105 datasets -> 22 552 identified RBP candidates across 13 species.)
@@ -1269,6 +1272,8 @@ Beginning part Luisa Wintel
 rbp_pos <- read.delim("Data/RBP2GO Table RBPs.txt", skip = 6, sep = "\t", stringsAsFactors = FALSE)
 rbp_neg <- read.delim("Data/RBP2GO Table Non-RBPs.txt", skip = 6, sep = "\t", stringsAsFactors = FALSE)
 ```
+
+Classifying Proteins According to RBP2GO
 
 ```{r}
 # Add a new column to the ctrl_norm_mean dataframe to store RBP2GO status
@@ -1287,6 +1292,8 @@ ctrl_norm_mean$RBP2GO_status[
 ] <- "Non-RBP"
 ```
 
+Visualization of the RBP2GO Classification
+
 ```{r}
 library(ggplot2)
 
@@ -1300,86 +1307,100 @@ ggplot(df_plot, aes(x = "", y = Amount, fill = Status)) +
   geom_bar(stat = "identity", width = 1) +
   coord_polar("y") +
   theme_void() +
-  labs(title = "RBP2GO Classification of all ctrl_norm_mean proteins",
-  scale_fill_manual(values = c("firebrick", "midnightblue", "darkseagreen3")))
+  labs(title = "RBP2GO Classification of all ctrl_norm_mean proteins") + 
+  scale_fill_manual(values = c("firebrick", "midnightblue", "darkseagreen3"))
 ```
 
+Assessing Selection Accuracy for RBP2GO-Known RBPs (True Positives, False Negatives)
+
 ```{r}
-# Create a logical vector: TRUE if the protein in ctrl_selected is a known RBP
-z = rownames(ctrl_selected) %in% rbp_pos$Entry_Name
-length(z)
-sum(z) # counts TRUE -> previously identified RBPs in ctrl_norm_mean
+# Convert all protein names to uppercase to make matching case-insensitive (-> "toupper")
+# Vectors for all proteins in ctrl_norm_mean (all-prots), rbp_pos (rbp_known), ctrl_selected (selected_prots), ctrl_not_selected (not_selected_prots)
+all_prots <- toupper(rownames(ctrl_norm_mean))
+rbp_known <- toupper(rbp_pos$Entry_Name)
+selected_prots <- toupper(rownames(ctrl_selected))
+not_selected_prots <- toupper(rownames(ctrl_not_selected))
 
-# Do the same for ctrl_not_selected
-y = rownames(ctrl_not_selected) %in% rbp_pos$Entry_Name
-length(y)
-sum(y) # counts TRUE -> previously identified Non-RBPs in ctrl_norm_mean
-```
-```{r}
-# Classification of selected proteins
+# Find RBPs (from the database) that are in our dataset (ctrl_norm_mean)
+rbps_in_ctrl <- all_prots[all_prots %in% rbp_known]
+#sum(rbps_in_ctrl)
 
-# Collect the protein names in each RBP2GO table and the names of the selected proteins as a vector, uppercase for comparison
-prot_names_selected <- toupper(rownames(ctrl_selected))
-rbp_pos_names <- toupper(rbp_pos$Entry_Name)
-rbp_neg_names <- toupper(rbp_neg$Entry_Name)
+# From the RBPs that are in ctrl_norm_mean and RBP2GO-known RBPs, identify the ones we selected (in ctrl_selected)
+# True Positives: Selected RBP2GO-known RBPs
+selected_rbps <- rbps_in_ctrl[rbps_in_ctrl %in% selected_prots]
+# Identify the ones that were not selected (in ctrl_not_selected)
+# False negatives: Not selected but RBP2GO-known RBPs
+not_selected_rbps <- rbps_in_ctrl[rbps_in_ctrl %in% not_selected_prots]
 
-# Create a status vector for each protein in ctrl_selected, default "unknown"
-status_selected <- rep("unknown", nrow(ctrl_selected))
+# Create a "status label" for each RBP: "Selected" or "Not Selected"
+status <- c(
+  rep("Selected RBP", length(selected_rbps)),
+  rep("Not Selected RBP", length(not_selected_rbps))
+)
 
-# Label proteins found in rbp_pos as "selected RBPs"
-status_selected[prot_names_selected %in% rbp_pos_names] <- "selected RBPs"
-# Label proteins found in rbp_neg as "selected Non-RBPs"
-status_selected[prot_names_selected %in% rbp_neg_names] <- "selected Non-RBPs"
+# Create a dataframe counting ("table") how many fall into each category
+df_rbp_pie <- as.data.frame(table(status))
+colnames(df_rbp_pie) <- c("Status", "Amount")
 
-# Create a data frame of the counts per category
+# Pie Chart 1: RBP2GO-known RBPs and how many we selected, not selected
+# Load plotting library
 library(ggplot2)
 
-df_plot <- as.data.frame(table(status_selected))
-colnames(df_plot) <- c("Status", "Amount")
-
-ggplot(df_plot, aes(x = "", y = Amount, fill = Status)) +
-  geom_bar(stat = "identity", width = 1) +
-  coord_polar("y") +
-  theme_void() +
-  labs(title = "Classification of the selected proteins") +
-  scale_fill_manual(values = c("selected RBPs" = "midnightblue", 
-                               "selected Non-RBPs" = "firebrick", 
-                               "unknown" = "darkseagreen3"))
+# Create a pie chart showing how many known RBPs were selected or not selected
+ggplot(df_rbp_pie, aes(x = "", y = Amount, fill = Status)) +
+  geom_bar(stat = "identity", width = 1) +  # Make bar chart (for pie)
+  coord_polar("y") +                        # Convert bar chart to pie chart
+  theme_void() +                            # Remove background, axes, etc.
+  labs(title = "Known RBPs: Selected vs Not Selected") +     
+  scale_fill_manual(values = c("Selected RBP" = "firebrick", 
+                               "Not Selected RBP" = "salmon"))
 ```
+Assessing False Positives in Non-RBPs (False Positives, True Negatives)
 
 ```{r}
-# Classification of not selected proteins
-# Collect the protein names in each RBP2GO table and the names of the not selected proteins as a vector, uppercase for comparison
-prot_names_not_selected <- toupper(rownames(ctrl_not_selected))
-rbp_pos_names <- toupper(rbp_pos$Entry_Name)
-rbp_neg_names <- toupper(rbp_neg$Entry_Name)
+# Convert all protein names to uppercase to make matching case-insensitive (-> "toupper")
+# Vectors for all proteins in ctrl_norm_mean (all-prots), rbp_neg (non_rbp_known), ctrl_selected (selected_prots), ctrl_not_selected (not_selected_prots)
+all_prots <- toupper(rownames(ctrl_norm_mean))
+non_rbp_known <- toupper(rbp_neg$Entry_Name)
 
-# Create a status vector for each protein in ctrl_selected, default "unknown"
-status_not_selected <- rep("unknown", nrow(ctrl_not_selected))
+# Find known Non-RBPs that are in our HeLa-dataset (ctrl_norm_mean)
+non_rbps_in_HeLa <- all_prots[all_prots %in% non_rbp_known]
 
-# Label proteins found in rbp_pos as "selected RBPs"
-# Label proteins found in rbp_neg as "selected Non-RBPs"
-status_not_selected[prot_names_not_selected %in% rbp_pos_names] <- "selected RBPs"
-status_not_selected[prot_names_not_selected %in% rbp_neg_names] <- "selected Non-RBPs"
+# From the proteins that are in ctrl_norm_mean and are RBP2GO-known non-RBPs, find how many were wrongly selected (in ctrl_selected)
+# False positives: selected known non_RBPs 
+selected_non_rbps <- non_rbps_in_HeLa[non_rbps_in_HeLa %in% selected_prots]  
+# remember: selected_prots <- toupper(rownames(ctrl_selected))
 
-# Create a data frame of the counts per category
+# Finds how many were correctly not selected
+# True negatives: not selected non_RBPs 
+not_selected_non_rbps <- non_rbps_in_HeLa[non_rbps_in_HeLa %in% not_selected_prots] 
+# remember: not_selected_prots <- toupper(rownames(ctrl_not_selected))
+
+# Create "status labels"
+status_non_rbps <- c(
+  rep("Selected Non-RBP", length(selected_non_rbps)),         # "Wrongly selected"
+  rep("Not Selected Non-RBP", length(not_selected_non_rbps))  # "Correctly ignored"
+)
+
+# Create dataframe and calculate percentages
+df_non_rbp_pie <- as.data.frame(table(status_non_rbps))
+colnames(df_non_rbp_pie) <- c("Status", "Amount")
+# df_non_rbp_pie$Percentage <- round((df_non_rbp_pie$Amount / sum(df_non_rbp_pie$Amount)) * 100, 1)
+# print(df_non_rbp_pie)
+
+
+# Pie Chart 2: RBP2GO-known RBPs and how many we selected, not selected
 library(ggplot2)
 
-df_plot_not_selected <- as.data.frame(table(status_not_selected))
-colnames(df_plot_not_selected) <- c("Status", "Amount")
-
-ggplot(df_plot_not_selected, aes(x = "", y = Amount, fill = Status)) +
-  geom_bar(stat = "identity", width = 1) +
-  coord_polar("y") +
-  theme_void() +
-  labs(title = "Classification of the NOT selected proteins") +
-  scale_fill_manual(values = c("selected RBPs" = "midnightblue", 
-                               "selected Non-RBPs" = "firebrick", 
-                               "unknown" = "darkseagreen3"))
+# Create a pie chart showing how many known Non-RBPs were selected or not selected
+ggplot(df_non_rbp_pie, aes(x = "", y = Amount, fill = Status)) +
+  geom_bar(stat = "identity", width = 1) +  # Make bar chart (for pie) 
+  coord_polar("y") +                        # Convert bar chart to pie chart
+  theme_void() +                            # Remove background, axes, etc.
+  labs(title = "Known Non-RBPs: Selected vs Not Selected") +
+  scale_fill_manual(values = c("Selected Non-RBP" = "mediumpurple1", 
+                               "Not Selected Non-RBP" = "midnightblue"))
 ```
-
-
-
 
 ***********************************************************************************************************
 15. Principle Component Analysis (PCA)
