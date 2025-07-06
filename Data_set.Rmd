@@ -835,7 +835,7 @@ Hypothesis: Correlation of ctrl_COM_shift with rnase_COM_shift is lower than tha
 
 Correlation can be seen as a measure for the similarity between the distribution of two curves. In case of low correlation, the two curves are less similar compared to high correlation. 
 
-Define the variables for the correlation values, use the correlation function 
+Define the variables for the correlation values, use the correlation function  
 ```{r}
 # Mean of the correlation values (ctrl vs. rnase) for those proteins whose COM is shifted by at least 2 fractions
 COM_shifter = correlations(ctrl_COM_shift, rnase_COM_shift)
