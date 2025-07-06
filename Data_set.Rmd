@@ -34,7 +34,7 @@ Supervisors: Maïwen Caudron-Herger and Michela Pozzi
 ```{r}
 #Reads table by indicating path to directory where the dataset is stored, and stores it to variable NS_Table (NS for Non-synchronizied HeLa-cells)
 
-NS_Table <- read.table("Daten/Data, copy but dont open.csv", header=TRUE, row.names=1, sep = ";")
+NS_Table <- read.table("Data/Excel table of original data, copy but dont open.csv", header=TRUE, row.names=1, sep = ";")
 ```
 
 ```{r}
@@ -1043,8 +1043,8 @@ We assume, that RBPs, due to their ability to interact with the negatively charg
 
 ```{r}
 # Read the two data sets from the website RBP2GO, among other things they contain protein names for RBPs and not RBPs, as well as the values for their isoelectric points
-rbp_pos <- read.delim("Daten/RBP2GO Table RBPs.txt", skip = 6, sep = "\t", stringsAsFactors = FALSE)
-rbp_neg <- read.delim("Daten/RBP2GO Table Non-RBPs.txt", skip = 6, sep = "\t", stringsAsFactors = FALSE)
+rbp_pos <- read.delim("Data/RBP2GO Table RBPs.txt", skip = 6, sep = "\t", stringsAsFactors = FALSE)
+rbp_neg <- read.delim("Data/RBP2GO Table Non-RBPs.txt", skip = 6, sep = "\t", stringsAsFactors = FALSE)
 ```
 
 ```{r}
@@ -1266,8 +1266,8 @@ Beginning part Luisa Wintel
 # "\t" means the values are separated by tabs.
 # stringsAsFactors => FALSE means text columns are treated as text and not turned into factors. Characters remain usable.
 
-rbp_pos <- read.delim("Daten/RBP2GO Table RBPs.txt", skip = 6, sep = "\t", stringsAsFactors = FALSE)
-rbp_neg <- read.delim("Daten/RBP2GO Table Non-RBPs.txt", skip = 6, sep = "\t", stringsAsFactors = FALSE)
+rbp_pos <- read.delim("Data/RBP2GO Table RBPs.txt", skip = 6, sep = "\t", stringsAsFactors = FALSE)
+rbp_neg <- read.delim("Data/RBP2GO Table Non-RBPs.txt", skip = 6, sep = "\t", stringsAsFactors = FALSE)
 ```
 
 ```{r}
@@ -1378,16 +1378,7 @@ ggplot(df_plot_not_selected, aes(x = "", y = Amount, fill = Status)) +
                                "unknown" = "darkseagreen3"))
 ```
 
-```{r}
-# Julians custom plotting function 'header_plotting'.
-# It likely highlights the top 100 proteins with high correlation (< 0.99) between two datasets.
-header_plotting(cor_all_proteins$correlations, # correlation values
-                ctrl_norm_mean, # condition 1
-                rnase_norm_mean, # condition 2
-                n =100, # how many top results to show
-                cor_threshold = 0.99, # only correlations less than 0.99
-                direction = "lt") # less than
-```
+
 
 
 ***********************************************************************************************************
