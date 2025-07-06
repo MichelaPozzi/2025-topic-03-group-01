@@ -8,7 +8,7 @@
 
 Welcome to our project in which we used mass-spectrometry data of non-synchronized HeLa cells in order to perform a proteome-wide screen to identify RNA-dependent proteins.
 
-**Our dataset...**\
+**Our dataset ...**\
 ... contains 4,765 proteins and 150 columns, representing 25 density fractions for each condition, measured in triplicates.\
 ... was generated using the R-Deep approach.\
 ... is based on a cell lysate obtained from non-synchronized HeLa cells.
@@ -23,9 +23,18 @@ Ribonucleoprotein (RNP) complexes - composed of RNA and RNA-binding proteins (RB
 
 ## A Glimpse into Potential Results
 
-Our approach enables the identification of RNA-dependent proteins based on their redistribution across the sucrose gradient upon RNase treatment. Specifically, we select proteins that exhibit a shift of at least three fractions in both their main peak fraction and center of mass between the control and RNase-treated conditions. Proteins displaying highly correlated abundance profiles (based on intensity across all 25 fractions) between both conditions are excluded, as such consistent profiles indicate minimal redistribution and are unlikely to be RNA-dependent. The robustness of our selection criteria was evaluated by comparison with external datasets in which RNA dependence has been previously annotated.
+Our approach enables the identification of RNA-dependent proteins based on their redistribution across the sucrose gradient upon RNase treatment.
+To classify proteins with respect to RNA-dependency, we defined two categories based on quantitative changes in their distribution profiles:
 
-![Fig. 1: Plot of the NUCL_HUMAN protein showing a significant shift of the RNASE compared to the control.](Images/NUCL_HUMAN_Plot.jpeg){width="734"}
+Selected (RNA-dependent): Proteins were classified as RNA-dependent  
+- if they exhibited a center of mass (COM) shift of ≥ 2 fractions,  
+- or — in the absence of a COM shift — if they showed a main peak shift of ≥ 3 fractions combined with a Pearson correlation < 0.7 between control and RNase conditions.  
+
+Not selected (RNA-independent): Proteins were considered RNA-independent   
+- if they showed no COM shift ≥ 2 and no main peak shift ≥ 3,  
+- or if a peak shift occurred without a COM shift, but the profile correlation remained ≥ 0.7.  
+    
+![Fig. 1: Protein intensity profiles across 25 fractions. DDX21_HUMAN shows a clear shift in its intensity distribution upon RNase treatment (blue), suggesting RNA-dependency. In contrast, SPTN1_HUMAN displays no noticeable change compared to the control condition (red), indicating RNA-independent behavior.](Images/Plot of SPTN1_HUMAN and DDX21_HUMAN.png){width="734"}
 
 ------------------------------------------------------------------------
 
@@ -74,16 +83,20 @@ This folder contains the plots we used in the poster and the README.
 
 ### Sources:
 
--   [Sternburg *et al.*, Global Approaches in Studying RNA-Binding Protein Interaction Networks, 2020, Trends in Biochemical Sciences.pdf](https://github.com/user-attachments/files/19981693/Sternburg.et.al.Global.Approaches.in.Studying.RNA-Binding.Protein.Interaction.Networks.2020.Trends.in.Biochemical.Sciences.pdf)
+-   [Sternburg *et al.*, Global Approaches in Studying RNA-Binding Protein Interaction Networks, 2020, Trends in Biochemical Sciences](https://github.com/user-attachments/files/19981693/Sternburg.et.al.Global.Approaches.in.Studying.RNA-Binding.Protein.Interaction.Networks.2020.Trends.in.Biochemical.Sciences.pdf)
 
--   [Corley *et al.*, How RNA-Binding Proteins Interact with RNA Molecules and Mechanisms, 2020, Molecular Cell.pdf](https://github.com/user-attachments/files/19981705/Corley.et.al.How.RNA-Binding.Proteins.Interact.with.RNA.Molecules.and.Mechanisms.2020.Molecular.Cell.pdf)
+-   [Corley *et al.*, How RNA-Binding Proteins Interact with RNA Molecules and Mechanisms, 2020, Molecular Cell](https://github.com/user-attachments/files/19981705/Corley.et.al.How.RNA-Binding.Proteins.Interact.with.RNA.Molecules.and.Mechanisms.2020.Molecular.Cell.pdf)
 
--   [Gebauer *et al*., RNA-binding proteins in human genetic disease, 2020, Nature Reviews Genetics.pdf](https://github.com/user-attachments/files/19981707/Gebauer.et.al.RNA-binding.proteins.in.human.genetic.disease.2020.Nature.Reviews.Genetics.pdf)
+-   [Gebauer *et al*., RNA-binding proteins in human genetic disease, 2020, Nature Reviews Genetics](https://github.com/user-attachments/files/19981707/Gebauer.et.al.RNA-binding.proteins.in.human.genetic.disease.2020.Nature.Reviews.Genetics.pdf)
 
--   [Caudron-Herger *et al.*, R-DeeP Proteome-wide and Quantitative Identification of RNA-Dependent Proteins by Density Gradient Ultracentrifugation, 2019, Molecular Cell.pdf](https://github.com/user-attachments/files/19981712/Caudron-Herger.et.al.R-DeeP.Proteome-wide.and.Quantitative.Identification.of.RNA-Dependent.Proteins.by.Density.Gradient.Ultracentrifugation.2019.Molecular.Cell.pdf)
+-   [Caudron-Herger *et al.*, R-DeeP Proteome-wide and Quantitative Identification of RNA-Dependent Proteins by Density Gradient Ultracentrifugation, 2019, Molecular Cell](https://github.com/user-attachments/files/19981712/Caudron-Herger.et.al.R-DeeP.Proteome-wide.and.Quantitative.Identification.of.RNA-Dependent.Proteins.by.Density.Gradient.Ultracentrifugation.2019.Molecular.Cell.pdf)
 
--   [Caudron-Herger *et al*., Identification, quantification and bioinformatic analysis of RNA-dependent proteins by RNase treatment and density gradient ultracentrifugation using R-DeeP-2020-Nature Protocols_1.pdf](https://github.com/user-attachments/files/19981715/Caudron-Herger-Identification.quantification.and.bioinformatic.analysis.of.RNA-dependent.proteins.by.RNase.treatment.and.density.gradient.ultracentrifugation.using.R-DeeP-2020-Nature.Protocols_1.pdf)
+-   [Caudron-Herger *et al*., Identification, quantification and bioinformatic analysis of RNA-dependent proteins by RNase treatment and density gradient ultracentrifugation using R-DeeP-2020-Nature Protocols](https://github.com/user-attachments/files/19981715/Caudron-Herger-Identification.quantification.and.bioinformatic.analysis.of.RNA-dependent.proteins.by.RNase.treatment.and.density.gradient.ultracentrifugation.using.R-DeeP-2020-Nature.Protocols_1.pdf)
 
--   [Rajagopal-Proteome-Wide Identification of RNA-Dependent Proteins in Lung Cancer Cells-2022-Cancers.pdf](https://github.com/user-attachments/files/19981723/Rajagopal-Proteome-Wide.Identification.of.RNA-Dependent.Proteins.in.Lung.Cancer.Cells-2022-Cancers.pdf)
+-   [Rajagopal-Proteome-Wide Identification of RNA-Dependent Proteins in Lung Cancer Cells-2022-Cancers](https://github.com/user-attachments/files/19981723/Rajagopal-Proteome-Wide.Identification.of.RNA-Dependent.Proteins.in.Lung.Cancer.Cells-2022-Cancers.pdf)
 
--   [Rajagopal *et al.*, An atlas of RNA-dependent proteins in cell division reveals the riboregulation of mitotic protein-protein interactions. Nat. Commun. 16, 2325 (2025).pdf](https://github.com/user-attachments/files/19981728/Rajagopal.et.al.An.atlas.of.RNA-dependent.proteins.in.cell.division.reveals.the.riboregulation.of.mitotic.protein-protein.interactions.Nat.Commun.16.2325.2025.pdf)
+-   [Rajagopal *et al.*, An atlas of RNA-dependent proteins in cell division reveals the riboregulation of mitotic protein-protein interactions. Nat. Commun. 16, 2325 (2025)](https://github.com/user-attachments/files/19981728/Rajagopal.et.al.An.atlas.of.RNA-dependent.proteins.in.cell.division.reveals.the.riboregulation.of.mitotic.protein-protein.interactions.Nat.Commun.16.2325.2025.pdf)
+
+-   [Caudron‑Herger *et al.*, RBP2GO: a comprehensive pan-species database on RNA-binding proteins, their interactions and functions, 2020, Nucleic Acids Research](https://doi.org/10.1093/nar/gkaa1040)
+
+
