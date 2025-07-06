@@ -391,7 +391,7 @@ par(mfrow = c(1, 1))
 
 **************************************************************************************************************
 4. Find Local Maxima
-  by Julian Baureis & Luisa Wintel
+  by Julian Baureis & Luisa Wintel influenced by ChatGPT & Ms_Statistical_Alnalysis (Maïwen Caudron-Herger)
 **************************************************************************************************************
 
 - Local maxima are peaks, that are higher than the two surrounding values 
@@ -399,44 +399,48 @@ par(mfrow = c(1, 1))
 - Find shoulders that were not discovered previously.
 
 ```{r}
-# In case the original data is advantageous for later analysis
+# Create backup "ctrl/rnase_norm_mean_original" 
+# -> allows to go back to the unmodified data later if needed
 ctrl_norm_mean_original = ctrl_norm_mean
 rnase_norm_mean_original = rnase_norm_mean
 ```
 
-Define Peak Finding Function
+Define a Function to Find Local Maxima
 
 ```{r}
-# Function find_local_maxima
-# Peak is local maximum with a certain amount (=window) of smaller points on each side
+# Function "find_local_maxima" finds local maxima (peaks) in a numeric vector (of protein intensities) 
+# A peak is a protein intensity that is higher than the surrounding values within a certain "window" (= amount of fractions on each side).
 # Bigger window => more stringent peak finding procedure 
 
 find_local_maxima <- function(x, window = 2) {
-  n <- length(x)
-  peaks <- c()
+  n <- length(x)         # 25 fractions
+  peaks <- c()           # Store the indices of detected peaks
 
   for (i in 1:n) {
+    # Define left and right boundaries of the window around the current point (fraction)
     left <- max(1, i - window)
     right <- min(n, i + window)
-    neighbors <- x[left:right][-which((left:right) == i)]
+    # Extract neighboring values (excluding the current point itself)
+    # x[2:6][-3] removes third vector entry -> forth protein intensity x[4]
+    neighbors <- x[left:right][-which((left:right) == i)]   
 
+    # Check if the current value is higher than all its neighbors
     if (all(neighbors <= x[i])) {
-      peaks <- c(peaks, i)
+      peaks <- c(peaks, i)     # Save the index if it qualifies as a peak
     }
   }
-
-  return(peaks)
+  return(peaks) # all fractions with maximum for every protein 
 }
 ```
 
 ```{r}
-# Apply the function to the data set 
-# Restriction to values above an absolute threshold of 2%
+# Apply the peak detection function to each protein (-> row in ctrl_norm_mean)
+# Only peaks above a threshold (> 2) are kept to filter out background noise
 # New column: "local_maxima" (column 26)
 
-ctrl_norm_mean$local_maxima <- apply(ctrl_norm_mean, 1, function(x) {
+ctrl_norm_mean$local_maxima <- apply(ctrl_norm_mean, 1, function(x) {   
 															   peak_indices <- find_local_maxima(x)
-															   filtered <- peak_indices[x[peak_indices] > 2] 
+															   filtered <- peak_indices[x[peak_indices] > 2]  # Only keep those fractions (in filtered) that have protein intensities >2
 															   local_maxima <- unlist(filtered)
 															   local_maxima
 															   })
@@ -449,6 +453,8 @@ rnase_norm_mean$local_maxima <- apply(rnase_norm_mean, 1, function(x) {
 															   })
 ```
 
+Find Main Maximum for each Protein
+
 ```{r}
 # Out of the local maxima, extract the global (greatest) maximum, and save it in a new column "global_maximum" (column 27)
 
@@ -460,10 +466,9 @@ ctrl_norm_mean$global_maximum <- sapply(1:nrow(ctrl_norm_mean), function(i) {
     return(NA)
   } else {
     peak_values <- x[peaks]
-    return(peaks[which.max(peak_values)])
+    return(peaks[which.max(peak_values)])    # Return the position of the highest-intensity peak
   }
 })
-
 
 rnase_norm_mean$global_maximum <- sapply(1:nrow(ctrl_norm_mean), function(i) {
   x <- as.numeric(rnase_norm_mean[i, 1:25])
@@ -585,7 +590,6 @@ Combine Peak and Shoulder Positions for Each Protein
 ```{r}
 # Calculate the total of all relevant signal maxima (real peaks and shoulders) for each protein row in the data.frames
 # New column: "combined_max_ctrl" and "combined_max_rnase" (column 29) respectively
-
 						   						
 rnase_3$combined_max_rnase <- apply(rnase_3, 1, function(x) {
 												 ls_max <- as.numeric(unlist(x$local_maxima)) # ls_max = numerical vector with the peak positions of this protein
