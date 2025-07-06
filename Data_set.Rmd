@@ -15,7 +15,7 @@ Supervisors: Maïwen Caudron-Herger and Michela Pozzi
 6.  Total count of maxima (peaks and shoulders) per protein
 7.  Identification of proteins with different maxima amount in ctrl vs rnase
 8.  Add center of mass values
-9.  Correlation functions
+9.  Correlation functions and plotting function 
 10. First criterion for data set purification
 11. Second criterion for data set purification
 12. Combining purified data sets
@@ -525,7 +525,7 @@ th_max_reg_simple <- function(x) {
   return(x_values)
 }
 
-# Apply the function row by row to the entire rnase_3 or ctrl_3 DataFrame.
+# Apply the function row by row to the entire rnase_3 or ctrl_3 Dataframe.
 rnase_3[1:25] <- t(apply(rnase_3, 1, th_max_reg_simple))
 ctrl_3[1:25]  <- t(apply(ctrl_3, 1, th_max_reg_simple))
 ```
@@ -688,9 +688,17 @@ rnase_norm_mean$COM <- apply(rnase_norm_mean[, 1:25], 1, function(x) {
 })
 ```
 
+
+
+
+
 ***********************************************************************************************************
-9. Useful functions, that will be used in this part
-  by Julian Baureis (Zeile 701 - 1290), Codewriting assisted by ChatGPT
+Code in the following parts (rows 700 - 1265) by Julian Baureis, Codewriting was assisted by ChatGPT 
+***********************************************************************************************************
+
+***********************************************************************************************************
+9. Useful functions, that will be used in the further parts 
+(by Julian Baureis)
 ***********************************************************************************************************
 
 Correlation function 
@@ -794,7 +802,8 @@ header_plotting <- function(cor_vector,
 
 ***********************************************************************************************************
 10. First Criterion for data set purification:
-The center of mass for a (likely) RNA-dependent protein is shifted by at least two fractions
+The center of mass for a RNA-dependent protein is shifted by at least two fractions
+(by Julian Baureis)
 ***********************************************************************************************************
 
 Create new data.frames out of ctrl/rnase_norm_mean to select those proteins, that exhibit a shift in their overall center of mass
@@ -819,6 +828,8 @@ rnase_no_COM_shift = rnase_norm_mean[!rownames(rnase_norm_mean) %in% rownames(rn
 Hypothesis: Correlation of ctrl_COM_shift with rnase_COM_shift is lower than that of ctrl_no_COM_shift with rnase_no_COM_shift
 ***********************************************************************************************************
 
+Correlation can be seen as a measure for the similarity between the distribution of two curves. In case of low correlation, the two curves are less similar compared to high correlation. 
+
 Define the variables for the correlation values, use the correlation function 
 ```{r}
 # Mean of the correlation values (ctrl vs. rnase) for those proteins whose COM is shifted by at least 2 fractions
@@ -834,8 +845,7 @@ cor_all_proteins = correlations(ctrl_norm_mean, rnase_norm_mean)
 cor_all_proteins$mean_abs_correlation
 ```
 
-Our hypothesis was confirmed. The mean correlation between ctrl and rnase is smaller for proteins whose COM was shifted by at least two fractions. Here, it is 0.36. For proteins without a large shift of their COM, it is 0.91.
-The mean correlation for all proteins is 0.79. This is less than 0.92 and greater than 0.36.This initially suggests that purification of RNA-dependent proteins based on the criterion of a significant shift in the center of mass appears to be reasonable.
+Our hypothesis was confirmed. The mean correlation between ctrl and rnase is smaller for proteins whose COM was shifted by at least two fractions. Here, it is 0.36. For proteins without a large shift of their COM, it is 0.91. The mean correlation for all proteins is 0.79. This is less than 0.92 and greater than 0.36.
 
 Plotting the correlation values in a histogram
 ```{r}
@@ -867,34 +877,35 @@ par(mfrow = c(1, 1))
 The correlation values for proteins with a shifted COM are much more located around 0. The correlation values for proteins with no COM shift show a clear tendency to high correlation values, most of them for correlation values between 0.9 and 1. 
 
 
-Examine those proteins, that still show a high correlation value, despite showing a shift in their center of mass, use the plotting function
+Examine some proteins, that still show a high correlation value, despite showing a shift in their center of mass, use the plotting function. You can change n to how many plots you want to receive.
 ```{r}
 header_plotting(COM_shifter$correlations, ctrl_COM_shift, rnase_COM_shift, n = 5, cor_threshold = 0.9, direction = "gt")
 ```
 They show a high correlation, because the curves look very similar, only a small portion shifted.
-Possible Interpretation: The proteins are partially RNA-dependent, and through RNase digestion in the experiment, they shifted to the much larger rest, that is normally not associated with RNA, and therefore not affected by RNAse digestion. Thats why blue (ctrl) and red (rnase) curve have a joined big peak, and the blue (ctrl) curve has an additional small peak, that is RNA-dependent. 
+Possible Interpretation: The proteins are partially RNA-dependent, and through RNase digestion in the experiment, they shifted to the much larger rest, that is normally not associated with RNA, and therefore not affected by RNAse digestion. Thats why blue (ctrl) and red (rnase) curve often have a joined big peak, and the blue (ctrl) curve has an additional small peak, that is RNA-dependent. 
 
 
-Examine the proteins with no big COM shift, that have a very high correlation value. 
+Examine some proteins with no big COM shift, that have a very high correlation value. 
 ```{r}
 header_plotting(COM_no_shifter$correlations, ctrl_no_COM_shift, rnase_no_COM_shift, n = 5, cor_threshold = 0.9, direction = "gt")
 ```
 As expected, these proteins have a very similar distribution. They should not be considered RNA-dependent. But what about the proteins, that show no big COM shift, but still a low correlation value. How do they look?
 
 
-Examine the proteins with no big COM shift, that have a lower correlation value
+Examine some proteins with no big COM shift, that have a lower correlation value
 ```{r}
 header_plotting(COM_no_shifter$correlations, ctrl_no_COM_shift, rnase_no_COM_shift, n = 5, cor_threshold = 0.7, direction = "lt")
 ```
-The proteins did not show a COM shift. However, their overall distribution looks different. Often, one curve shifts a bit to both sides at the same time, resulting in this effect. 
+The proteins did not show a COM shift. However, their overall distribution looks different. Often, one curve shifts a bit to both sides at the same time, resulting in the effect of no COM shift.
 
 ***********************************************************************************************************
 11. Second Criterion for data set purification:
 The shift of the global maximum between ctrl and rnase is used as a further purification criterion
+(by Julian Baureis)
 ***********************************************************************************************************
 
 We use a shift in the global maximum as another criterion, to identify those proteins, that do not show a big shift in their COM, but still look very different, and therefore should exhibit a shift, when only observing their greatest/global maximum. 
-Therefore, from the data.frame "ctrl/rnase_no_COM_shift", we first separate the proteins, that actually show a shift in their global maxima. 
+Therefore, from the dataframe "ctrl/rnase_no_COM_shift", we first separate the proteins, that actually show a shift in their global maxima. 
 
 ```{r}
 # Calculate the absolute difference of the position of the global maximum between ctrl and rnase 
@@ -903,11 +914,11 @@ diff_main_maxima <- abs(ctrl_no_COM_shift$global_maximum - rnase_no_COM_shift$gl
 # Indices of proteins with deviation ≥ 3 fractions
 deviating_main_maxima <- which(diff_main_maxima >= 3)
 
-# Apply on the data.frames
+# Apply on the dataframes
 ctrl_main_shift = ctrl_no_COM_shift[deviating_main_maxima, ]
 rnase_main_shift = rnase_no_COM_shift[deviating_main_maxima, ]
 
-# Create the complementary data.frame that contains all proteins whose main maximum does not shift by at least 2 fractions
+# Create the complementary dataframe that contains all proteins whose main maximum does not shift by at least 2 fractions
 ctrl_no_main_shift = ctrl_no_COM_shift[!rownames(ctrl_no_COM_shift) %in% rownames(ctrl_main_shift), ]
 rnase_no_main_shift = rnase_no_COM_shift[!rownames(rnase_no_COM_shift) %in% rownames(rnase_main_shift), ]
 ```
@@ -928,7 +939,7 @@ cor_all_proteins_no_COM$mean_abs_correlation
 ```
 The mean correlation value for the proteins with a COM shift AND an additional shift in their global maximum is much lower with 0.61 than the mean correlation value for those proteins with no COM shift and no global maximum shift with 0.93 The correlation values are separately plotted in a histogram. 
 
-Plotting the correlation values in a histogram, remember: both histogramms are based on the proteins, that showed NO shift in their COM
+Plotting the correlation values in a histogram, remember: both histograms are based on the proteins, that showed NO big shift in their COM
 ```{r}
 par(mfrow = c(1, 2)) 
 
@@ -956,13 +967,12 @@ hist(
 par(mfrow = c(1, 1))
 ```
 
-Examine the proteins of the left histogram, that additional to no big COM shift, showed a main shift
-
+Examine some proteins of the left histogram, that additional to no big COM shift, showed a main shift, but still had a high correlation value
 ```{r}
 header_plotting(main_shifter$correlations, ctrl_main_shift, rnase_main_shift, n = 5, cor_threshold = 0.9, direction = "gt" )
 ```
 
-These proteins do not seem RNA-dependent, the curves look very similar. This is because there is no COM shift, and the existent global maximum shift does not lead to a change in the overall curve, for example because there are two big maxima in each ctrl and rnase, and ctrl has the global maximum at one of them, rnase has its global maximum at the other one. On paper, this is a global maximum shift, but the overall curves still look very similar. 
+These proteins do not seem RNA-dependent, the curves look very similar. This is because there is no COM shift, and the existent global maximum shift usually does not lead to a change in the overall curve, for example because there are two big maxima in each ctrl and rnase, and ctrl has the global maximum at one of them, rnase has its global maximum at the other one. On paper, this is a global maximum shift, but the overall curves still look very similar. 
 In order to separate these proteins, an arbitrary threshold is used, to cut off those proteins, whose curves look to similar despite a global maximum shift. 
 
 Plot the left histogram and the arbitrary threshold. On the right side of the threshold, the respective proteins will be considered as not RNA-dependent for our analysis. 
@@ -997,6 +1007,7 @@ rnase_above_threshold = rnase_main_shift[!keep_indices, ]
 
 ***********************************************************************************************************
 12. Combining the purified data sets back together for further analysis
+(by Julian Baureis)
 ***********************************************************************************************************
 
 
@@ -1036,6 +1047,7 @@ As shown, a shift in the center of mass on its own is not suitable to identify a
 
 ***********************************************************************************************************
 13. Statistical Tests (t-tests)
+(by Julian Baureis)
 ***********************************************************************************************************
 
 We assume, that RBPs, due to their ability to interact with the negatively charged RNA, should exhibit a higher isoelectric point than neutral proteins. Here, we perform a statistical test, to assess, whether the selected proteins have a statistically higher isoelectric point than the neutral value, which is represented by the isoelectric point of 7. As a source for the values of the isoelectric points, we use the database RBP2GO. 
@@ -1080,12 +1092,12 @@ df_neg_combined_selected = data.frame(protein = matched_neg_names, isoelectric_p
 # Merge those two dataframes together 
 final_df_combined_selected = rbind(df_pos_combined_selected, df_neg_combined_selected)
 
-# How many proteins were not listed in either rbp_pos or rbp_neg, but still used in our data set - 39
+# How many proteins were not listed in either rbp_pos or rbp_neg, but are still in ctrl_selected - 39
 # dim(ctrl_selected)[1] - dim(final_df_combined_selected)[1]
 ```
 
 First t-test is performed (One sided, right tailed)
-Question: Are the isoelectric points of the selected proteins greater than 7?
+Question: Are the isoelectric points of the selected proteins greater than the neutral value of 7?
 
 --> H0: Random variable X (the isoelectric points) origin from a population with an expected value ≤ 7    
 --> E(X) ≤ 7
@@ -1104,7 +1116,7 @@ Perform the same data set preparations again for the whole data set with all ini
 ```{r}
 # Create a new dataframe, that only contains all initial proteins, that were also listed in the external data rbp_pos & rbp_neg, as well as their respective isoelectric points for these proteins.
 
-# Protein names of all inital proteins 
+# Protein names of all initial proteins 
 protein_names = rownames(ctrl_norm_mean)
 
 # Extract the protein names from rbp_pos and rbp_neg
@@ -1152,11 +1164,10 @@ Question: Are the isoelectric points of the not selected proteins different from
 # Perform the second t-test
 t.test(final_df_combined_all_proteins$isoelectric_point, mu = 7.0, alternative = "two.sided")
 ```
-The value for the test-statistic is still high (6.1), and the p-value is again very small (p << 0.05). However, it should be noted, that the observed effect is not as clear as for the last test. For example, the p value in this test is still higher compared to the previous test. The mean value of the isoelectric points in this test is 7.2, and therefore much smaller than the mean value of 8.2, we gained for the last test. 
+The value for the test-statistic is still high (6.1), and the p-value is again very small (p << 0.05). However, it should be noted, that the observed effect is not as clear as for the last test. For example, the p-value in this test is still higher compared to the previous test. The mean value of the isoelectric points in this test is 7.2, and therefore much smaller than the mean value of 8.2, we gained for the last test. 
 
 
 Visualize the isoelectric points in a histogram 
-
 ```{r}
 par(mfrow = c(1, 2)) 
 
@@ -1172,7 +1183,7 @@ hist(
 )
 
 # ablines
-#abline(v = 7, col = "firebrick", lwd = 4, lty = 2)
+abline(v = 7, col = "firebrick", lwd = 4, lty = 2)
 
 abline(v = mean(final_df_combined_selected$isoelectric_point, na.rm = TRUE),
        col = "black", lwd = 4)
@@ -1189,8 +1200,8 @@ hist(
   xlim = c(0, 14)
 )
 
-#ablines 
-#abline(v = 7, col = "firebrick", lwd = 4, lty = 2)
+# ablines 
+abline(v = 7, col = "firebrick", lwd = 4, lty = 2)
 
 abline(v = mean(final_df_combined_all_proteins$isoelectric_point, na.rm = TRUE),
        col = "black", lwd = 4)
@@ -1198,11 +1209,12 @@ abline(v = mean(final_df_combined_all_proteins$isoelectric_point, na.rm = TRUE),
 par(mfrow = c(1, 1))
 ```
 
-The selected proteins (left histogram) show a tendency to higher values for the isoelectric point. The mean value (black line) of the isoelectric points is higher in this histogram than in the other histogram, and differs more from the neutral value (red line). There are in general more values for higher isoelectric points among the selected proteins. Based on our intensity distribution criteria we managed to separate proteins we assumed are RNA-dependent. This assumption seems to be in accord with the observed behaviour of the histogramms, in which our likely RNA-dependent proteins tend to show a higher isoelectric point.
+The selected proteins (left histogram) show a tendency to higher values for the isoelectric point. The mean value (black line) of the isoelectric points is higher in this histogram than in the other histogram, and differs more from the neutral value (red line). There are in general more values for higher isoelectric points among the selected proteins. Based on our intensity distribution criteria we managed to separate proteins we assumed are RNA-dependent. This assumption seems to be in accord with the observed behaviour of the histograms, in which our likely RNA-dependent proteins tend to show a higher isoelectric point.
 
 
 ***********************************************************************************************************
 14. Further visualizations and interpretation of the purified data
+(by Julian Baureis)
 ***********************************************************************************************************
 
 Scatter plot for visualizing how the COM values behave for the selected and not_selected proteins between ctrl and rnase groups 
@@ -1248,15 +1260,15 @@ abline(a = 0, b = 1, col = "black", lwd = 3, lty = 3)
 
 par(mfrow = c(1, 1)) 
 ```
-The selected proteins consist of the two substes ctrl/rnase_COM_shift (color salmon) and ctrl/rnase_under_threshold (color firebrick). The not selected proteins consist of the two substes ctrl/rnase_no_main_shift (color purple) and ctrl/rnase_above_threshold (color midnightblue).
-Interpretation: For the not selected proteins, there is mostly no or only a small deviation between the COM values when comparing ctrl and rnase intensities. For the selected proteins, there is a clear deviation between the COM values when comparing ctrl and rnase. There is a trend observable. Most of the proteins show a high COM value in the ctrl group, and at the same time, a lower COM value for the rnase group. This indicates, that during the RNse digestion in the experiment, those proteins previously bound to RNA were freed and isolated from their RNP-complexes and migrated into less dense fractions. A big part of their intensity "potential" and hence their center of mass consequently appears in smaller fractions, leading to the observed lower COM values for the rnase group.
-It should be further noted, that among our selected proteins, there are also a few with no big COM shift. They are marked in red. They mostly show their COM value for ctrl and rnase in higher fractions. Per definition, these proteins have a shift in their main maximum between ctrl and rnase, and also have a correlation value < 0.7 between ctrl and rnase. The combination of these properties (main maximum shift + lower correlation value + COM at higher fractions) may be explained by the protein partially shifting left and right in the rnase group compared to the ctrl group. If one part of the protein distribution moves in lower fractions and the other part in higher fractions, the overall COM value is not changed that much, but there is a shift in the main maximum and a reduced correlation value, which is seen for these red proteins.
+The selected proteins consist of the two subsets ctrl/rnase_COM_shift (color salmon) and ctrl/rnase_under_threshold (color firebrick). The not selected proteins consist of the two subsets ctrl/rnase_no_main_shift (color purple) and ctrl/rnase_above_threshold (color midnightblue).
+Interpretation: For the selected proteins, there is a clear trend observable when comparing the COM values of ctrl and rnase. Most of the proteins show a high COM value in the ctrl group, and at the same time, a lower COM value for the rnase group. This indicates, that during the RNase digestion in the experiment, those proteins previously bound to RNA were freed and isolated from their RNP-complexes and migrated into less dense fractions. A big part of their intensity "potential" and hence their center of mass consequently appears in smaller fractions, leading to the observed lower COM values for the rnase group.
+It should be further noted, that among our selected proteins, there are also a few with no big COM shift. They are marked in red. They mostly show their COM value for ctrl and rnase in higher fractions. Per definition, these proteins have a shift in their main maximum between ctrl and rnase, and also have a correlation value < 0.7 between ctrl and rnase. The combination of these properties (main maximum shift + lower correlation value + no big COM shift) may be explained by the protein partially shifting left and right in the rnase group compared to the ctrl group. If one part of the protein distribution moves in lower fractions and the other part in higher fractions, the overall COM value is not changed that much, but there is a shift in the main maximum and a reduced correlation value, which is seen for these red proteins.
+
+
+
 
 ***********************************************************************************************************
-End part Julian Baureis
-Beginning part Luisa Wintel
-***********************************************************************************************************
-100. Evaluation of the Selection Criteria
+15. Evaluation of the Selection Criteria
   by Luisa Wintel (and Julian Baureis) influenced by ChatGPT
 ***********************************************************************************************************
 
