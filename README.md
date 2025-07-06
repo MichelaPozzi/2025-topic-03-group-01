@@ -58,9 +58,13 @@ This document contains our project code. It is divided into the following sectio
 
 This PowerPoint contains the poster for our final presentation.
 
-***Excel table of original data:***
+***Data:***
 
-This table shows the original mass spectroscopy data we were given with adjusted delimiter.
+This folder contains the following documents:
+
+> 1.  Excel table of original data: Original mass spectroscopy data with adjusted delimiter
+> 2.  RBP2GO Table Non-RBPs: Data base of non RNA-binding proteins
+> 3.  RBP2GO Table RBPs: Data base of RNA-binding proteins
 
 ***Images:***
 

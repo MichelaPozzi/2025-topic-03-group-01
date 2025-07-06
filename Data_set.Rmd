@@ -1479,19 +1479,6 @@ plot(pca_result_rnase_not_selected$x[,2:3], col = "midnightblue", pch = 16,
 ```
 
 ```{r}
-# JPEG-Datei öffnen
-jpeg("PC1 vs PC2 RNASE (SHIFT).jpeg", width = 800, height = 600)
-
-plot(pca_result_rnase$x[,1:2], col = "midnightblue", pch = 16,
-     xlab = "PC1", ylab = "PC2", main = "PCA: PC1 vs PC2 RNASE (SHIFT)")
-
-
-# Grafikgerät schließen
-dev.off()
-
-```
-
-```{r}
 #Recognize centers for k-means clustering -> 3 centers
 plot(pca_result_ctrl, type = "l", main = "Elbow-Plot CTRL (SHIFT)")
 plot(pca_result_rnase, type = "l", main = "Elbow-Plot RNASE (SHIFT)")
