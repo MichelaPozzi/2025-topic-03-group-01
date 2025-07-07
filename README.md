@@ -1,8 +1,12 @@
+---
+---
+---
+
 # Proteome-wide Screen for RNA-dependent Proteins of non-synchronized HeLa cells
 
 ##### Baureis, J., Ferdin, J., Nicklas, B., Wintel, L.
 
-##### Supervisors: Prof. Caudron-Heger, M., Pozzi, M.
+##### Supervisors: Caudron-Heger, M., Pozzi, M.
 
 ------------------------------------------------------------------------
 
@@ -23,18 +27,17 @@ Ribonucleoprotein (RNP) complexes - composed of RNA and RNA-binding proteins (RB
 
 ## A Glimpse into Potential Results
 
-Our approach enables the identification of RNA-dependent proteins based on their redistribution across the sucrose gradient upon RNase treatment.
-To classify proteins with respect to RNA-dependency, we defined two categories based on quantitative changes in their distribution profiles:
+Our approach enables the identification of RNA-dependent proteins based on their redistribution across the sucrose gradient upon RNase treatment. To classify proteins with respect to RNA-dependency, we defined two categories based on quantitative changes in their distribution profiles:
 
-Selected (RNA-dependent): Proteins were classified as RNA-dependent  
-- if they exhibited a center of mass (COM) shift of ≥ 2 fractions,  
-- or — in the absence of a COM shift — if they showed a main peak shift of ≥ 3 fractions combined with a Pearson correlation < 0.7 between control and RNase conditions.  
+Selected (RNA-dependent): Proteins were classified as RNA-dependent\
+- if they exhibited a center of mass (COM) shift of ≥ 2 fractions,\
+- or — in the absence of a COM shift — if they showed a main peak shift of ≥ 3 fractions combined with a Pearson correlation \< 0.7 between control and RNase conditions.
 
-Not selected (RNA-independent): Proteins were considered RNA-independent   
-- if they showed no COM shift ≥ 2 and no main peak shift ≥ 3,  
-- or if a peak shift occurred without a COM shift, but the profile correlation remained ≥ 0.7.  
-    
-![Fig. 1: Protein intensity profiles across 25 fractions. DDX21_HUMAN shows a clear shift in its intensity distribution upon RNase treatment (blue), suggesting RNA-dependency. In contrast, SPTN1_HUMAN displays no noticeable change compared to the control condition (red), indicating RNA-independent behavior.](Images/Plot of SPTN1_HUMAN and DDX21_HUMAN.png){width="734"}
+Not selected (RNA-independent): Proteins were considered RNA-independent\
+- if they showed no COM shift ≥ 2 and no main peak shift ≥ 3,\
+- or if a peak shift occurred without a COM shift, but the profile correlation remained ≥ 0.7.
+
+![Fig. 1: Protein intensity profiles across 25 fractions. DDX21_HUMAN shows a clear shift in its intensity distribution upon RNase treatment (blue), suggesting RNA-dependency. In contrast, SPTN1_HUMAN displays no noticeable change compared to the control condition (red), indicating RNA-independent behavior.](Images/Plot%20of%20SPTN1_HUMAN%20and%20DDX21_HUMAN.png){width="734"}
 
 ------------------------------------------------------------------------
 
@@ -43,6 +46,10 @@ Not selected (RNA-independent): Proteins were considered RNA-independent
 ***Data_set:***
 
 This document contains our project code. It is divided into the following sections:
+
+> 1.  sub-project 1: HeLa_NS = non-synchronized HeLa cells\
+> 2.  sub-project 2: HeLa_Mitosis = HeLa cells synchonized in mitosis\
+> 3.  sub-project 3: HeLa_Interphase = HeLa cells synchonized in interphase
 
 > 1.  Load dataset
 > 2.  Data cleanup
@@ -98,5 +105,3 @@ This folder contains the plots we used in the poster and the README.
 -   [Rajagopal *et al.*, An atlas of RNA-dependent proteins in cell division reveals the riboregulation of mitotic protein-protein interactions. Nat. Commun. 16, 2325 (2025)](https://github.com/user-attachments/files/19981728/Rajagopal.et.al.An.atlas.of.RNA-dependent.proteins.in.cell.division.reveals.the.riboregulation.of.mitotic.protein-protein.interactions.Nat.Commun.16.2325.2025.pdf)
 
 -   [Caudron‑Herger *et al.*, RBP2GO: a comprehensive pan-species database on RNA-binding proteins, their interactions and functions, 2020, Nucleic Acids Research](https://doi.org/10.1093/nar/gkaa1040)
-
-
