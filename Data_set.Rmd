@@ -1210,6 +1210,7 @@ par(mfrow = c(1, 1))
 The selected proteins (left histogram) show a tendency to higher values for the isoelectric point. The mean value (black line) of the isoelectric points is higher in this histogram than in the other histogram, and differs more from the neutral value (red line). There are in general more values for higher isoelectric points among the selected proteins. Based on our intensity distribution criteria we managed to separate proteins we assumed are RNA-dependent. This assumption seems to be in accord with the observed behaviour of the histograms, in which our likely RNA-dependent proteins tend to show a higher isoelectric point.
 
 
+Perform again for the not selected proteins
 ```{r}
 # Create a new dataframe, that only contains those proteins from our not selected group, that were also listed in the external data rbp_pos & rbp_neg, as well as the respective isoelectric points for these proteins.
 
@@ -1245,7 +1246,7 @@ final_df_combined_not_selected = rbind(df_pos_combined_not_selected, df_neg_comb
 ```
 
 
-Third t-test is performed (right-sided, one-tailed)
+Third t-test is performed (one-sided, right-tailed)
 Question: Are the isoelectric points of the selected proteins significantly higher than those of the not selected proteins?
 
 --> H0: Mean of X (isoelectric points) for selected proteins is smaller or equal than mean for the not selected proteins 
@@ -1257,6 +1258,7 @@ Question: Are the isoelectric points of the selected proteins significantly high
 t.test(final_df_combined_selected$isoelectric_point, final_df_combined_not_selected$isoelectric_point, alternative = "greater")
 ```
 The p-value is << 0.05, and the H1 hypothesis is accepted, H0 is rejected. The isoelectric points for the selected proteins are significantly greater than the isoelectric points for the not selected proteins.
+
 
 Visualize the isoelectric points in a histogram 
 ```{r}
@@ -1299,7 +1301,7 @@ abline(v = mean(final_df_combined_not_selected$isoelectric_point, na.rm = TRUE),
 
 par(mfrow = c(1, 1))
 ```
-The different distribution of the isoelectric points between the selected and not selected proteins are clearly visible in the histogram.
+The different distributions of the isoelectric points between the selected and not selected proteins are clearly visible in this histogram.
 
 
 ***********************************************************************************************************
