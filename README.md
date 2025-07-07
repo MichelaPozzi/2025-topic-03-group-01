@@ -47,10 +47,6 @@ Not selected (RNA-independent): Proteins were considered RNA-independent\
 
 This document contains our project code. It is divided into the following sections:
 
-> 1.  sub-project 1: HeLa_NS = non-synchronized HeLa cells\
-> 2.  sub-project 2: HeLa_Mitosis = HeLa cells synchonized in mitosis\
-> 3.  sub-project 3: HeLa_Interphase = HeLa cells synchonized in interphase
-
 > 1.  Load dataset
 > 2.  Data cleanup
 > 3.  Normalization
