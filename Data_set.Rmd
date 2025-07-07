@@ -911,7 +911,7 @@ Examine some proteins with no big COM shift, that have a lower correlation value
 header_plotting(COM_no_shifter$correlations, ctrl_no_COM_shift, rnase_no_COM_shift, n = 5, cor_threshold = 0.7, direction = "lt")
 ```
 
-The proteins did not show a COM shift. However, their overall distribution seems to look different. 
+The proteins did not show a big COM shift. However, their overall distribution seems to look different. 
 
 ***********************************************************************************************************
 11. Second Criterion for data set purification:
