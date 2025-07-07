@@ -697,8 +697,7 @@ rnase_norm_mean$COM <- apply(rnase_norm_mean[, 1:25], 1, function(x) {
 ```
 
 
-***********************************************************************************************************
-The code writing for the following parts 9-14 was assisted by ChatGPT
+
 ***********************************************************************************************************
 9. Useful functions, that will be used in the further parts 
 (by Julian Baureis, assisted by ChatGPT)
@@ -884,6 +883,7 @@ Examine some proteins, that still show a high correlation value, despite showing
 ```{r}
 header_plotting(COM_shifter$correlations, ctrl_COM_shift, rnase_COM_shift, n = 5, cor_threshold = 0.9, direction = "gt")
 ```
+
 They show a high correlation, because the curves look very similar, only a small portion shifted.
 Possible Interpretation: The proteins are partially RNA-dependent, and through RNase digestion in the experiment, they shifted to the much larger rest, that is normally not associated with RNA, and therefore not affected by RNAse digestion. Thats why blue (ctrl) and red (rnase) curve often have a joined big peak, and the blue (ctrl) curve has an additional small peak, that is RNA-dependent. 
 
@@ -892,6 +892,7 @@ Examine some proteins with no big COM shift, that have a very high correlation v
 ```{r}
 header_plotting(COM_no_shifter$correlations, ctrl_no_COM_shift, rnase_no_COM_shift, n = 5, cor_threshold = 0.9, direction = "gt")
 ```
+
 As expected, these proteins have a very similar distribution. They should not be considered RNA-dependent. But what about the proteins, that show no big COM shift, but still a low correlation value. How do they look?
 
 
@@ -899,6 +900,7 @@ Examine some proteins with no big COM shift, that have a lower correlation value
 ```{r}
 header_plotting(COM_no_shifter$correlations, ctrl_no_COM_shift, rnase_no_COM_shift, n = 5, cor_threshold = 0.7, direction = "lt")
 ```
+
 The proteins did not show a COM shift. However, their overall distribution looks different. Often, one curve shifts a bit to both sides at the same time, resulting in the effect of no COM shift.
 
 ***********************************************************************************************************
