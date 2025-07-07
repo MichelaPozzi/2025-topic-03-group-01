@@ -59,7 +59,7 @@ This document contains our project code. It is divided into the following sectio
 > 10. First criterion for data set purification
 > 11. Second criterion for data set purification
 > 12. Combining purified data sets
-> 13. t-test
+> 13. Statistical tests (t-tests)
 > 14. Further visualization/interpretation of purified data
 > 15. Evaluation of selection criteria
 > 16. Principle Component Analysis
