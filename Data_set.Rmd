@@ -1171,7 +1171,7 @@ par(mfrow = c(1, 2))
 
 hist(
   final_df_combined_selected$isoelectric_point,
-  main = "Isoelectric points of the selected proteins",
+  main = "Isoelectric points: selected proteins",
   xlab = "Isoelectric point",
   ylab = "Frequency",
   breaks = 30,
@@ -1189,7 +1189,7 @@ abline(v = mean(final_df_combined_selected$isoelectric_point, na.rm = TRUE),
 
 hist(
   final_df_combined_all_proteins$isoelectric_point,
-  main = "Isoelectric points for all proteins",
+  main = "Isoelectric points: all proteins",
   xlab = "Isoelectric point",
   ylab = "Frequency",
   breaks = 30,
@@ -1266,7 +1266,7 @@ par(mfrow = c(1, 2))
 
 hist(
   final_df_combined_selected$isoelectric_point,
-  main = "Isoelectric points of the selected proteins",
+  main = "Isoelectric points: selected proteins",
   xlab = "Isoelectric point",
   ylab = "Frequency",
   breaks = 30,
@@ -1284,7 +1284,7 @@ abline(v = mean(final_df_combined_selected$isoelectric_point, na.rm = TRUE),
 
 hist(
   final_df_combined_not_selected$isoelectric_point,
-  main = "Isoelectric points of not selected proteins",
+  main = "Isoelectric points: not selected proteins",
   xlab = "Isoelectric point",
   ylab = "Frequency",
   breaks = 30,
