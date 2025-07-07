@@ -911,7 +911,7 @@ Examine some proteins with no big COM shift, that have a lower correlation value
 header_plotting(COM_no_shifter$correlations, ctrl_no_COM_shift, rnase_no_COM_shift, n = 5, cor_threshold = 0.7, direction = "lt")
 ```
 
-The proteins did not show a COM shift. However, their overall distribution seems to look different. Often, one curve shifts a bit to both sides at the same time, resulting in the effect of no COM shift.
+The proteins did not show a COM shift. However, their overall distribution seems to look different. 
 
 ***********************************************************************************************************
 11. Second Criterion for data set purification:
@@ -988,7 +988,7 @@ Examine some proteins of the left histogram, that additional to no big COM shift
 header_plotting(main_shifter$correlations, ctrl_main_shift, rnase_main_shift, n = 5, cor_threshold = 0.9, direction = "gt" )
 ```
 
-These proteins do not seem RNA-dependent, the curves look very similar. This may be, because there is no COM shift, and their existent global maximum shift usually does not lead to a change in the overall curve, for example because there are two big maxima in each ctrl and rnase, and ctrl has the global maximum at one of them, rnase has its global maximum at the other one. On paper, this is a global maximum shift, but the overall curves still look very similar. 
+These proteins do not seem RNA-dependent, the curves look very similar. This may be, because there is no COM shift, and their existent global maximum shift usually does not lead to a change in the overall curve, for example, if there are two big maxima in each ctrl and rnase, and ctrl has the global maximum at one of them, rnase has its global maximum at the other one. On paper, this is a global maximum shift, but the overall curves still look very similar. 
 In order to separate these proteins, an arbitrary threshold is used, to cut off those proteins, whose curves look to similar despite a global maximum shift. 
 
 Plot the left histogram and the arbitrary threshold. On the right side of the threshold, the respective proteins will be considered as not RNA-dependent for our analysis. 
